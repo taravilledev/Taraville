@@ -58,31 +58,32 @@ for (const mode of [undefined, null, "live", "REAL", ""]) {
 }
 function intake(choice = "yes") {
   const form = new FormData();
-  form.set("notice_presented", "on");
-  form.set("followup_requested", "on");
+  form.set("intake_confirmed", "on");
   form.set("survey_consent", choice);
   return form;
 }
 assert.equal(parsePrivacyIntake(intake("yes")), true);
-assert.equal(parsePrivacyIntake(intake("no")), false, "An explicit refusal must remain false, not a missing choice");
-for (const key of ["notice_presented", "followup_requested", "survey_consent"]) {
+const withheld = intake();
+withheld.delete("survey_consent");
+assert.equal(parsePrivacyIntake(withheld), false, "An unchecked optional consent box means survey consent was not given");
+for (const key of ["intake_confirmed", "survey_consent"]) {
   const missing = intake();
   missing.delete(key);
-  assert.throws(() => parsePrivacyIntake(missing), `${key} is required`);
+  if (key === "survey_consent") assert.equal(parsePrivacyIntake(missing), false);
+  else assert.throws(() => parsePrivacyIntake(missing), `${key} is required`);
   for (const value of ["", "off", "true", "false", file]) {
     const invalid = intake();
     invalid.set(key, value);
     assert.throws(() => parsePrivacyIntake(invalid), `${key} must use its explicit allowed choice`);
   }
 }
-for (const invalidChoice of ["on", "YES", "NO", " yes "]) {
+for (const invalidChoice of ["on", "no", "YES", "NO", " yes "]) {
   assert.throws(() => parsePrivacyIntake(intake(invalidChoice)));
 }
 
 const operations = ["contact", "withdraw", "opt_in"] as const;
 function confirmed(operation: typeof operations[number]) {
   const form = new FormData();
-  form.set("data_confirmed", "on");
   form.set("confirm_operation", "on");
   if (operation === "opt_in") form.set("notice_presented", "on");
   return form;
@@ -90,12 +91,7 @@ function confirmed(operation: typeof operations[number]) {
 for (const operation of operations) {
   const context = { id, requestId, version: 1, operation };
   assert.deepEqual(plain(parsePrivacyMutation(context, confirmed(operation))), context);
-  const retiredConfirmation = confirmed(operation);
-  retiredConfirmation.delete("data_confirmed");
-  retiredConfirmation.set("synthetic_only", "on");
-  assert.throws(() => parsePrivacyMutation(context, retiredConfirmation),
-    "The retired field must not bypass data acknowledgement for a privacy mutation");
-  for (const key of ["data_confirmed", "confirm_operation"]) {
+  for (const key of ["confirm_operation"]) {
     const missing = confirmed(operation);
     missing.delete(key);
     assert.throws(() => parsePrivacyMutation(context, missing), `${operation} needs ${key}`);
@@ -154,7 +150,6 @@ function leadForm() {
   form.set("first_name", "Synthetic privacy form");
   form.set("phone", "0000000000");
   form.set("owner_id", owner);
-  form.set("data_confirmed", "on");
   // The caller supplies this value from its authenticated staff record.
   form.set("survey.sales_staff", staff);
   return form;
@@ -171,8 +166,8 @@ for (const brand of ["TARAVILLE", "BAAN_KUNAPAP"] as const) {
     for (const value of ["", "หญิง", file]) {
       const invalid = leadForm();
       invalid.set(key, value);
-      assert.throws(() => parseLeadForm(context, invalid, false),
-        `Declined survey must reject ${key}, including an empty value`);
+      assert.deepEqual(plain(parseLeadForm(context, invalid, false).survey), { sales_staff: staff },
+        `Withheld consent must drop ${key} instead of storing it`);
     }
   }
   const missingStaff = leadForm();
@@ -196,5 +191,5 @@ for (const brand of ["TARAVILLE", "BAAN_KUNAPAP"] as const) {
   normalForm.set("survey.monthly_installment", brand === "TARAVILLE" ? "6,000-8,000" : "15000");
   assert.throws(() => parseLeadForm(context, normalForm, true), "Normal parsing must still reject cross-brand shapes");
 }
-console.log("PASS: live/historical notice selection, explicit privacy choices/mutations, newest effective survey choice and declined form guard");
+console.log("PASS: live/historical notice selection, explicit privacy choices/mutations, newest effective survey choice and dropped answers without consent");
 console.log("Pure parser checks do not verify trusted staff injection, server-action wiring, HTTP/Auth, database or browser flows.");

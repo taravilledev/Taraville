@@ -12,7 +12,7 @@ export async function recordPrivacy(context: PrivacyMutation, _state: ActionStat
   const { supabase } = await requireStaff(true);
   let input;
   try { input = parsePrivacyMutation(context, form); }
-  catch { return { error: "กรุณายืนยันขั้นตอนและข้อมูล หากเลือกให้ข้อมูลเพิ่มเติมต้องแสดงประกาศก่อน" }; }
+  catch { return { error: "กรุณายืนยันขั้นตอน หากเลือกให้ข้อมูลเพิ่มเติมต้องแสดงประกาศก่อน" }; }
   let result;
   try {
     const current = await supabase.from("leads").select("privacy_mode").eq("id", input.id).single();

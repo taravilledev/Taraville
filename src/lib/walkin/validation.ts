@@ -15,12 +15,9 @@ export function parseLeadForm(context: MutationContext, form: FormData, isSurvey
   const contact = contactSchema.parse(Object.fromEntries(
     ["name_title", "first_name", "last_name", "phone", "line_id"].map(key => [key, form.get(key) ?? ""]),
   ));
-  z.literal("on").parse(form.get("data_confirmed"));
   const owner = z.uuid().parse(form.get("owner_id"));
   if (!isSurveyAllowed) {
-    for (const key of form.keys()) {
-      if (key.startsWith("survey.") && key !== "survey.sales_staff") throw new Error("Survey declined");
-    }
+    // Answers typed before consent was withheld are discarded, never stored.
     const staff = z.string().max(4000).parse(form.get("survey.sales_staff"));
     return { contact, owner, survey: { sales_staff: staff } as Record<string, string | string[]> };
   }

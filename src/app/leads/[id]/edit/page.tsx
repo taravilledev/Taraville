@@ -1,18 +1,21 @@
 import { Suspense } from "react";
 import { randomUUID } from "node:crypto";
 import { leadDetail } from "@/lib/walkin/queries";
+import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { AppShell } from "@/app/walkin/app-shell";
+import { FormHeader } from "@/app/walkin/form-header";
 import { LeadForm } from "@/app/walkin/lead-form";
 import { surveyChoice } from "@/lib/walkin/privacy";
+import styles from "@/app/walkin/walkin.module.css";
 
 export const metadata = { title: "แก้ไขผู้สนใจ · Taraville Group", robots: { index: false, follow: false } };
 export default function EditPage({ params }: { params: Promise<{ id: string }> }) {
-  return <Suspense fallback={<p>กำลังโหลดแบบฟอร์ม…</p>}><Edit params={params} /></Suspense>;
+  return <Suspense fallback={<PageSkeleton />}><Edit params={params} /></Suspense>;
 }
 async function Edit({ params }: { params: Promise<{ id: string }> }) {
   const { lead, staff, events } = await leadDetail((await params).id);
-  return <AppShell staff={staff}><h1>แก้ไขข้อมูลผู้สนใจ</h1><p>แบรนด์: {lead.brand === "TARAVILLE" ? "Taraville" : "บ้านคุณภาพ"} · เปลี่ยนแบรนด์ไม่ได้</p>
-    <a href={`/leads/${lead.id}`}>กลับไปดูรายละเอียดล่าสุด</a>
+  return <AppShell staff={staff}>
+    <FormHeader brand={lead.brand} title="แก้ไขข้อมูล" action={<a className={styles.noticeLink} href={`/leads/${lead.id}`}>← กลับไปรายละเอียด</a>} />
     <LeadForm brand={lead.brand} staff={staff} owners={[]} lead={lead} choice={surveyChoice(events)} requestId={randomUUID()} />
   </AppShell>;
 }

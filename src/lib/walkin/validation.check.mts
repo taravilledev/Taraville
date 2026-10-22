@@ -33,7 +33,6 @@ function form(entries: [string, string | Blob][] = []) {
   result.set("first_name", "ลูกค้าทดสอบ");
   result.set("phone", "0000000000");
   result.set("owner_id", owner);
-  result.set("data_confirmed", "on");
   for (const [key, value] of entries) result.append(key, value);
   return result;
 }
@@ -61,16 +60,7 @@ for (const key of ["first_name", "phone"]) {
   missing.delete(key);
   assert.throws(() => parseLeadForm(context(), missing), `${key} is required`);
 }
-for (const value of ["", "off", "true"]) {
-  const invalid = form();
-  invalid.set("data_confirmed", value);
-  assert.throws(() => parseLeadForm(context(), invalid), "Data acknowledgement must be checked");
-}
-const unchecked = form();
-unchecked.delete("data_confirmed");
-assert.throws(() => parseLeadForm(context(), unchecked));
-unchecked.set("synthetic_only", "on");
-assert.throws(() => parseLeadForm(context(), unchecked), "The retired field must not bypass data acknowledgement");
+assert.doesNotThrow(() => parseLeadForm(context(), form()), "Lead input no longer needs a separate data acknowledgement");
 for (const value of ["", "not-a-uuid", "123e4567-e89b-42d3-a456"]) {
   const invalid = form();
   invalid.set("owner_id", value);
@@ -127,7 +117,7 @@ assert.throws(() => parseLeadForm(context(), form([
   ["survey.channel_other", "one"], ["survey.channel_other", "two"],
 ])), "Duplicate Other text must not silently choose a value");
 
-for (const key of ["first_name", "owner_id", "data_confirmed", "survey.address", "survey.channel_other", "survey.decision_factors"]) {
+for (const key of ["first_name", "owner_id", "survey.address", "survey.channel_other", "survey.decision_factors"]) {
   const invalid = form();
   invalid.set(key, new File(["synthetic"], "synthetic.txt", { type: "text/plain" }));
   assert.throws(() => parseLeadForm(context(), invalid), `File field must be rejected: ${key}`);
