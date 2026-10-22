@@ -4,7 +4,7 @@ import { useActionState, useRef, type ReactNode } from "react";
 import styles from "./walkin.module.css";
 
 export type ActionState = { error: string };
-export function ActionForm({ action, children, label = "บันทึกข้อมูลสมมติ" }: {
+export function ActionForm({ action, children, label = "บันทึกข้อมูล" }: {
   action: (state: ActionState, data: FormData) => Promise<ActionState>;
   children: ReactNode; label?: string;
 }) {

@@ -5,7 +5,7 @@ import ts from "typescript";
 
 const migrations = new URL("../migrations/", import.meta.url);
 const files = readdirSync(migrations).filter((name) => name.endsWith(".sql"));
-assert.equal(files.length, 6, "Review this check when the pilot migration set changes");
+assert.equal(files.length, 7, "Review this check when the pilot migration set changes");
 const sources = files.map((name) => {
   const source = readFileSync(new URL(name, migrations), "utf8");
   assert.ok(source.trimEnd().split("\n").length <= 300, `${name} exceeds 300 lines`);
@@ -13,6 +13,10 @@ const sources = files.map((name) => {
 });
 const sql = sources.join("\n").replace(/--[^\n]*/g, "");
 const normalized = sql.replace(/\s+/g, " ").toLowerCase();
+const live = readFileSync(new URL("20261022102243_walkin_live_intake.sql", migrations), "utf8");
+assert.match(live, /revoke all on function public\.walkin_create_lead\(uuid, text, jsonb, jsonb, uuid\) from public, anon, authenticated;/);
+assert.match(live, /revoke all on function private\.walkin_remove_lead\(uuid, bigint, text\) from public, anon, authenticated;/);
+assert.match(live, /current_user = 'postgres' and tg_op = 'DELETE'/);
 const source = readFileSync(new URL("../../src/lib/walkin/survey-questions.ts", import.meta.url), "utf8");
 const exports = {};
 runInNewContext(ts.transpileModule(source, {

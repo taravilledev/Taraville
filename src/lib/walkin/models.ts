@@ -10,7 +10,7 @@ export const leadSchema = z.object({
   survey: z.record(z.string(), z.union([z.string(), z.array(z.string())])),
   owner_id: z.uuid(), created_by: z.uuid(), version: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
   created_at: z.string(), updated_at: z.string(),
-  privacy_mode: z.literal("synthetic"), last_contact_at: z.string().nullable(),
+  privacy_mode: z.enum(["synthetic", "real"]), last_contact_at: z.string().nullable(),
 });
 export type Lead = z.infer<typeof leadSchema>;
 export const LEAD_COLUMNS = "id,brand,name_title,first_name,last_name,phone,line_id,survey,owner_id,created_by,version,created_at,updated_at,privacy_mode,last_contact_at";

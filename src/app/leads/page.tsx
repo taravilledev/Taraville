@@ -50,7 +50,7 @@ async function List({ searchParams }: Props) {
     <p>หน้า {filters.page} · แสดงครั้งละ 25 รายการ</p>
     <div className={styles.questions}>{leads.slice(0, 25).map(lead => <a key={lead.id} className={styles.leadCard} href={`/leads/${lead.id}`}>
       <strong>{lead.first_name} {lead.last_name}</strong><span>{lead.brand === "TARAVILLE" ? "Taraville" : "บ้านคุณภาพ"} · {lead.phone}</span>
-      <small>{new Date(lead.created_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })}</small></a>)}</div>
+      <small>{lead.privacy_mode === "synthetic" ? "ข้อมูลสมมติ · " : ""}{new Date(lead.created_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })}</small></a>)}</div>
     {!leads.length && <p>ยังไม่มีรายการที่ตรงกับตัวกรอง</p>}
     <nav className={styles.sectionNav} aria-label="เปลี่ยนหน้ารายการ">
       {filters.page > 1 && <a href={pageHref(filters.page - 1)}>หน้าก่อนหน้า</a>}

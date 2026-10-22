@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { runInNewContext } from "node:vm";
 import ts from "typescript";
 
 const nodeRequire = createRequire(import.meta.url);
-const noticePath = "../../../docs/walkin/notices/walkin-synthetic-2026-10-21.1.json";
+const syntheticNoticePath = "../../../docs/walkin/notices/walkin-synthetic-2026-10-21.1.json";
+const liveNoticePath = "../../../docs/walkin/notices/walkin-live-2026-10-22.1.json";
 function load(name: string, dependencies: Record<string, unknown> = {}) {
   const exports: Record<string, unknown> = {};
   const compiled = ts.transpileModule(readFileSync(new URL(name, import.meta.url), "utf8"), {
@@ -15,7 +17,7 @@ function load(name: string, dependencies: Record<string, unknown> = {}) {
     exports, TextEncoder,
     require: (dependency: string) => {
       if (dependency === "zod") return nodeRequire("zod");
-      if (dependency === noticePath) return nodeRequire(noticePath);
+      if ([syntheticNoticePath, liveNoticePath].includes(dependency)) return nodeRequire(dependency);
       if (Object.hasOwn(dependencies, dependency)) return dependencies[dependency];
       throw new Error(`Unexpected dependency: ${dependency}`);
     },
@@ -23,9 +25,10 @@ function load(name: string, dependencies: Record<string, unknown> = {}) {
   return exports;
 }
 const privacy = load("./privacy.ts") as typeof import("./privacy");
+const { leadSchema } = load("./models.ts") as typeof import("./models");
 const catalog = load("./survey-questions.ts");
 const validation = load("./validation.ts", { "./survey-questions": catalog }) as typeof import("./validation");
-const { parsePrivacyIntake, parsePrivacyMutation, privacyEventSchema, surveyChoice } = privacy;
+const { PRIVACY_NOTICE, SYNTHETIC_NOTICE, privacyNotice, parsePrivacyIntake, parsePrivacyMutation, privacyEventSchema, surveyChoice } = privacy;
 const { parseLeadForm, mutationContextSchema } = validation;
 const owner = "123e4567-e89b-42d3-a456-426614174000";
 const requestId = "123e4567-e89b-42d3-a456-426614174001";
@@ -33,6 +36,26 @@ const id = "123e4567-e89b-42d3-a456-426614174002";
 const staff = "Synthetic server-provided staff";
 const file = new File(["synthetic"], "synthetic.txt", { type: "text/plain" });
 function plain(value: unknown) { return JSON.parse(JSON.stringify(value)); }
+assert.equal(createHash("sha256").update(readFileSync(new URL(syntheticNoticePath, import.meta.url))).digest("hex"),
+  "5de1d920ff5330ef2a0d3708e10c1aa0e976594de4e80fd5d9d6b1cda699e317",
+  "Activating live intake must preserve the exact historical synthetic snapshot");
+assert.equal(SYNTHETIC_NOTICE.mode, "synthetic");
+assert.equal(SYNTHETIC_NOTICE.version, "walkin-synthetic-2026-10-21.1");
+assert.equal(PRIVACY_NOTICE.mode, "real");
+assert.equal(PRIVACY_NOTICE.version, "walkin-live-2026-10-22.1");
+assert.notEqual(PRIVACY_NOTICE.version, SYNTHETIC_NOTICE.version);
+assert.equal(privacyNotice("synthetic"), SYNTHETIC_NOTICE,
+  "Historical leads must present their synthetic notice rather than the live notice");
+assert.equal(privacyNotice("real"), PRIVACY_NOTICE);
+assert.deepEqual(plain(SYNTHETIC_NOTICE), nodeRequire(syntheticNoticePath));
+assert.deepEqual(plain(PRIVACY_NOTICE), nodeRequire(liveNoticePath));
+const modeSchema = leadSchema.pick({ privacy_mode: true });
+for (const mode of ["synthetic", "real"] as const) {
+  assert.equal(modeSchema.parse({ privacy_mode: mode }).privacy_mode, mode);
+}
+for (const mode of [undefined, null, "live", "REAL", ""]) {
+  assert.equal(modeSchema.safeParse({ privacy_mode: mode }).success, false);
+}
 function intake(choice = "yes") {
   const form = new FormData();
   form.set("notice_presented", "on");
@@ -59,7 +82,7 @@ for (const invalidChoice of ["on", "YES", "NO", " yes "]) {
 const operations = ["contact", "withdraw", "opt_in"] as const;
 function confirmed(operation: typeof operations[number]) {
   const form = new FormData();
-  form.set("synthetic_only", "on");
+  form.set("data_confirmed", "on");
   form.set("confirm_operation", "on");
   if (operation === "opt_in") form.set("notice_presented", "on");
   return form;
@@ -67,7 +90,12 @@ function confirmed(operation: typeof operations[number]) {
 for (const operation of operations) {
   const context = { id, requestId, version: 1, operation };
   assert.deepEqual(plain(parsePrivacyMutation(context, confirmed(operation))), context);
-  for (const key of ["synthetic_only", "confirm_operation"]) {
+  const retiredConfirmation = confirmed(operation);
+  retiredConfirmation.delete("data_confirmed");
+  retiredConfirmation.set("synthetic_only", "on");
+  assert.throws(() => parsePrivacyMutation(context, retiredConfirmation),
+    "The retired field must not bypass data acknowledgement for a privacy mutation");
+  for (const key of ["data_confirmed", "confirm_operation"]) {
     const missing = confirmed(operation);
     missing.delete(key);
     assert.throws(() => parsePrivacyMutation(context, missing), `${operation} needs ${key}`);
@@ -126,7 +154,7 @@ function leadForm() {
   form.set("first_name", "Synthetic privacy form");
   form.set("phone", "0000000000");
   form.set("owner_id", owner);
-  form.set("synthetic_only", "on");
+  form.set("data_confirmed", "on");
   // The caller supplies this value from its authenticated staff record.
   form.set("survey.sales_staff", staff);
   return form;
@@ -168,5 +196,5 @@ for (const brand of ["TARAVILLE", "BAAN_KUNAPAP"] as const) {
   normalForm.set("survey.monthly_installment", brand === "TARAVILLE" ? "6,000-8,000" : "15000");
   assert.throws(() => parseLeadForm(context, normalForm, true), "Normal parsing must still reject cross-brand shapes");
 }
-console.log("PASS: explicit synthetic privacy choices/mutations, newest effective survey choice and declined form guard");
+console.log("PASS: live/historical notice selection, explicit privacy choices/mutations, newest effective survey choice and declined form guard");
 console.log("Pure parser checks do not verify trusted staff injection, server-action wiring, HTTP/Auth, database or browser flows.");

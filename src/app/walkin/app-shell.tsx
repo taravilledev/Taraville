@@ -17,8 +17,8 @@ export function AppShell({ children, staff, paletteId, fontId }: { children: Rea
       </div>}
     </header>
     <main className={styles.main}>
-      <div className={styles.previewNote} role="note"><strong>ทดสอบระบบ · ใช้ข้อมูลสมมติเท่านั้น</strong>
-        <span>ยังไม่เปิดรับข้อมูลลูกค้าจริง ระหว่างรออนุมัติประกาศความเป็นส่วนตัว</span></div>
+      <div className={styles.previewNote} role="note"><strong>ระบบรับเรื่องผู้สนใจ</strong>
+        <span>แสดงประกาศก่อนรับข้อมูล · แบบสอบถามเพิ่มเติมเป็นทางเลือก</span></div>
       {staff && <nav className={styles.sectionNav}><a href="/walkin">รับข้อมูลใหม่</a><Link href="/leads" prefetch={false}>รายการผู้สนใจ</Link><Link href="/account/password" prefetch={false}>ตั้ง / เปลี่ยนรหัสผ่าน</Link></nav>}
       <div className={styles.content}>{children}</div>
     </main>

@@ -33,7 +33,7 @@ function form(entries: [string, string | Blob][] = []) {
   result.set("first_name", "ลูกค้าทดสอบ");
   result.set("phone", "0000000000");
   result.set("owner_id", owner);
-  result.set("synthetic_only", "on");
+  result.set("data_confirmed", "on");
   for (const [key, value] of entries) result.append(key, value);
   return result;
 }
@@ -45,7 +45,7 @@ const emptySurvey = parseLeadForm(context(), form());
 assert.deepEqual(plain(emptySurvey), {
   contact: { name_title: "", first_name: "ลูกค้าทดสอบ", last_name: "", phone: "0000000000", line_id: "" },
   owner, survey: { decision_factors: [] },
-}, "Optional survey questions must not prevent synthetic lead creation");
+}, "Optional survey questions must not prevent confirmed lead creation");
 const trimmed = form();
 trimmed.set("first_name", "  ลูกค้าทดสอบ  ");
 trimmed.set("phone", "  0000000000  ");
@@ -63,12 +63,14 @@ for (const key of ["first_name", "phone"]) {
 }
 for (const value of ["", "off", "true"]) {
   const invalid = form();
-  invalid.set("synthetic_only", value);
-  assert.throws(() => parseLeadForm(context(), invalid), "Synthetic-only acknowledgement must be checked");
+  invalid.set("data_confirmed", value);
+  assert.throws(() => parseLeadForm(context(), invalid), "Data acknowledgement must be checked");
 }
 const unchecked = form();
-unchecked.delete("synthetic_only");
+unchecked.delete("data_confirmed");
 assert.throws(() => parseLeadForm(context(), unchecked));
+unchecked.set("synthetic_only", "on");
+assert.throws(() => parseLeadForm(context(), unchecked), "The retired field must not bypass data acknowledgement");
 for (const value of ["", "not-a-uuid", "123e4567-e89b-42d3-a456"]) {
   const invalid = form();
   invalid.set("owner_id", value);
@@ -125,7 +127,7 @@ assert.throws(() => parseLeadForm(context(), form([
   ["survey.channel_other", "one"], ["survey.channel_other", "two"],
 ])), "Duplicate Other text must not silently choose a value");
 
-for (const key of ["first_name", "owner_id", "synthetic_only", "survey.address", "survey.channel_other", "survey.decision_factors"]) {
+for (const key of ["first_name", "owner_id", "data_confirmed", "survey.address", "survey.channel_other", "survey.decision_factors"]) {
   const invalid = form();
   invalid.set(key, new File(["synthetic"], "synthetic.txt", { type: "text/plain" }));
   assert.throws(() => parseLeadForm(context(), invalid), `File field must be rejected: ${key}`);
@@ -167,5 +169,5 @@ const genericError = "บันทึกไม่สำเร็จ กรุณ
 assert.equal(mutationError(), genericError);
 assert.equal(mutationError("XX000", "secret backend table and stack trace"), genericError);
 assert.equal(mutationError(undefined, "secret backend table and stack trace"), genericError);
-console.log("PASS: synthetic form validation, brand-specific surveys, mutation contexts and safe error messages");
+console.log("PASS: confirmed form validation, brand-specific surveys, mutation contexts and safe error messages");
 console.log("Pure validation checks do not verify HTTP, authentication, database authorization, browser or device flows.");

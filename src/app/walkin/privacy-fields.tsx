@@ -10,8 +10,8 @@ export function PrivacyFields({ notice, contact, survey, isNew, choice }: {
   const [selection, setSelection] = useState("");
   const isSurveyAllowed = isNew ? selection === "yes" : choice !== false;
   return <>
-    {isNew && <section className={styles.card}><h2>ก่อนกรอกข้อมูลสมมติ</h2>
-      <details><summary>อ่านร่างประกาศฉบับที่จะบันทึกเป็นหลักฐาน</summary>{notice}</details>
+    {isNew && <section className={styles.card}><h2>ก่อนกรอกข้อมูล</h2>
+      <details><summary>อ่านประกาศฉบับที่จะบันทึกเป็นหลักฐาน</summary>{notice}</details>
       <label className={styles.option}><input type="checkbox" name="notice_presented" required /><span>{PRIVACY_NOTICE.choices.notice_presented}</span></label>
       <label className={styles.option}><input type="checkbox" name="followup_requested" required /><span>{PRIVACY_NOTICE.choices.followup_requested}</span></label>
       <p>หากต้องการเพียงข้อมูลทั่วไป ไม่ต้องสร้างรายการผู้สนใจ</p>

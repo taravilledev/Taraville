@@ -4,7 +4,7 @@ import { staffSchema } from "@/lib/walkin/models";
 import { SURVEY_QUESTIONS } from "@/lib/walkin/survey-questions";
 import { AppShell } from "@/app/walkin/app-shell";
 import { ActionForm } from "@/app/walkin/action-form";
-import { SyntheticConfirmation } from "@/app/walkin/lead-form";
+import { DataConfirmation } from "@/app/walkin/lead-form";
 import { reassignLead } from "@/app/walkin/actions";
 import { PrivacyControls } from "@/app/walkin/privacy-controls";
 import styles from "@/app/walkin/walkin.module.css";
@@ -27,6 +27,7 @@ async function Detail({ params, searchParams }: Props) {
   return <AppShell staff={staff}>
     {saved && <p role="status">บันทึกแล้ว กรุณาตรวจข้อมูลด้านล่าง</p>}
     <section className={styles.card}><p className={styles.eyebrow}>{lead.brand === "TARAVILLE" ? "TARAVILLE" : "BAAN KUNAPAP"}</p>
+      <p>{lead.privacy_mode === "synthetic" ? "ข้อมูลสมมติสำหรับทดสอบ" : "รายการผู้สนใจ"}</p>
       <h1>{lead.name_title} {lead.first_name} {lead.last_name}</h1>
       <dl className={styles.details}><dt>เบอร์โทร</dt><dd>{lead.phone}</dd><dt>LINE ID</dt><dd>{lead.line_id || "ไม่ได้ระบุ"}</dd>
         <dt>ผู้ดูแล</dt><dd>{currentOwner}</dd><dt>บันทึกเมื่อ</dt><dd>{new Date(lead.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}</dd></dl>
@@ -45,7 +46,7 @@ async function Detail({ params, searchParams }: Props) {
       <ActionForm action={reassignLead.bind(null, lead.id, lead.version)} label="ยืนยันเปลี่ยนผู้ดูแล">
         <label className={styles.field}>ฝ่ายขายผู้ดูแล *<select name="owner_id" defaultValue={owners.some(owner => owner.id === lead.owner_id) ? lead.owner_id : ""} required>
           <option value="">เลือกฝ่ายขาย</option>{owners.map(owner => <option key={owner.id} value={owner.id}>{owner.full_name}</option>)}
-        </select></label><SyntheticConfirmation />
+        </select></label><DataConfirmation mode={lead.privacy_mode} />
       </ActionForm>
     </section>}
   </AppShell>;

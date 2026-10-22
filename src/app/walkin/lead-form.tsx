@@ -8,9 +8,9 @@ import { PrivacyFields } from "./privacy-fields";
 import { VersionedNotice } from "./versioned-notice";
 import styles from "./walkin.module.css";
 
-export function SyntheticConfirmation() {
-  return <label className={styles.option}><input type="checkbox" name="synthetic_only" required />
-    <span>ยืนยันว่าเป็นข้อมูลสมมติสำหรับทดสอบระบบ ไม่ใช่ข้อมูลลูกค้าจริง</span></label>;
+export function DataConfirmation({ mode = "real" }: { mode?: "synthetic" | "real" }) {
+  return <label className={styles.option}><input type="checkbox" name="data_confirmed" required />
+    <span>{mode === "synthetic" ? "ยืนยันว่ารายการนี้เป็นข้อมูลสมมติ ไม่ใช่ข้อมูลลูกค้าจริง" : "ตรวจสอบข้อมูลและตัวเลือกตามที่ผู้สนใจแจ้งแล้ว"}</span></label>;
 }
 
 export function LeadForm({ brand, staff, owners, lead, requestId, choice = null }: {
@@ -18,8 +18,8 @@ export function LeadForm({ brand, staff, owners, lead, requestId, choice = null 
 }) {
   const questions = SURVEY_QUESTIONS[brand];
   const context = { brand, requestId, ...(lead ? { id: lead.id, version: lead.version } : {}) };
-  return <><CompanyNotice brand={brand} /><ActionForm action={saveLead.bind(null, context)}>
-    <PrivacyFields isNew={!lead} choice={choice} notice={<VersionedNotice brand={brand} />} contact={
+  return <><CompanyNotice brand={brand} mode={lead?.privacy_mode} /><ActionForm action={saveLead.bind(null, context)}>
+    <PrivacyFields isNew={!lead} choice={choice} notice={<VersionedNotice brand={brand} mode={lead?.privacy_mode} />} contact={
     <section id="contact" className={styles.card} aria-labelledby="contact-title">
       <div className={styles.sectionHeading}><h2 id="contact-title">ข้อมูลติดต่อ</h2><span>ช่องที่มี * เป็นข้อมูลจำเป็น</span></div>
       <div className={styles.nameGrid}>
@@ -46,9 +46,9 @@ export function LeadForm({ brand, staff, owners, lead, requestId, choice = null 
     </section>} />
     <p className={styles.ownerNote}>ผู้บันทึก: <strong>{staff.full_name}</strong> · ใช้ชื่อจากบัญชีที่เข้าสู่ระบบโดยอัตโนมัติเมื่อบันทึก</p>
     <section className={styles.card} id="privacy"><h2>ก่อนบันทึก</h2>
-      <p className={styles.pendingPrivacy}>บันทึกเฉพาะการจำลองขั้นตอนและตัวเลือก ยังไม่เปิดรับข้อมูลหรือความยินยอมจากลูกค้าจริง</p>
-      <a className={styles.noticeLink} href={`/privacy?brand=${brand}`} target="_blank" rel="noopener noreferrer">อ่านร่างประกาศความเป็นส่วนตัว (เปิดแท็บใหม่)</a>
-      <SyntheticConfirmation />
+      <p className={styles.pendingPrivacy}>{lead?.privacy_mode === "synthetic" ? "รายการทดสอบเดิมยังคงเป็นข้อมูลสมมติ" : "บันทึกคำขอติดต่อกลับและตัวเลือกแบบสอบถามแยกกัน"}</p>
+      <a className={styles.noticeLink} href={`/privacy?brand=${brand}`} target="_blank" rel="noopener noreferrer">อ่านประกาศความเป็นส่วนตัว (เปิดแท็บใหม่)</a>
+      <DataConfirmation mode={lead?.privacy_mode} />
     </section>
   </ActionForm></>;
 }
