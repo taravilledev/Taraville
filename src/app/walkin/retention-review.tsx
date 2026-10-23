@@ -10,7 +10,7 @@ export async function RetentionReview({ session }: { session: Awaited<ReturnType
   const rows = z.array(z.object({ id: z.uuid(), brand: z.enum(["TARAVILLE", "BAAN_KUNAPAP"]), review_due_at: z.string() })).parse(data);
   if (!rows.length) return null;
   return <section className={styles.card}><details>
-    <summary>ครบกำหนดทบทวน 12 เดือน {rows.length > 25 ? "25+" : rows.length} รายการ</summary>
+    <summary>มี {rows.length > 25 ? "25+" : rows.length} รายการครบกำหนดทบทวน 12 เดือน · ดู</summary>
     <p className={styles.hint}>สำหรับผู้บริหาร · ตรวจเหตุจำเป็นและขออนุมัติวิธีจัดการก่อนลบ ไม่มีการลบอัตโนมัติ</p>
     <ul>{rows.slice(0, 25).map(row => <li key={row.id}><a href={`/leads/${row.id}`}>
       {row.brand === "TARAVILLE" ? "Taraville" : "บ้านคุณภาพ"} · ครบกำหนด {new Date(row.review_due_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })}
