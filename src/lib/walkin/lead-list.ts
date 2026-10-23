@@ -7,10 +7,14 @@ export const filtersSchema = z.object({
   q: z.string().trim().max(50).optional(),
   brand: z.enum(["BAAN_KUNAPAP", "TARAVILLE"]).optional(), owner: z.uuid().optional(),
   from: z.iso.date().optional(), to: z.iso.date().optional(),
+  stage: z.enum(["received", "contacted", "closed"]).optional(), closed: z.literal("show").optional(),
   sort: z.enum(["created", "contact"]).default("created"), dir: z.enum(["asc", "desc"]).default("desc"),
   page: z.coerce.number().int().min(1).max(100000).default(1),
 }).refine(value => !value.from || !value.to || value.from <= value.to);
 export type LeadFilters = z.infer<typeof filtersSchema>;
+
+/** Closed leads are hidden unless asked for; a text search always includes them so returning customers are found (ADR 0008). */
+export const hidesClosed = (filters: LeadFilters) => !filters.q && !filters.stage && filters.closed !== "show";
 
 const DEFAULTS: Partial<Record<keyof LeadFilters, unknown>> = { sort: "created", dir: "desc", page: 1 };
 
@@ -18,7 +22,7 @@ const DEFAULTS: Partial<Record<keyof LeadFilters, unknown>> = { sort: "created",
 export function listHref(filters: LeadFilters, changes: Partial<Record<keyof LeadFilters, string | number | undefined>> = {}) {
   const params = new URLSearchParams();
   const merged: Partial<Record<keyof LeadFilters, unknown>> = { ...filters, ...changes };
-  for (const key of ["q", "brand", "owner", "from", "to", "sort", "dir", "page"] as const) {
+  for (const key of ["q", "brand", "owner", "from", "to", "stage", "closed", "sort", "dir", "page"] as const) {
     const value = merged[key];
     if (value === undefined || value === "" || value === DEFAULTS[key]) continue;
     params.set(key, String(value));

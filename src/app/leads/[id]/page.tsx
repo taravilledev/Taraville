@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { leadDetail, saleOwners } from "@/lib/walkin/queries";
+import { closeInfo, leadDetail, saleOwners } from "@/lib/walkin/queries";
 import { staffSchema } from "@/lib/walkin/models";
 import { SURVEY_QUESTIONS } from "@/lib/walkin/survey-questions";
 import { COMPANIES } from "@/lib/walkin/companies";
@@ -8,6 +8,7 @@ import { AppShell } from "@/app/walkin/app-shell";
 import { RequiredMark } from "@/app/walkin/required-mark";
 import { ActionForm } from "@/app/walkin/action-form";
 import { reassignLead } from "@/app/walkin/actions";
+import { LeadStatus } from "@/app/walkin/status-controls";
 import { ContactRecord, EvidenceHistory, SurveyChoice, formatDate } from "@/app/walkin/privacy-controls";
 import styles from "@/app/walkin/walkin.module.css";
 
@@ -20,7 +21,7 @@ async function Detail({ params, searchParams }: Props) {
   const { id } = await params;
   const session = await leadDetail(id);
   const { lead, staff, events } = session;
-  const owners = await saleOwners(session);
+  const [owners, closed] = await Promise.all([saleOwners(session), closeInfo(session)]);
   const saved = (await searchParams).saved === "1";
   const ownerResult = await session.supabase.from("staff").select("id,full_name,role,is_active").eq("id", lead.owner_id).maybeSingle();
   if (ownerResult.error) throw new Error("โหลดผู้ดูแลไม่ได้ กรุณาลองใหม่");
@@ -39,6 +40,7 @@ async function Detail({ params, searchParams }: Props) {
         <a href={`/leads/${lead.id}/edit`} className={styles.secondaryLink}>แก้ไขข้อมูล</a>
       </div>
     </section>
+    <LeadStatus lead={lead} info={closed} />
     <ContactRecord lead={lead} />
     <section className={styles.card}><h2>คำตอบแบบสอบถาม</h2><dl className={styles.answers}>
       {SURVEY_QUESTIONS[lead.brand].map(question => {
