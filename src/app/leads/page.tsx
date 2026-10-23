@@ -1,9 +1,10 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireStaff } from "@/lib/supabase/staff";
 import { LEAD_COLUMNS, leadSchema } from "@/lib/walkin/models";
 import { saleOwners } from "@/lib/walkin/queries";
-import { PAGE_SIZE, filtersSchema } from "@/lib/walkin/lead-list";
+import { PAGE_SIZE, filtersSchema, listHref } from "@/lib/walkin/lead-list";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { AppShell } from "@/app/walkin/app-shell";
 import { RetentionReview } from "@/app/walkin/retention-review";
@@ -38,8 +39,9 @@ async function List({ searchParams }: Props) {
   const ascending = filters.dir === "asc";
   request = filters.sort === "contact" ? request.order("last_contact_at", { ascending, nullsFirst: false }).order("id", { ascending }) : request.order("created_at", { ascending }).order("id", { ascending });
   const { data, error, count } = await request.range((filters.page - 1) * PAGE_SIZE, filters.page * PAGE_SIZE - 1);
-  // PGRST103: the requested page is past the last row (e.g. a stale URL after filtering); show it as empty.
-  if (error && error.code !== "PGRST103") throw new Error("โหลดรายการไม่ได้ กรุณาลองใหม่");
+  // PGRST103: the requested page is past the last row (e.g. a stale URL after filtering); go back to page 1.
+  if (error?.code === "PGRST103") redirect(listHref(filters, { page: 1 }));
+  if (error) throw new Error("โหลดรายการไม่ได้ กรุณาลองใหม่");
   const leads = leadSchema.array().parse(data ?? []);
   const total = count ?? leads.length;
   const ownerName = new Map(owners.map(owner => [owner.id, owner.full_name]));
