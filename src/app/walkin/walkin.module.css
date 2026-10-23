@@ -159,3 +159,6 @@
   .accountName { display: none; }
   .accountTrigger { gap: var(--space-2); padding-right: var(--space-2); }
 }
+@media (min-width: 1024px) {
+  .main.mainWide { width: min(100% - 80px, 1240px); }
+}
