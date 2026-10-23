@@ -26,7 +26,7 @@ export async function saveLead(context: MutationContext, _state: ActionState, fo
     }
     input = parseLeadForm(parsed.data, form, consent !== false);
   }
-  catch { return { error: "กรุณาตรวจข้อมูล การแสดงประกาศ คำขอติดต่อกลับ ตัวเลือกแบบสอบถาม และการยืนยันข้อมูล" }; }
+  catch { return { error: "กรุณาตรวจข้อมูลที่จำเป็น การแสดงประกาศ คำขอติดต่อกลับ และตัวเลือกแบบสอบถาม" }; }
   if (staff.role === "sale" && input.owner !== staff.id) return { error: "ฝ่ายขายบันทึกได้เฉพาะรายการของตนเอง" };
   const request = context.id ? supabase.rpc("walkin_update_lead", {
     p_lead_id: context.id, p_expected_version: context.version, p_contact: input.contact, p_survey: input.survey,
@@ -49,8 +49,8 @@ export async function reassignLead(id: string, version: number, _state: ActionSt
   const { supabase, staff } = await requireStaff(true);
   if (staff.role !== "executive") return { error: "เฉพาะผู้บริหารเท่านั้นที่เปลี่ยนผู้ดูแลได้" };
   const parsed = z.object({ id: z.uuid(), version: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
-    owner: z.uuid(), confirmed: z.literal("on") }).safeParse({ id, version, owner: form.get("owner_id"), confirmed: form.get("data_confirmed") });
-  if (!parsed.success) return { error: "กรุณาเลือกฝ่ายขายและยืนยันข้อมูล" };
+    owner: z.uuid() }).safeParse({ id, version, owner: form.get("owner_id") });
+  if (!parsed.success) return { error: "กรุณาเลือกฝ่ายขาย" };
   const { data, error } = await supabase.rpc("walkin_reassign_lead", {
     p_lead_id: parsed.data.id, p_expected_version: parsed.data.version, p_owner: parsed.data.owner,
   }).single();

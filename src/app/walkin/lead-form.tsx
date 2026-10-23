@@ -3,52 +3,47 @@ import { SURVEY_QUESTIONS, type Brand } from "@/lib/walkin/survey-questions";
 import { SurveyField } from "./survey-field";
 import { ActionForm } from "./action-form";
 import { saveLead } from "./actions";
-import { CompanyNotice } from "./company-notice";
-import { PrivacyFields } from "./privacy-fields";
+import { ConsentFields } from "./consent-fields";
+import { NoticeDialog } from "./notice-dialog";
+import { RequiredMark } from "./required-mark";
 import { VersionedNotice } from "./versioned-notice";
 import styles from "./walkin.module.css";
 
-export function DataConfirmation({ mode = "real" }: { mode?: "synthetic" | "real" }) {
-  return <label className={styles.option}><input type="checkbox" name="data_confirmed" required />
-    <span>{mode === "synthetic" ? "ยืนยันว่ารายการนี้เป็นข้อมูลสมมติ ไม่ใช่ข้อมูลลูกค้าจริง" : "ตรวจสอบข้อมูลและตัวเลือกตามที่ผู้สนใจแจ้งแล้ว"}</span></label>;
-}
+export const LEAD_FORM_ID = "lead-form";
 
 export function LeadForm({ brand, staff, owners, lead, requestId, choice = null }: {
   brand: Brand; staff: Staff; owners: Staff[]; lead?: Lead; requestId: string; choice?: boolean | null;
 }) {
   const questions = SURVEY_QUESTIONS[brand];
   const context = { brand, requestId, ...(lead ? { id: lead.id, version: lead.version } : {}) };
-  return <><CompanyNotice brand={brand} mode={lead?.privacy_mode} /><ActionForm action={saveLead.bind(null, context)}>
-    <PrivacyFields isNew={!lead} choice={choice} notice={<VersionedNotice brand={brand} mode={lead?.privacy_mode} />} contact={
-    <section id="contact" className={styles.card} aria-labelledby="contact-title">
-      <div className={styles.sectionHeading}><h2 id="contact-title">ข้อมูลติดต่อ</h2><span>ช่องที่มี * เป็นข้อมูลจำเป็น</span></div>
-      <div className={styles.nameGrid}>
-        <label className={styles.field}>คำนำหน้า<select name="name_title" defaultValue={lead?.name_title ?? ""} autoComplete="honorific-prefix">
-          <option value="">ไม่ระบุ</option><option>นาย</option><option>นาง</option><option>นางสาว</option>
-        </select></label>
-        <label className={styles.field}>ชื่อ *<input name="first_name" defaultValue={lead?.first_name} autoComplete="given-name" required maxLength={200} /></label>
-        <label className={styles.field}>นามสกุล<input name="last_name" defaultValue={lead?.last_name} autoComplete="family-name" maxLength={200} /></label>
-      </div>
-      <div className={styles.contactGrid}>
-        <label className={styles.field}>เบอร์โทรศัพท์มือถือ *<input name="phone" type="tel" inputMode="tel" defaultValue={lead?.phone} autoComplete="tel" required maxLength={80} /></label>
-        <label className={styles.field}>LINE ID<input name="line_id" defaultValue={lead?.line_id} autoComplete="off" maxLength={200} /></label>
-      </div>
-      {!lead && staff.role === "executive" ? <label className={styles.field}>ฝ่ายขายผู้ดูแล *
-        <select name="owner_id" required defaultValue=""><option value="">เลือกฝ่ายขาย</option>
-          {owners.map(owner => <option key={owner.id} value={owner.id}>{owner.full_name}</option>)}
-        </select></label> : <input type="hidden" name="owner_id" value={lead?.owner_id ?? staff.id} />}
-      <p className={styles.ownerNote}>ฝ่ายขายผู้ดูแลอ้างอิงบัญชีพนักงาน ส่วนชื่อผู้บันทึกใช้บัญชีที่เข้าสู่ระบบ</p>
-    </section>} survey={
-    <section id="survey" className={styles.card} aria-labelledby="survey-title">
-      <h2 id="survey-title">แบบสอบถามความต้องการ</h2><p className={styles.sectionHint}>คำถามเพิ่มเติมเลือกไม่ตอบได้</p>
-      <div className={styles.questions}>{questions.filter(question => question.key !== "sales_staff").map(question =>
-        <SurveyField key={question.key} question={question} answers={lead?.survey} />)}</div>
-    </section>} />
-    <p className={styles.ownerNote}>ผู้บันทึก: <strong>{staff.full_name}</strong> · ใช้ชื่อจากบัญชีที่เข้าสู่ระบบโดยอัตโนมัติเมื่อบันทึก</p>
-    <section className={styles.card} id="privacy"><h2>ก่อนบันทึก</h2>
-      <p className={styles.pendingPrivacy}>{lead?.privacy_mode === "synthetic" ? "รายการทดสอบเดิมยังคงเป็นข้อมูลสมมติ" : "บันทึกคำขอติดต่อกลับและตัวเลือกแบบสอบถามแยกกัน"}</p>
-      <a className={styles.noticeLink} href={`/privacy?brand=${brand}`} target="_blank" rel="noopener noreferrer">อ่านประกาศความเป็นส่วนตัว (เปิดแท็บใหม่)</a>
-      <DataConfirmation mode={lead?.privacy_mode} />
-    </section>
-  </ActionForm></>;
+  const isSurveyShown = lead ? choice !== false : true;
+  return <>
+    {!lead && <NoticeDialog><VersionedNotice brand={brand} /></NoticeDialog>}
+    <ActionForm id={LEAD_FORM_ID} sticky action={saveLead.bind(null, context)}>
+      <section id="contact" className={styles.card} aria-labelledby="contact-title">
+        <div className={styles.sectionHeading}><h2 id="contact-title">ข้อมูลติดต่อ</h2><span>ช่องที่มี<RequiredMark />เป็นข้อมูลจำเป็น</span></div>
+        <div className={styles.nameGrid}>
+          <label className={styles.field}>คำนำหน้า<select name="name_title" defaultValue={lead?.name_title ?? ""} autoComplete="honorific-prefix">
+            <option value="">ไม่ระบุ</option><option>นาย</option><option>นาง</option><option>นางสาว</option>
+          </select></label>
+          <label className={styles.field}><span>ชื่อ<RequiredMark /></span><input name="first_name" defaultValue={lead?.first_name} autoComplete="given-name" required maxLength={200} /></label>
+          <label className={styles.field}>นามสกุล<input name="last_name" defaultValue={lead?.last_name} autoComplete="family-name" maxLength={200} /></label>
+        </div>
+        <div className={styles.contactGrid}>
+          <label className={styles.field}><span>เบอร์โทรศัพท์มือถือ<RequiredMark /></span><input name="phone" type="tel" inputMode="tel" defaultValue={lead?.phone} autoComplete="tel" required maxLength={80} /></label>
+          <label className={styles.field}>LINE ID<input name="line_id" defaultValue={lead?.line_id} autoComplete="off" maxLength={200} /></label>
+        </div>
+        {!lead && staff.role === "executive" ? <label className={styles.field}><span>ฝ่ายขายผู้ดูแล<RequiredMark /></span>
+          <select name="owner_id" required defaultValue=""><option value="">เลือกฝ่ายขาย</option>
+            {owners.map(owner => <option key={owner.id} value={owner.id}>{owner.full_name}</option>)}
+          </select></label> : <input type="hidden" name="owner_id" value={lead?.owner_id ?? staff.id} />}
+      </section>
+      {isSurveyShown ? <section id="survey" className={styles.card} aria-labelledby="survey-title">
+        <h2 id="survey-title">แบบสอบถามความต้องการ</h2><p className={styles.sectionHint}>ไม่บังคับ ข้อที่ลูกค้าไม่ตอบ เว้นว่างได้</p>
+        <div className={styles.questions}>{questions.filter(question => question.key !== "sales_staff").map(question =>
+          <SurveyField key={question.key} question={question} answers={lead?.survey} />)}</div>
+      </section> : <p className={styles.hint} role="status">ลูกค้าไม่ให้ข้อมูลแบบสอบถามเพิ่มเติม · เปลี่ยนตัวเลือกได้จากหน้ารายละเอียด</p>}
+      {!lead && <ConsentFields />}
+    </ActionForm>
+  </>;
 }

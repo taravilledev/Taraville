@@ -1,26 +1,59 @@
 @import "tailwindcss";
 
+/* Design tokens: the only place raw colours, sizes and radii are written. CSS modules use var(--…). */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --ink: #4d352e;
+  --muted: #7b655c;
+  --accent: #a44f36;
+  --on-accent: #fff;
+  --tint: #fbede5;
+  --line: #eadbd1;
+  --line-strong: #cdb9ab;
+  --paper: #fff;
+  --canvas: #fcf7f3;
+  --skeleton: #f1e6dd;
+  --danger: #a22e28;
+  --danger-ink: #7f2622;
+  --danger-tint: #fff0ee;
+  --warn-ink: #684b14;
+  --warn-tint: #fff5dc;
+  --warn-line: #e6c989;
+  --backdrop: rgb(77 53 46 / 0.45);
+  --shadow-hover: 0 6px 18px rgb(164 79 54 / 0.12);
+  --shadow-menu: 0 12px 32px rgb(77 53 46 / 0.16);
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --radius-round: 50%;
+
+  --text-xs: 13px;
+  --text-sm: 15px;
+  --text-md: 17px;
+  --text-lg: 22px;
+  --text-xl: 28px;
+  --text-title: clamp(24px, 3.4vw, 30px);
+
+  --control-h: 52px;
+  --tap-min: 44px;
+  --content-w: 880px;
+  --font-body: var(--font-nunito), var(--font-sarabun), "Thonburi", Tahoma, sans-serif;
+  --font-utility: var(--font-nunito), Arial, sans-serif;
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: 1.65;
 }

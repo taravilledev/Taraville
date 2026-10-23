@@ -19,9 +19,10 @@ export function surveyChoice(events: PrivacyEvent[]): boolean | null {
 }
 
 export function parsePrivacyIntake(form: FormData) {
-  z.literal("on").parse(form.get("notice_presented"));
-  z.literal("on").parse(form.get("followup_requested"));
-  return z.enum(["yes", "no"]).parse(form.get("survey_consent")) === "yes";
+  // One tick attests both notice_presented and followup_requested; the survey consent stays separate.
+  z.literal("on").parse(form.get("intake_confirmed"));
+  // An unchecked consent box submits nothing; the optional survey is then dropped by parseLeadForm.
+  return z.literal("yes").nullable().parse(form.get("survey_consent")) === "yes";
 }
 
 export const privacyMutationSchema = z.object({
@@ -31,7 +32,6 @@ export const privacyMutationSchema = z.object({
 export type PrivacyMutation = z.infer<typeof privacyMutationSchema>;
 export function parsePrivacyMutation(context: PrivacyMutation, form: FormData) {
   const parsed = privacyMutationSchema.parse(context);
-  z.literal("on").parse(form.get("data_confirmed"));
   z.literal("on").parse(form.get("confirm_operation"));
   if (parsed.operation === "opt_in") z.literal("on").parse(form.get("notice_presented"));
   return parsed;
