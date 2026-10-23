@@ -5,11 +5,16 @@ import { runInNewContext } from "node:vm";
 import ts from "typescript";
 
 const nodeRequire = createRequire(import.meta.url);
-const exports: Record<string, unknown> = {};
-const compiled = ts.transpileModule(readFileSync(new URL("./lead-list.ts", import.meta.url), "utf8"), {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
-}).outputText;
-runInNewContext(compiled, { exports, URLSearchParams, Date, require: (name: string) => name === "zod" ? nodeRequire("zod") : {} }, { timeout: 1000 });
+function load(file: string, require: (name: string) => unknown) {
+  const exports: Record<string, unknown> = {};
+  const compiled = ts.transpileModule(readFileSync(new URL(file, import.meta.url), "utf8"), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+  }).outputText;
+  runInNewContext(compiled, { exports, URLSearchParams, Date, require }, { timeout: 1000 });
+  return exports;
+}
+const stageModule = load("./lead-stage.ts", name => nodeRequire(name));
+const exports = load("./lead-list.ts", name => name === "zod" ? nodeRequire("zod") : name === "./lead-stage" ? stageModule : {});
 const { budgetOf, filtersSchema, hidesClosed, listHref, pageWindow, relativeDays } = exports as typeof import("./lead-list");
 
 const base = filtersSchema.parse({});
@@ -21,6 +26,7 @@ assert.equal(listHref({ ...base, q: "สม", page: 3 }, { page: undefined }), "
 assert.equal(listHref(base, { stage: "closed" }), "/leads?stage=closed");
 assert.equal(listHref({ ...base, closed: "show" }, { page: 2 }), "/leads?closed=show&page=2");
 assert.equal(filtersSchema.safeParse({ stage: "lost" }).success, false);
+assert.equal(filtersSchema.safeParse({ stage: "project_opened" }).success, true);
 assert.equal(filtersSchema.safeParse({ closed: "hide" }).success, false);
 // Closed leads are hidden by default, but a search, a stage filter or "show" brings them back.
 assert.equal(hidesClosed(base), true);

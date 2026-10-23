@@ -8,7 +8,7 @@ import styles from "./walkin.module.css";
 
 type CloseInfo = { text: string | null; by: string | null } | null;
 
-export function LeadStatus({ lead, info }: { lead: Lead; info: CloseInfo }) {
+export function LeadStatus({ lead, info, hasActiveProject }: { lead: Lead; info: CloseInfo; hasActiveProject: boolean }) {
   const context = { id: lead.id, version: lead.version, requestId: randomUUID() };
   if (lead.closed_at && lead.closed_reason) {
     return <section className={styles.card}><h2>สถานะ: ปิด</h2>
@@ -21,6 +21,7 @@ export function LeadStatus({ lead, info }: { lead: Lead; info: CloseInfo }) {
       </details>
     </section>;
   }
+  if (hasActiveProject) return null; // a lead with an active project cannot be closed (ADR 0008)
   return <section className={styles.card}>
     <details><summary>ปิดรายการนี้</summary>
       <ActionForm action={closeLead.bind(null, context)} label="ยืนยันปิดรายการ">
