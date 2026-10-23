@@ -25,3 +25,16 @@ export async function saleOwners(session: Awaited<ReturnType<typeof requireStaff
   if (error) throw new Error("โหลดรายชื่อผู้ดูแลไม่ได้ กรุณาลองใหม่");
   return staffSchema.array().parse(data);
 }
+
+/** Who closed the lead and the free-text reason; Sale cannot read other staff, so the name can be absent. */
+export async function closeInfo(session: Awaited<ReturnType<typeof leadDetail>>) {
+  const { lead, supabase } = session;
+  if (!lead.closed_at || !lead.closed_by) return null;
+  const [event, closer] = await Promise.all([
+    supabase.from("lead_status_events").select("reason_text").eq("lead_id", lead.id).eq("kind", "close")
+      .order("id", { ascending: false }).limit(1).maybeSingle(),
+    supabase.from("staff").select("full_name").eq("id", lead.closed_by).maybeSingle(),
+  ]);
+  if (event.error || closer.error) throw new Error("โหลดข้อมูลการปิดไม่ได้ กรุณาลองใหม่");
+  return { text: (event.data?.reason_text as string | null) ?? null, by: (closer.data?.full_name as string | undefined) ?? null };
+}
