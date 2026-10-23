@@ -10,7 +10,7 @@ const compiled = ts.transpileModule(readFileSync(new URL("./lead-stage.ts", impo
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
 }).outputText;
 runInNewContext(compiled, { exports, require: (name: string) => nodeRequire(name) }, { timeout: 1000 });
-const { closeReasonsFor, parseCloseForm, parseReopenForm } = exports as typeof import("./lead-stage");
+const { closeReasonsFor, parseCancelProjectForm, parseCloseForm, parseOpenProjectForm, parseReopenForm } = exports as typeof import("./lead-stage");
 
 const context = { id: "00000000-0000-4000-8000-000000000001", version: 3, requestId: "00000000-0000-4000-8000-000000000002" };
 const form = (fields: Record<string, string>) => Object.entries(fields).reduce((data, [key, value]) => (data.set(key, value), data), new FormData());
@@ -26,4 +26,11 @@ assert.throws(() => parseCloseForm(context, form({ confirm_operation: "on", reas
 assert.throws(() => parseCloseForm(context, form({ confirm_operation: "on", reason: "duplicate", reason_text: "x" })), "text only for other");
 assert.throws(() => parseReopenForm(context, form({})));
 assert.equal(parseReopenForm(context, form({ confirm_operation: "on" })).version, 3);
-console.log("PASS: lead stage close/reopen form parsing");
+assert.equal(parseOpenProjectForm(context, form({ confirm_operation: "on" })).id, context.id);
+assert.throws(() => parseOpenProjectForm(context, form({})));
+const cancel = { id: context.id, leadId: "00000000-0000-4000-8000-000000000003", version: 2, requestId: context.requestId };
+assert.equal(parseCancelProjectForm(cancel, form({ confirm_operation: "on", reason: "  opened by mistake " })).reason, "opened by mistake");
+assert.throws(() => parseCancelProjectForm(cancel, form({ confirm_operation: "on", reason: "   " })));
+assert.throws(() => parseCancelProjectForm(cancel, form({ confirm_operation: "on", reason: "x".repeat(501) })));
+assert.throws(() => parseCancelProjectForm(cancel, form({ reason: "mistake" })));
+console.log("PASS: lead stage close/reopen and project form parsing");

@@ -1,7 +1,9 @@
 import { z } from "zod";
 
-export const STAGE_LABELS = { received: "รับเข้า", contacted: "ติดต่อแล้ว", closed: "ปิด" } as const;
-export type Stage = keyof typeof STAGE_LABELS;
+export const STAGE_LABELS = { received: "รับเข้า", contacted: "ติดต่อแล้ว", project_opened: "เปิดโครงการแล้ว", closed: "ปิด" } as const;
+export const STAGE_CODES = ["received", "contacted", "project_opened", "closed"] as const;
+export const stageSchema = z.enum(STAGE_CODES);
+export type Stage = z.infer<typeof stageSchema>;
 
 export const CLOSE_REASON_CODES = ["not_interested", "bought_elsewhere", "not_ready", "unreachable", "duplicate", "other", "bought_with_us"] as const;
 export const closeReasonSchema = z.enum(CLOSE_REASON_CODES);
@@ -29,4 +31,17 @@ export function parseCloseForm(context: StatusMutation, form: FormData) {
 export function parseReopenForm(context: StatusMutation, form: FormData) {
   z.literal("on").parse(form.get("confirm_operation"));
   return statusMutationSchema.parse(context);
+}
+
+export const projectOpenSchema = statusMutationSchema;
+export const projectCancelContextSchema = z.object({ id: z.uuid(), leadId: z.uuid(), version: statusMutationSchema.shape.version, requestId: z.uuid() });
+export type ProjectCancelContext = z.infer<typeof projectCancelContextSchema>;
+export function parseOpenProjectForm(context: StatusMutation, form: FormData) {
+  z.literal("on").parse(form.get("confirm_operation"));
+  return projectOpenSchema.parse(context);
+}
+export function parseCancelProjectForm(context: ProjectCancelContext, form: FormData) {
+  z.literal("on").parse(form.get("confirm_operation"));
+  const reason = z.string().trim().min(1).max(500).parse(form.get("reason"));
+  return { ...projectCancelContextSchema.parse(context), reason };
 }

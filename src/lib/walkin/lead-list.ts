@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { stageSchema } from "./lead-stage";
 import type { Lead } from "./models";
 
 export const PAGE_SIZE = 50;
@@ -7,7 +8,7 @@ export const filtersSchema = z.object({
   q: z.string().trim().max(50).optional(),
   brand: z.enum(["BAAN_KUNAPAP", "TARAVILLE"]).optional(), owner: z.uuid().optional(),
   from: z.iso.date().optional(), to: z.iso.date().optional(),
-  stage: z.enum(["received", "contacted", "closed"]).optional(), closed: z.literal("show").optional(),
+  stage: stageSchema.optional(), closed: z.literal("show").optional(),
   sort: z.enum(["created", "contact"]).default("created"), dir: z.enum(["asc", "desc"]).default("desc"),
   page: z.coerce.number().int().min(1).max(100000).default(1),
 }).refine(value => !value.from || !value.to || value.from <= value.to);
