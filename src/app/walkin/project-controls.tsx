@@ -31,7 +31,7 @@ export function LeadProject({ lead, projects, names, isExecutive }: Props) {
         </ActionForm>
       </details>}
     {cancelled.map(project => <p key={project.id} className={styles.hint}>
-      {project.code} · ยกเลิก · {project.cancel_reason} · โดย {(project.cancelled_by && names.get(project.cancelled_by)) || "เจ้าหน้าที่อื่น"}
+      {project.code} · ยกเลิก · {project.cancel_reason} · โดย {(project.cancelled_by && names.get(project.cancelled_by)) || "ผู้บริหาร"}
       {project.cancelled_at ? ` · ${formatDate(project.cancelled_at)}` : ""}</p>)}
   </section>;
 }

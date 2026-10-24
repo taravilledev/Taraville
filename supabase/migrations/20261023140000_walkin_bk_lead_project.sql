@@ -37,6 +37,7 @@ create table private.project_code_counters (
 );
 revoke all on private.project_code_counters from public, anon, authenticated;
 
+-- Internal only: called from walkin_open_project; execute is revoked from every API role below.
 create function private.walkin_next_project_code(p_prefix text) returns text
 language plpgsql security definer set search_path = '' as $$
 declare
@@ -127,8 +128,10 @@ begin
   end if;
   perform 1 from public.leads where id = v_lead_id for update;
   select * into v_project from public.projects where id = p_project_id for update;
-  if v_project.status = 'cancelled' and v_project.cancel_request_id = p_request_id
-    and v_project.cancelled_by = v_actor.id and v_project.cancel_reason = v_reason then
+  if v_project.status = 'cancelled' and v_project.cancel_request_id = p_request_id and v_project.cancelled_by = v_actor.id then
+    if v_project.cancel_reason <> v_reason then
+      raise exception 'request_conflict' using errcode = '22023';
+    end if;
     return v_project;
   end if;
   if p_expected_version is null or v_project.version <> p_expected_version then

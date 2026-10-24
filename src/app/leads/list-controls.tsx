@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import type { LeadFilters } from "@/lib/walkin/lead-list";
-import { STAGE_LABELS, type Stage } from "@/lib/walkin/lead-stage";
+import { STAGE_CODES, STAGE_LABELS } from "@/lib/walkin/lead-stage";
 import styles from "./leads.module.css";
 
 type Props = { filters: LeadFilters; owners?: { id: string; full_name: string }[]; activeCount: number };
@@ -52,7 +52,7 @@ export function ListControls({ filters, owners, activeCount }: Props) {
           <option value="">ทุกแบรนด์</option><option value="BAAN_KUNAPAP">บ้านคุณภาพ</option><option value="TARAVILLE">Taraville</option></select></label>
       <label className={styles.field}>สถานะ
         <select name="stage" defaultValue={filters.stage ?? ""}>
-          <option value="">ทุกสถานะ</option>{(Object.keys(STAGE_LABELS) as Stage[]).map(stage => <option key={stage} value={stage}>{STAGE_LABELS[stage]}</option>)}</select></label>
+          <option value="">ทุกสถานะ</option>{STAGE_CODES.map(stage => <option key={stage} value={stage}>{STAGE_LABELS[stage]}</option>)}</select></label>
       {owners && <label className={styles.field}>ฝ่ายขายผู้ดูแล
         <select name="owner" defaultValue={filters.owner ?? ""}>
           <option value="">ทุกคน</option>{owners.map(owner => <option key={owner.id} value={owner.id}>{owner.full_name}</option>)}</select></label>}

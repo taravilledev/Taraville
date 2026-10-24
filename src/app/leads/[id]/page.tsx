@@ -22,7 +22,7 @@ async function Detail({ params, searchParams }: Props) {
   const { id } = await params;
   const session = await leadDetail(id);
   const { lead, staff, events } = session;
-  const [owners, closed, { projects, names }] = await Promise.all([saleOwners(session), closeInfo(session), leadProjects(session)]);
+  const [owners, closeDetails, { projects, names }] = await Promise.all([saleOwners(session), closeInfo(session), leadProjects(session)]);
   const saved = (await searchParams).saved === "1";
   const ownerResult = await session.supabase.from("staff").select("id,full_name,role,is_active").eq("id", lead.owner_id).maybeSingle();
   if (ownerResult.error) throw new Error("โหลดผู้ดูแลไม่ได้ กรุณาลองใหม่");
@@ -41,7 +41,7 @@ async function Detail({ params, searchParams }: Props) {
         <a href={`/leads/${lead.id}/edit`} className={styles.secondaryLink}>แก้ไขข้อมูล</a>
       </div>
     </section>
-    <LeadStatus lead={lead} info={closed} hasActiveProject={projects.some(project => project.status === "active")} />
+    <LeadStatus lead={lead} info={closeDetails} hasActiveProject={projects.some(project => project.status === "active")} />
     <LeadProject lead={lead} projects={projects} names={names} isExecutive={staff.role === "executive"} />
     <ContactRecord lead={lead} />
     <section className={styles.card}><h2>คำตอบแบบสอบถาม</h2><dl className={styles.answers}>

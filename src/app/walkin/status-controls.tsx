@@ -29,7 +29,7 @@ export function LeadStatus({ lead, info, hasActiveProject }: { lead: Lead; info:
           <option value="">เลือกเหตุผล</option>
           {closeReasonsFor(lead.brand).map(code => <option key={code} value={code}>{CLOSE_REASON_LABELS[code]}</option>)}
         </select></label>
-        <label className={styles.field}><span>รายละเอียด (จำเป็นเมื่อเลือก “อื่นๆ”)</span><input name="reason_text" maxLength={500} /></label>
+        <label className={styles.field}><span>รายละเอียด (เฉพาะเมื่อเลือก “อื่นๆ” และต้องกรอก)</span><input name="reason_text" maxLength={500} /></label>
         <p className={styles.hint}>รายการที่ปิดยังแก้ไขและบันทึกการติดต่อได้ และเปิดอีกครั้งได้ ไม่ใช่การลบข้อมูลหรือการขอไม่ให้ติดต่อ</p>
         <label className={styles.option}><input type="checkbox" name="confirm_operation" required /><span>ยืนยันปิดรายการนี้</span></label>
       </ActionForm>

@@ -156,6 +156,8 @@ begin
   -- replay is a no-op; cancelling again fails; the code is kept
   perform public.walkin_cancel_project(v_old.id, v_old.version, '85000000-0000-4000-a000-000000000005', 'opened by mistake');
   if pg_temp.version(v_bk) <> v_lead_before + 1 then raise exception 'Cancel replay bumped the lead'; end if;
+  perform pg_temp.expect_error(format($q$select public.walkin_cancel_project(%L, %s, %L, 'different reason')$q$, v_old.id,
+    v_old.version, '85000000-0000-4000-a000-000000000005'), '22023', 'request_conflict');
   perform pg_temp.expect_error(format($q$select public.walkin_cancel_project(%L, 2, %L, 'again')$q$, v_old.id,
     '85000000-0000-4000-a000-000000000006'), '22023', 'invalid_project_state');
   -- opening again issues a new number; the cancelled code is never reused
