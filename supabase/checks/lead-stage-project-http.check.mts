@@ -98,9 +98,14 @@ rejected(await close(bk.id, bk.version + 1, "duplicate"), 400, "22023", "invalid
 rejected(await cancel(project.id, 1, "mistake", sale), 403, "42501", "access_denied", "Sale cancelling");
 rejected(await cancel(project.id, 1, "   "), 400, "22023", "invalid_cancel_reason", "blank cancel reason");
 rejected(await cancel(project.id, 9, "mistake"), 409, "PT409", "stale_project", "stale cancel");
-const cancelled = ok(await cancel(project.id, 1, "opened by mistake"), "Executive cancel");
+const cancelRequest = randomUUID();
+const cancelled = ok(await cancel(project.id, 1, "opened by mistake", executive, cancelRequest), "Executive cancel");
 assert.equal(cancelled.status, "cancelled");
 assert.equal(await stage(bk.id), "received");
+const leadAfterCancel = (await lead(bk.id)).version;
+assert.equal(ok(await cancel(project.id, 1, "opened by mistake", executive, cancelRequest), "cancel replay").version, cancelled.version);
+assert.equal((await lead(bk.id)).version, leadAfterCancel, "cancel replay must not bump the lead");
+rejected(await cancel(project.id, 1, "different reason", executive, cancelRequest), 400, "22023", "request_conflict", "cancel replay with another reason");
 rejected(await cancel(project.id, 2, "again"), 400, "22023", "invalid_project_state", "cancel twice");
 const second = ok(await open(bk.id, (await lead(bk.id)).version), "open after cancel");
 assert.notEqual(second.code, project.code, "a cancelled code is never reused");
