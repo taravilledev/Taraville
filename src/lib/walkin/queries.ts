@@ -2,7 +2,7 @@ import "server-only";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { requireStaff } from "@/lib/supabase/staff";
-import { LEAD_COLUMNS, leadSchema, staffSchema } from "./models";
+import { LEAD_COLUMNS, PROJECT_COLUMNS, leadSchema, projectSchema, staffSchema } from "./models";
 import { privacyEventSchema } from "./privacy";
 
 export async function leadDetail(id: string) {
@@ -24,4 +24,34 @@ export async function saleOwners(session: Awaited<ReturnType<typeof requireStaff
     .eq("role", "sale").eq("is_active", true).order("full_name");
   if (error) throw new Error("โหลดรายชื่อผู้ดูแลไม่ได้ กรุณาลองใหม่");
   return staffSchema.array().parse(data);
+}
+
+/** Who closed the lead and the free-text reason; Sale cannot read other staff, so the name can be absent. */
+export async function closeInfo(session: Awaited<ReturnType<typeof leadDetail>>) {
+  const { lead, supabase } = session;
+  if (!lead.closed_at || !lead.closed_by) return null;
+  const [event, closer] = await Promise.all([
+    supabase.from("lead_status_events").select("reason_text").eq("lead_id", lead.id).eq("kind", "close")
+      .order("id", { ascending: false }).limit(1).maybeSingle(),
+    supabase.from("staff").select("full_name").eq("id", lead.closed_by).maybeSingle(),
+  ]);
+  if (event.error || closer.error) throw new Error("โหลดข้อมูลการปิดไม่ได้ กรุณาลองใหม่");
+  return { text: (event.data?.reason_text as string | null) ?? null, by: (closer.data?.full_name as string | undefined) ?? null };
+}
+
+/** Projects of a lead, newest first, with the names of whoever cancelled them (Sale may not read other staff). */
+export async function leadProjects(session: Awaited<ReturnType<typeof leadDetail>>) {
+  const { lead, supabase } = session;
+  const { data, error } = await supabase.from("projects").select(PROJECT_COLUMNS).eq("lead_id", lead.id)
+    .order("created_at", { ascending: false }).order("id", { ascending: false });
+  if (error) throw new Error("โหลดโครงการไม่ได้ กรุณาลองใหม่");
+  const projects = projectSchema.array().parse(data);
+  const ids = [...new Set(projects.flatMap(project => project.cancelled_by ?? []))];
+  const names = new Map<string, string>();
+  if (ids.length) {
+    const staff = await supabase.from("staff").select("id,full_name").in("id", ids);
+    if (staff.error) throw new Error("โหลดโครงการไม่ได้ กรุณาลองใหม่");
+    for (const row of staff.data) names.set(row.id as string, row.full_name as string);
+  }
+  return { projects, names };
 }

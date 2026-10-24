@@ -1,6 +1,7 @@
 import Link from "next/link";
-import type { Lead } from "@/lib/walkin/models";
+import type { ListLead } from "@/lib/walkin/models";
 import { budgetOf, listHref, relativeDays, type LeadFilters } from "@/lib/walkin/lead-list";
+import { STAGE_LABELS } from "@/lib/walkin/lead-stage";
 import styles from "./leads.module.css";
 
 const thaiDate = (iso: string) => new Date(iso).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" });
@@ -13,7 +14,7 @@ function SortHeader({ filters, column, label }: { filters: LeadFilters; column: 
     {label}{isActive ? (filters.dir === "asc" ? " ↑" : " ↓") : ""}</Link>;
 }
 
-export function LeadTable({ leads, filters, ownerName }: { leads: Lead[]; filters: LeadFilters; ownerName?: Map<string, string> }) {
+export function LeadTable({ leads, filters, ownerName }: { leads: ListLead[]; filters: LeadFilters; ownerName?: Map<string, string> }) {
   const columns = ownerName ? styles.withOwner : "";
   return <div className={`${styles.table} ${columns}`}>
     <div className={styles.headRow}>
@@ -25,7 +26,8 @@ export function LeadTable({ leads, filters, ownerName }: { leads: Lead[]; filter
     {leads.map(lead => <div key={lead.id} className={styles.row}>
       <Link className={styles.name} href={`/leads/${lead.id}`} prefetch={false}>
         {`${lead.name_title} ${lead.first_name} ${lead.last_name}`.replace(/\s+/g, " ").trim()}
-        {lead.privacy_mode === "synthetic" && <small> · ข้อมูลสมมติ</small>}</Link>
+        {lead.privacy_mode === "synthetic" && <small> · ข้อมูลสมมติ</small>}
+        <small> · {STAGE_LABELS[lead.stage]}</small></Link>
       <a className={styles.phone} href={`tel:${lead.phone}`}>{lead.phone}</a>
       <span className={styles.brand} title={lead.brand === "TARAVILLE" ? "Taraville" : "บ้านคุณภาพ"}>{lead.brand === "TARAVILLE" ? "TV" : "BK"}</span>
       <span className={styles.budget}>{budgetOf(lead)}</span>
