@@ -20,11 +20,13 @@ async function Report({ searchParams }: Props) {
   const session = await requireStaff();
   const raw = await searchParams;
   const parsed = reportFiltersSchema.safeParse(Object.fromEntries(Object.entries(raw).filter(([, value]) => value !== "")));
-  if (!parsed.success) return <AppShell staff={session.staff}><p role="alert">ตัวกรองไม่ถูกต้อง <Link href="/leads/report" prefetch={false}>ล้างตัวกรอง</Link></p></AppShell>;
+  const invalidFilter = <AppShell staff={session.staff}><p role="alert">ตัวกรองไม่ถูกต้อง <Link href="/leads/report" prefetch={false}>ล้างตัวกรอง</Link></p></AppShell>;
+  if (!parsed.success) return invalidFilter;
   const { brand, owner } = parsed.data;
   const month = parsed.data.month ?? currentMonth();
   // Every call writes an audit row inside the RPC (ADR 0014), so the page is never cached.
   const { data, error } = await session.supabase.rpc("walkin_monthly_report", { p_month: `${month}-01`, p_brand: brand ?? null, p_owner: owner ?? null });
+  if (error?.message === "invalid_report_filter") return invalidFilter;
   if (error) throw new Error("โหลดรายงานไม่ได้ กรุณาลองใหม่");
   const report = reportSchema.parse(data);
   const { summary } = report;
