@@ -84,3 +84,13 @@ export async function leadProjects(session: Awaited<ReturnType<typeof leadDetail
   }
   return { projects, names };
 }
+
+/** Code of each lead's active Project, for the tag on the list cards; leads without one are absent from the map. */
+export async function activeProjectCodes(session: Awaited<ReturnType<typeof requireStaff>>, leadIds: string[]) {
+  const codes = new Map<string, string>();
+  if (!leadIds.length) return codes;
+  const { data, error } = await session.supabase.from("projects").select("lead_id,code").eq("status", "active").in("lead_id", leadIds);
+  if (error) throw new Error("โหลดรายการไม่ได้ กรุณาลองใหม่");
+  for (const row of data) codes.set(row.lead_id as string, row.code as string);
+  return codes;
+}
