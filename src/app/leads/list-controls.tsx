@@ -20,8 +20,10 @@ export function ListControls({ filters, owners, activeCount }: Props) {
     if (!formRef.current) return;
     const params = new URLSearchParams();
     for (const [key, value] of new FormData(formRef.current)) if (typeof value === "string" && value) params.set(key, value);
-    if (params.get("sort") === "created") params.delete("sort");
-    if (params.get("dir") === "desc") params.delete("dir");
+    const [sort, dir] = (params.get("order") ?? "").split(":");
+    params.delete("order");
+    if (sort && sort !== "created") params.set("sort", sort);
+    if (dir && dir !== "desc") params.set("dir", dir);
     const query = params.toString();
     router.replace(query ? `/leads?${query}` : "/leads", { scroll: false });
   }
@@ -37,8 +39,6 @@ export function ListControls({ filters, owners, activeCount }: Props) {
   }
 
   return <form ref={formRef} className={styles.controls} action="/leads" method="get" onChange={onChange} onSubmit={onSubmit}>
-    <input type="hidden" name="sort" value={filters.sort} />
-    <input type="hidden" name="dir" value={filters.dir} />
     {filters.brand && <input type="hidden" name="brand" value={filters.brand} />}
     {filters.closed && <input type="hidden" name="closed" value={filters.closed} />}
     <div className={styles.searchRow}>
@@ -54,6 +54,10 @@ export function ListControls({ filters, owners, activeCount }: Props) {
       {owners && <label className={styles.field}>ฝ่ายขายผู้ดูแล
         <select name="owner" defaultValue={filters.owner ?? ""}>
           <option value="">ทุกคน</option>{owners.map(owner => <option key={owner.id} value={owner.id}>{owner.full_name}</option>)}</select></label>}
+      <label className={styles.field}>เรียงตาม
+        <select name="order" defaultValue={`${filters.sort}:${filters.dir}`}>
+          <option value="created:desc">บันทึกล่าสุดก่อน</option><option value="created:asc">บันทึกเก่าสุดก่อน</option>
+          <option value="contact:desc">ติดต่อล่าสุดก่อน</option><option value="contact:asc">ติดต่อนานที่สุดก่อน</option></select></label>
       <label className={styles.field}>บันทึกตั้งแต่<input type="date" name="from" defaultValue={filters.from} /></label>
       <label className={styles.field}>ถึงวันที่<input type="date" name="to" defaultValue={filters.to} /></label>
     </div>

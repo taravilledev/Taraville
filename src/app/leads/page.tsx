@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireStaff } from "@/lib/supabase/staff";
 import { listLeadSchema } from "@/lib/walkin/models";
-import { brandCounts, filteredLeads, saleOwners } from "@/lib/walkin/queries";
+import { activeProjectCodes, brandCounts, filteredLeads, saleOwners } from "@/lib/walkin/queries";
 import { PAGE_SIZE, filtersSchema, listHref } from "@/lib/walkin/lead-list";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { AppShell } from "@/app/walkin/app-shell";
@@ -11,7 +11,7 @@ import { RetentionReview } from "@/app/walkin/retention-review";
 import { ListControls } from "./list-controls";
 import { BrandTiles } from "./brand-tiles";
 import { ListChips } from "./list-chips";
-import { LeadTable } from "./lead-table";
+import { LeadCards } from "./lead-cards";
 import { ListPager } from "./list-pager";
 import styles from "./leads.module.css";
 
@@ -37,8 +37,9 @@ async function List({ searchParams }: Props) {
   if (error) throw new Error("โหลดรายการไม่ได้ กรุณาลองใหม่");
   const leads = listLeadSchema.array().parse(data ?? []);
   const total = count ?? leads.length;
+  const projectCodes = await activeProjectCodes(session, leads.map(lead => lead.id));
   const ownerName = new Map(owners.map(owner => [owner.id, owner.full_name]));
-  const activeCount = [filters.owner, filters.from, filters.to, filters.stage].filter(Boolean).length;
+  const activeCount = [filters.owner, filters.from, filters.to, filters.stage, filters.sort !== "created" || filters.dir !== "desc"].filter(Boolean).length;
   return <AppShell staff={session.staff} wide>
     <div className={styles.page}>
     <div className={styles.titleRow}><h1 className={styles.pageTitle}>รายการผู้สนใจ</h1><p className={styles.total}>ทั้งหมด {total.toLocaleString("th-TH")} รายการ
@@ -49,9 +50,9 @@ async function List({ searchParams }: Props) {
     <BrandTiles filters={filters} counts={counts} />
     <ListControls filters={filters} owners={isExecutive ? owners : undefined} activeCount={activeCount} />
     <ListChips filters={filters} ownerName={ownerName} />
-    {leads.length ? <LeadTable leads={leads} filters={filters} ownerName={isExecutive ? ownerName : undefined} />
+    {leads.length ? <LeadCards leads={leads} projectCodes={projectCodes} ownerName={isExecutive ? ownerName : undefined} />
       : <p className={styles.empty}>ไม่พบรายการที่ตรงกับการค้นหา</p>}
-    <ListPager filters={filters} totalPages={Math.max(1, Math.ceil(total / PAGE_SIZE))} />
+    <ListPager filters={filters} total={total} />
     </div>
   </AppShell>;
 }

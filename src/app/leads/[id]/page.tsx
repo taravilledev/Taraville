@@ -31,7 +31,8 @@ async function Detail({ params, searchParams }: Props) {
   return <AppShell staff={staff}>
     {saved && <p className={styles.banner} role="status"><span>บันทึกแล้ว</span><a href="/walkin">รับลูกค้ารายถัดไป</a></p>}
     <section className={styles.card}>
-      <p className={styles.eyebrow}>{COMPANIES[lead.brand].brandName}{lead.privacy_mode === "synthetic" ? " · ข้อมูลสมมติสำหรับทดสอบ" : ""}</p>
+      <p className={styles.pills}><span className={`${styles.pill} ${lead.brand === "TARAVILLE" ? styles.pillTv : styles.pillBk}`}>{COMPANIES[lead.brand].brandName}</span>
+        {lead.privacy_mode === "synthetic" && <span className={styles.pill}>ข้อมูลสมมติสำหรับทดสอบ</span>}</p>
       <h1>{lead.name_title} {lead.first_name} {lead.last_name}</h1>
       <dl className={styles.details}><dt>เบอร์โทร</dt><dd>{lead.phone}</dd><dt>LINE ID</dt><dd>{lead.line_id || "ไม่ได้ระบุ"}</dd>
         <dt>ผู้ดูแล</dt><dd>{currentOwner}</dd><dt>บันทึกเมื่อ</dt><dd>{formatDate(lead.created_at)}</dd>
@@ -41,16 +42,17 @@ async function Detail({ params, searchParams }: Props) {
         <a href={`/leads/${lead.id}/edit`} className={styles.secondaryLink}>แก้ไขข้อมูล</a>
       </div>
     </section>
-    <LeadStatus lead={lead} info={closeDetails} hasActiveProject={projects.some(project => project.status === "active")} />
-    <LeadProject lead={lead} projects={projects} names={names} isExecutive={staff.role === "executive"} />
-    <ContactRecord lead={lead} />
-    <section className={styles.card}><h2>คำตอบแบบสอบถาม</h2><dl className={styles.answers}>
+    <section className={styles.card}><h2>คำตอบแบบสอบถาม</h2><dl className={`${styles.answers} ${styles.answersGrid}`}>
       {SURVEY_QUESTIONS[lead.brand].map(question => {
         const value = lead.survey[question.key];
         const answer = Array.isArray(value) ? value.join(" · ") : value;
         return <div key={question.key}><dt>{question.label}</dt><dd>{answer || "ไม่ได้ระบุ"}
           {lead.survey[`${question.key}_other`] && <span> · {lead.survey[`${question.key}_other`]}</span>}</dd></div>;
       })}</dl></section>
+    <LeadStatus lead={lead} info={closeDetails} hasActiveProject={projects.some(project => project.status === "active")} />
+    <LeadProject lead={lead} projects={projects} names={names} isExecutive={staff.role === "executive"} />
+    <ContactRecord lead={lead} />
+    <details className={styles.more}><summary>ความยินยอม และการเปลี่ยนผู้ดูแล</summary>
     <SurveyChoice lead={lead} events={events} />
     {staff.role === "executive" && <section className={styles.card}><h2>เปลี่ยนฝ่ายขายผู้ดูแล</h2>
       <ActionForm action={reassignLead.bind(null, lead.id, lead.version)} label="เปลี่ยนผู้ดูแล">
@@ -60,6 +62,7 @@ async function Detail({ params, searchParams }: Props) {
         <p className={styles.hint}>ผู้ดูแลคนใหม่จะเห็นรายการนี้ ส่วนผู้ดูแลเดิมจะไม่เห็นอีก</p>
       </ActionForm>
     </section>}
+    </details>
     <EvidenceHistory events={events} />
   </AppShell>;
 }
