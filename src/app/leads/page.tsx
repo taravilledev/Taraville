@@ -42,7 +42,7 @@ async function List({ searchParams }: Props) {
   const activeCount = [filters.owner, filters.from, filters.to, filters.stage, filters.sort !== "created" || filters.dir !== "desc"].filter(Boolean).length;
   return <AppShell staff={session.staff} wide>
     <div className={styles.page}>
-    <div className={styles.titleRow}><h1 className={styles.pageTitle}>รายการผู้สนใจ</h1><p className={styles.total}>ทั้งหมด {total.toLocaleString("th-TH")} รายการ
+    <div className={styles.titleRow}><h1 className={styles.pageTitle}>รายการผู้สนใจ</h1><p className={styles.total}>ทั้งหมด {total.toLocaleString("th-TH")} รายการ · <Link href="/leads/report" prefetch={false}>รายงานรายเดือน</Link>
       {isExecutive && (filters.brand
         ? <> · <a href={listHref(filters, { page: undefined }).replace("/leads", "/leads/export")} download>ส่งออก CSV</a></>
         : <> · เลือกแบรนด์เพื่อส่งออก CSV</>)}</p></div>
