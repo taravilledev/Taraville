@@ -1,5 +1,5 @@
 import { z } from "zod";
-import notice from "../../../docs/walkin/notices/walkin-live-2026-10-22.1.json";
+import notice from "../../../docs/walkin/notices/walkin-live-2026-10-26.1.json";
 import syntheticNotice from "../../../docs/walkin/notices/walkin-synthetic-2026-10-21.1.json";
 
 export const PRIVACY_NOTICE = notice;
