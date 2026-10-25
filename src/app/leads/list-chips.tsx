@@ -5,7 +5,6 @@ import styles from "./leads.module.css";
 
 export function ListChips({ filters, ownerName }: { filters: LeadFilters; ownerName: Map<string, string> }) {
   const chips = [
-    filters.brand && { key: "brand", label: filters.brand === "TARAVILLE" ? "Taraville" : "บ้านคุณภาพ" },
     filters.owner && { key: "owner", label: ownerName.get(filters.owner) ?? "ผู้ดูแล" },
     filters.stage && { key: "stage", label: STAGE_LABELS[filters.stage] },
     filters.from && { key: "from", label: `ตั้งแต่ ${filters.from}` },

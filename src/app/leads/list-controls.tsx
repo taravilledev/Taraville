@@ -39,6 +39,7 @@ export function ListControls({ filters, owners, activeCount }: Props) {
   return <form ref={formRef} className={styles.controls} action="/leads" method="get" onChange={onChange} onSubmit={onSubmit}>
     <input type="hidden" name="sort" value={filters.sort} />
     <input type="hidden" name="dir" value={filters.dir} />
+    {filters.brand && <input type="hidden" name="brand" value={filters.brand} />}
     {filters.closed && <input type="hidden" name="closed" value={filters.closed} />}
     <div className={styles.searchRow}>
       <label className={styles.field}>ค้นหาชื่อ เบอร์โทร หรือ LINE ID
@@ -47,9 +48,6 @@ export function ListControls({ filters, owners, activeCount }: Props) {
         ตัวกรอง{activeCount > 0 ? ` (${activeCount})` : ""}</button>
     </div>
     <div className={`${styles.filters} ${isOpen ? styles.filtersOpen : ""}`}>
-      <label className={styles.field}>แบรนด์
-        <select name="brand" defaultValue={filters.brand ?? ""}>
-          <option value="">ทุกแบรนด์</option><option value="BAAN_KUNAPAP">บ้านคุณภาพ</option><option value="TARAVILLE">Taraville</option></select></label>
       <label className={styles.field}>สถานะ
         <select name="stage" defaultValue={filters.stage ?? ""}>
           <option value="">ทุกสถานะ</option>{STAGE_CODES.map(stage => <option key={stage} value={stage}>{STAGE_LABELS[stage]}</option>)}</select></label>

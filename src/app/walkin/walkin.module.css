@@ -1,26 +1,30 @@
-.shell { min-height: 100dvh; }
+.shell { display: flex; flex-direction: column; min-height: 100dvh; }
 .shell * { box-sizing: border-box; }
 .shell :is(input, select, button, a, summary):focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
 .shell :is(input, select) { font: inherit; }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 /* Header and navigation */
-.header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-5); min-height: 80px; padding: var(--space-4) max(var(--space-5), calc((100vw - 1100px) / 2)); background: var(--paper); border-bottom: 1px solid var(--line); }
-.wordmark { display: flex; align-items: center; gap: var(--space-2); color: var(--ink); font: 700 var(--text-md) var(--font-utility); letter-spacing: .06em; text-decoration: none; }
-.wordmarkLight { font-weight: 400; }
-.tabs { display: flex; gap: var(--space-1); }
-.tabs a { display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 var(--space-4); border-radius: var(--radius-pill); color: var(--muted); font-weight: 600; text-decoration: none; }
-.tabs a[aria-current] { background: var(--tint); color: var(--accent); }
-.main { width: min(100% - 48px, var(--content-w)); margin: 0 auto; padding: var(--space-5) 0 max(var(--space-6), env(safe-area-inset-bottom)); }
+.header { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); min-height: 56px; padding: var(--space-1) max(var(--space-4), calc((100vw - 1280px) / 2)); background: var(--paper); border-bottom: 1px solid var(--line); }
+.wordmark { display: flex; align-items: center; gap: var(--space-3); min-height: var(--tap-min); color: var(--ink); text-decoration: none; }
+.logoMark { display: grid; flex-shrink: 0; place-items: center; width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--accent); color: var(--on-accent); }
+.wordmarkText { display: flex; flex-direction: column; line-height: 1.25; }
+.wordmarkText strong { font: 700 var(--text-sm) var(--font-utility); }
+.wordmarkText small { color: var(--muted); font-size: var(--text-xs); }
+.tabs { display: flex; gap: var(--space-1); margin-left: var(--space-2); }
+.tabs a { display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--tap-min); padding: 0 var(--space-3); border-radius: var(--radius-sm); color: var(--muted); font-size: var(--text-sm); font-weight: 600; text-decoration: none; }
+.tabs a[aria-current] { background: var(--tint); color: var(--ink); }
+.siteFooter { padding: var(--space-4); border-top: 1px solid var(--line); background: var(--paper); color: var(--muted); font-size: var(--text-xs); text-align: center; }
+.main { flex: 1; width: min(100% - 48px, var(--content-w)); margin: 0 auto; padding: var(--space-5) 0 max(var(--space-6), env(safe-area-inset-bottom)); }
 
 /* Account dropdown */
 .account { position: relative; margin-left: auto; }
-.accountTrigger { display: flex; align-items: center; gap: var(--space-3); min-height: var(--control-h); padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1); border: 1px solid var(--line); border-radius: var(--radius-pill); background: var(--paper); cursor: pointer; list-style: none; }
+.accountTrigger { display: flex; align-items: center; gap: var(--space-3); min-height: var(--tap-min); padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1); border: 1px solid var(--line); border-radius: var(--radius-pill); background: var(--paper); cursor: pointer; list-style: none; }
 .accountTrigger::-webkit-details-marker { display: none; }
 .account[open] > .accountTrigger { border-color: var(--accent); }
 .accountTrigger > svg { color: var(--muted); transition: transform .15s; }
 .account[open] > .accountTrigger > svg { transform: rotate(180deg); }
-.avatar { display: grid; flex-shrink: 0; place-items: center; width: 42px; height: 42px; border-radius: var(--radius-round); background: var(--tint); color: var(--accent); font: 700 var(--text-md) var(--font-utility); }
+.avatar { display: grid; flex-shrink: 0; place-items: center; width: 36px; height: 36px; border-radius: var(--radius-round); background: var(--tint); color: var(--accent); font: 700 var(--text-md) var(--font-utility); }
 .accountName { display: flex; flex-direction: column; line-height: 1.35; text-align: left; }
 .accountName strong { font-size: var(--text-sm); }
 .accountName small { color: var(--muted); font-size: var(--text-xs); }
@@ -69,13 +73,13 @@
 .nameGrid { display: grid; grid-template-columns: 125px 1fr 1fr; gap: var(--space-4); }
 .contactGrid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin: var(--space-5) 0; }
 .field { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; font-size: var(--text-sm); font-weight: 600; }
-.field input, .field select, .otherField input { width: 100%; min-width: 0; min-height: var(--control-h); padding: var(--space-3) var(--space-3); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--paper); color: var(--ink); font-size: var(--text-md); font-weight: 400; line-height: 1.4; }
+.field input, .field select, .otherField input { width: 100%; min-width: 0; min-height: var(--control-h); padding: var(--space-2) var(--space-3); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--paper); color: var(--ink); font-size: var(--text-md); font-weight: 400; line-height: 1.4; }
 .field input::placeholder, .otherField input::placeholder { color: var(--muted); }
 .questions { display: flex; flex-direction: column; gap: var(--space-5); }
 .question { min-width: 0; margin: 0; padding: 0; border: 0; }
 .question legend { width: 100%; margin-bottom: var(--space-3); font-size: var(--text-sm); font-weight: 600; }
 .options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
-.option { display: flex; align-items: center; gap: var(--space-3); min-height: var(--control-h); padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-sm); font-size: var(--text-sm); cursor: pointer; }
+.option { display: flex; align-items: center; gap: var(--space-3); min-height: var(--control-h); padding: var(--space-2) var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-sm); font-size: var(--text-sm); cursor: pointer; }
 .option input { flex-shrink: 0; width: 20px; height: 20px; margin: 0; accent-color: var(--accent); }
 .option:has(input:checked) { border-color: var(--accent); background: var(--tint); }
 .optionLines { display: flex; flex-direction: column; gap: var(--space-2); }
@@ -88,7 +92,7 @@
 .banner a { display: inline-flex; align-items: center; min-height: var(--tap-min); color: var(--accent); }
 
 /* Buttons and footer */
-.primaryButton, .primaryLink, .secondaryLink { display: inline-flex; align-items: center; justify-content: center; min-height: var(--control-h); padding: var(--space-3) var(--space-5); border: 1px solid var(--accent); border-radius: var(--radius-sm); font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
+.primaryButton, .primaryLink, .secondaryLink { display: inline-flex; align-items: center; justify-content: center; min-height: var(--control-h); padding: var(--space-2) var(--space-5); border: 1px solid var(--accent); border-radius: var(--radius-sm); font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
 .primaryButton, .primaryLink { background: var(--accent); color: var(--on-accent); }
 .secondaryLink { background: transparent; color: var(--accent); }
 .primaryButton:disabled { opacity: .6; cursor: wait; }
@@ -147,8 +151,7 @@
 }
 @media (max-width: 639px) {
   .main { width: calc(100% - 28px); padding-top: var(--space-4); }
-  .header { min-height: 70px; padding: var(--space-3) var(--space-4); }
-  .wordmark { gap: var(--space-2); font-size: var(--text-xs); }
+  .wordmarkText small { display: none; }
   .card { padding: var(--space-5) var(--space-4); border-radius: var(--radius-md); }
   .sectionHeading { flex-direction: column; align-items: flex-start; gap: var(--space-2); }
   .nameGrid, .contactGrid, .options, .brandGrid { grid-template-columns: 1fr; }
@@ -160,5 +163,5 @@
   .accountTrigger { gap: var(--space-2); padding-right: var(--space-2); }
 }
 @media (min-width: 1024px) {
-  .main.mainWide { width: min(100% - 80px, 1240px); }
+  .main.mainWide { width: min(100% - 80px, 1280px); }
 }

@@ -1,26 +1,30 @@
 @import "tailwindcss";
 
-/* Design tokens: the only place raw colours, sizes and radii are written. CSS modules use var(--…). */
+/* Design tokens: the only place raw colours, sizes and radii are written. CSS modules use var(--…). Palette follows the Taraville demo (ADR 0012). */
 :root {
-  --ink: #4d352e;
-  --muted: #7b655c;
-  --accent: #a44f36;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --accent: #047857;
   --on-accent: #fff;
-  --tint: #fbede5;
-  --line: #eadbd1;
-  --line-strong: #cdb9ab;
+  --tint: #f1f5f9;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
   --paper: #fff;
-  --canvas: #fcf7f3;
-  --skeleton: #f1e6dd;
-  --danger: #a22e28;
-  --danger-ink: #7f2622;
-  --danger-tint: #fff0ee;
-  --warn-ink: #684b14;
-  --warn-tint: #fff5dc;
-  --warn-line: #e6c989;
-  --backdrop: rgb(77 53 46 / 0.45);
-  --shadow-hover: 0 6px 18px rgb(164 79 54 / 0.12);
-  --shadow-menu: 0 12px 32px rgb(77 53 46 / 0.16);
+  --canvas: #f8fafc;
+  --skeleton: #e2e8f0;
+  --danger: #b91c1c;
+  --danger-ink: #991b1b;
+  --danger-tint: #fef2f2;
+  --warn-ink: #92400e;
+  --warn-tint: #fffbeb;
+  --warn-line: #fcd34d;
+  --brand-tv: #15803d;
+  --brand-tv-tint: #dcfce7;
+  --brand-bk: #1d4ed8;
+  --brand-bk-tint: #dbeafe;
+  --backdrop: rgb(15 23 42 / 0.45);
+  --shadow-hover: 0 6px 18px rgb(15 23 42 / 0.1);
+  --shadow-menu: 0 12px 32px rgb(15 23 42 / 0.16);
 
   --space-1: 4px;
   --space-2: 8px;
@@ -29,9 +33,9 @@
   --space-5: 24px;
   --space-6: 32px;
 
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
   --radius-pill: 999px;
   --radius-round: 50%;
 
@@ -56,4 +60,10 @@ body {
   font-family: var(--font-body);
   font-size: var(--text-md);
   line-height: 1.65;
+}
+
+/* App shell: demo density for mouse users (pointer: fine); touch screens keep 44px targets and full-size type. */
+.dense { --control-h: var(--tap-min); }
+@media (pointer: fine) {
+  .dense { --text-xs: 12px; --text-sm: 13px; --text-md: 13px; --text-lg: 18px; --text-title: 24px; --control-h: 36px; --tap-min: 32px; }
 }
