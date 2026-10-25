@@ -16,7 +16,13 @@ function load(file: string, require: (name: string) => unknown) {
 const stageModule = load("./lead-stage.ts", name => nodeRequire(name));
 const questionModule = load("./survey-questions.ts", () => ({}));
 const exports = load("./lead-csv.ts", name => name === "./lead-stage" ? stageModule : name === "./survey-questions" ? questionModule : {});
-const { csvCell, leadsCsv } = exports as typeof import("./lead-csv");
+const { csvCell, leadsCsv, phoneCell } = exports as typeof import("./lead-csv");
+
+// Leading-zero phones stay text in Excel; anything else goes through the normal escaping.
+assert.equal(phoneCell("0812345678"), '"=""0812345678"""');
+assert.equal(phoneCell("+66812345678"), "'+66812345678");
+assert.equal(phoneCell("081-234-5678"), "081-234-5678");
+assert.equal(phoneCell('0" & HYPERLINK("x'), csvCell('0" & HYPERLINK("x'), "a quote never reaches the formula");
 
 // Formula triggers are neutralised; quoting follows RFC 4180.
 for (const value of ["=1+1", "+66812345678", "-2", "@SUM(A1)", "\tx", "\rx"]) assert.equal(csvCell(value).replace(/^"/, "")[0], "'");

@@ -12,6 +12,9 @@ export function csvCell(value: string) {
   return /[",\r\n]/.test(safe) ? `"${safe.replaceAll('"', '""')}"` : safe;
 }
 
+/** Excel turns 0812345678 into the number 812345678; ="0812345678" keeps it text. Digits only, so the formula is ours. */
+export const phoneCell = (phone: string) => /^0\d+$/.test(phone) ? `"=""${phone}"""` : csvCell(phone);
+
 const bangkokTime = (iso: string | null) => iso ? new Date(iso).toLocaleString("sv-SE", { timeZone: "Asia/Bangkok" }).slice(0, 16) : "";
 
 function surveyAnswer(survey: ListLead["survey"], key: string) {
@@ -27,10 +30,11 @@ export function leadsCsv(brand: Brand, leads: ListLead[], ownerName: Map<string,
   const header = ["บันทึกเมื่อ", "สถานะ", "คำนำหน้า", "ชื่อ", "นามสกุล", "เบอร์โทร", "LINE ID", "ฝ่ายขายผู้ดูแล",
     "ติดต่อล่าสุด", "เหตุผลที่ปิด", "รหัสโครงการ", ...questions.map(question => question.label)];
   const rows = leads.map(lead => [
-    bangkokTime(lead.created_at), STAGE_LABELS[lead.stage], lead.name_title, lead.first_name, lead.last_name, lead.phone,
-    lead.line_id, ownerName.get(lead.owner_id) ?? "", bangkokTime(lead.last_contact_at),
-    lead.closed_reason ? CLOSE_REASON_LABELS[lead.closed_reason] : "", projectCode.get(lead.id) ?? "",
-    ...questions.map(question => surveyAnswer(lead.survey, question.key)),
+    ...[bangkokTime(lead.created_at), STAGE_LABELS[lead.stage], lead.name_title, lead.first_name, lead.last_name].map(csvCell),
+    phoneCell(lead.phone),
+    ...[lead.line_id, ownerName.get(lead.owner_id) ?? "", bangkokTime(lead.last_contact_at),
+      lead.closed_reason ? CLOSE_REASON_LABELS[lead.closed_reason] : "", projectCode.get(lead.id) ?? "",
+      ...questions.map(question => surveyAnswer(lead.survey, question.key))].map(csvCell),
   ]);
-  return "﻿" + [header, ...rows].map(row => row.map(csvCell).join(",")).join("\r\n") + "\r\n";
+  return "﻿" + [header.map(csvCell), ...rows].map(row => row.join(",")).join("\r\n") + "\r\n";
 }
