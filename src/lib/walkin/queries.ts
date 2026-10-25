@@ -36,6 +36,17 @@ export function filteredLeads(session: Awaited<ReturnType<typeof requireStaff>>,
   return filters.sort === "contact" ? request.order("last_contact_at", { ascending, nullsFirst: false }).order("id", { ascending }) : request.order("created_at", { ascending }).order("id", { ascending });
 }
 
+/** Lead counts per brand under every other filter, for the brand tiles; brand and page are ignored. */
+export async function brandCounts(session: Awaited<ReturnType<typeof requireStaff>>, filters: LeadFilters) {
+  const count = async (brand: "TARAVILLE" | "BAAN_KUNAPAP") => {
+    const { count, error } = await filteredLeads(session, { ...filters, brand }).range(0, 0);
+    if (error) throw new Error("โหลดรายการไม่ได้ กรุณาลองใหม่");
+    return count ?? 0;
+  };
+  const [taraville, baanKunapap] = await Promise.all([count("TARAVILLE"), count("BAAN_KUNAPAP")]);
+  return { all: taraville + baanKunapap, taraville, baanKunapap };
+}
+
 export async function saleOwners(session: Awaited<ReturnType<typeof requireStaff>>) {
   if (session.staff.role !== "executive") return [];
   const { data, error } = await session.supabase.from("staff").select("id,full_name,role,is_active")
