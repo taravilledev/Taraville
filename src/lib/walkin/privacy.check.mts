@@ -7,7 +7,8 @@ import ts from "typescript";
 
 const nodeRequire = createRequire(import.meta.url);
 const syntheticNoticePath = "../../../docs/walkin/notices/walkin-synthetic-2026-10-21.1.json";
-const liveNoticePath = "../../../docs/walkin/notices/walkin-live-2026-10-22.1.json";
+const liveNoticePath = "../../../docs/walkin/notices/walkin-live-2026-10-26.1.json";
+const liveNoticeV1Path = "../../../docs/walkin/notices/walkin-live-2026-10-22.1.json";
 function load(name: string, dependencies: Record<string, unknown> = {}) {
   const exports: Record<string, unknown> = {};
   const compiled = ts.transpileModule(readFileSync(new URL(name, import.meta.url), "utf8"), {
@@ -25,7 +26,7 @@ function load(name: string, dependencies: Record<string, unknown> = {}) {
   return exports;
 }
 const privacy = load("./privacy.ts") as typeof import("./privacy");
-const { leadSchema } = load("./models.ts") as typeof import("./models");
+const { leadSchema } = load("./models.ts", { "./lead-stage": load("./lead-stage.ts") }) as typeof import("./models");
 const catalog = load("./survey-questions.ts");
 const validation = load("./validation.ts", { "./survey-questions": catalog }) as typeof import("./validation");
 const { PRIVACY_NOTICE, SYNTHETIC_NOTICE, privacyNotice, parsePrivacyIntake, parsePrivacyMutation, privacyEventSchema, surveyChoice } = privacy;
@@ -42,7 +43,10 @@ assert.equal(createHash("sha256").update(readFileSync(new URL(syntheticNoticePat
 assert.equal(SYNTHETIC_NOTICE.mode, "synthetic");
 assert.equal(SYNTHETIC_NOTICE.version, "walkin-synthetic-2026-10-21.1");
 assert.equal(PRIVACY_NOTICE.mode, "real");
-assert.equal(PRIVACY_NOTICE.version, "walkin-live-2026-10-22.1");
+assert.equal(PRIVACY_NOTICE.version, "walkin-live-2026-10-26.1");
+assert.equal(createHash("sha256").update(readFileSync(new URL(liveNoticeV1Path, import.meta.url))).digest("hex"),
+  "06c8d726325499d89a3e92091875c9b9204ef1c59c2a13b04bb49075627bcafb",
+  "Leads created under live notice v1 keep evidence of that exact text (ADR 0015)");
 assert.notEqual(PRIVACY_NOTICE.version, SYNTHETIC_NOTICE.version);
 assert.equal(privacyNotice("synthetic"), SYNTHETIC_NOTICE,
   "Historical leads must present their synthetic notice rather than the live notice");
