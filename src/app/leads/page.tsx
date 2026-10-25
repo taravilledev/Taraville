@@ -13,6 +13,7 @@ import { BrandTiles } from "./brand-tiles";
 import { ListChips } from "./list-chips";
 import { LeadCards } from "./lead-cards";
 import { ListPager } from "./list-pager";
+import { DownloadIcon, ReportIcon } from "./header-icons";
 import styles from "./leads.module.css";
 
 export const metadata = { title: "รายการผู้สนใจ · Taraville Group", robots: { index: false, follow: false } };
@@ -42,10 +43,15 @@ async function List({ searchParams }: Props) {
   const activeCount = [filters.owner, filters.from, filters.to, filters.stage, filters.sort !== "created" || filters.dir !== "desc"].filter(Boolean).length;
   return <AppShell staff={session.staff} wide>
     <div className={styles.page}>
-    <div className={styles.titleRow}><h1 className={styles.pageTitle}>รายการผู้สนใจ</h1><p className={styles.total}>ทั้งหมด {total.toLocaleString("th-TH")} รายการ · <Link href="/leads/report" prefetch={false}>รายงานรายเดือน</Link>
-      {isExecutive && (filters.brand
-        ? <> · <a href={listHref(filters, { page: undefined }).replace("/leads", "/leads/export")} download>ส่งออก CSV</a></>
-        : <> · เลือกแบรนด์เพื่อส่งออก CSV</>)}</p></div>
+    <div className={styles.titleRow}>
+      <div><h1>รายการผู้สนใจ</h1><p className={styles.total}>ทั้งหมด {total.toLocaleString("th-TH")} รายการ</p></div>
+      <div className={styles.headerActions}>
+        <Link href="/leads/report" prefetch={false} className={styles.actionBtn}><ReportIcon />รายงานรายเดือน</Link>
+        {isExecutive && (filters.brand
+          ? <a href={listHref(filters, { page: undefined }).replace("/leads", "/leads/export")} download className={styles.actionBtn}><DownloadIcon />ส่งออก CSV</a>
+          : <span className={styles.actionNote}><button type="button" disabled aria-describedby="export-hint" className={styles.actionBtn}><DownloadIcon />ส่งออก CSV</button><small id="export-hint">เลือกแบรนด์ก่อน</small></span>)}
+      </div>
+    </div>
     <RetentionReview session={session} />
     <BrandTiles filters={filters} counts={counts} />
     <ListControls filters={filters} owners={isExecutive ? owners : undefined} activeCount={activeCount} />

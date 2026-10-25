@@ -63,7 +63,7 @@ body {
 }
 
 /* App shell: demo density for mouse users (pointer: fine); touch screens keep 44px targets and full-size type. */
-.dense { --control-h: var(--tap-min); }
+.dense { --control-h: var(--tap-min); font-size: var(--text-md); }
 @media (pointer: fine) {
   .dense { --text-xs: 12px; --text-sm: 13px; --text-md: 13px; --text-lg: 18px; --text-title: 24px; --control-h: 36px; --tap-min: 32px; }
 }
