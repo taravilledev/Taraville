@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requireStaff } from "@/lib/supabase/staff";
 import { LEAD_COLUMNS, PROJECT_COLUMNS, leadSchema, projectSchema, staffSchema } from "./models";
 import { privacyEventSchema } from "./privacy";
+import { hidesClosed, type LeadFilters } from "./lead-list";
 
 export async function leadDetail(id: string) {
   const session = await requireStaff();
@@ -16,6 +17,23 @@ export async function leadDetail(id: string) {
     .eq("lead_id", id).order("id", { ascending: false });
   if (events.error) throw new Error("โหลดหลักฐานไม่ได้ กรุณาลองใหม่");
   return { ...session, lead: leadSchema.parse(data), events: privacyEventSchema.array().parse(events.data) };
+}
+
+/** The list's filters as one query, shared by the list page and the CSV export so both select the same leads. */
+export function filteredLeads(session: Awaited<ReturnType<typeof requireStaff>>, filters: LeadFilters) {
+  let request = session.supabase.from("walkin_leads_staged").select(`${LEAD_COLUMNS},stage`, { count: "exact" });
+  // PostgREST or() syntax reserves these characters; names, phones and LINE IDs never need them.
+  for (const term of (filters.q ?? "").replace(/[%,()*\\"]/g, " ").split(/\s+/).filter(Boolean).slice(0, 3)) {
+    request = request.or(`first_name.ilike.%${term}%,last_name.ilike.%${term}%,phone.ilike.%${term}%,line_id.ilike.%${term}%`);
+  }
+  if (filters.stage) request = request.eq("stage", filters.stage);
+  else if (hidesClosed(filters)) request = request.neq("stage", "closed");
+  if (filters.brand) request = request.eq("brand", filters.brand);
+  if (filters.owner) request = request.eq("owner_id", session.staff.role === "executive" ? filters.owner : session.staff.id);
+  if (filters.from) request = request.gte("created_at", `${filters.from}T00:00:00+07:00`);
+  if (filters.to) request = request.lte("created_at", `${filters.to}T23:59:59.999999+07:00`);
+  const ascending = filters.dir === "asc";
+  return filters.sort === "contact" ? request.order("last_contact_at", { ascending, nullsFirst: false }).order("id", { ascending }) : request.order("created_at", { ascending }).order("id", { ascending });
 }
 
 export async function saleOwners(session: Awaited<ReturnType<typeof requireStaff>>) {
