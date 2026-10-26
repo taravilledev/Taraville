@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { ChevronDown, Lock, LogOut } from "lucide-react";
 import type { Staff } from "@/lib/walkin/models";
@@ -25,7 +26,12 @@ export function AccountMenu({ staff }: { staff: Staff }) {
     </summary>
     <div className={styles.accountMenu}>
       <Link href="/account/password" prefetch={false}><Lock aria-hidden="true" />เปลี่ยนรหัสผ่าน</Link>
-      <form action={logout}><button className={styles.menuDanger}><LogOut aria-hidden="true" />ออกจากระบบ</button></form>
+      <form action={logout}><LogoutButton /></form>
     </div>
   </details>;
+}
+
+function LogoutButton() {
+  const { pending } = useFormStatus();
+  return <button className={styles.menuDanger} disabled={pending}><LogOut aria-hidden="true" />{pending ? "กำลังออกจากระบบ…" : "ออกจากระบบ"}</button>;
 }
