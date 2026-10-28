@@ -4,8 +4,8 @@ import { runInNewContext } from "node:vm";
 import ts from "typescript";
 
 const migrations = new URL("../migrations/", import.meta.url);
-const files = readdirSync(migrations).filter((name) => name.endsWith(".sql"));
-assert.equal(files.length, 7, "Review this check when the pilot migration set changes");
+const files = readdirSync(migrations).filter((name) => name.endsWith(".sql")).sort();
+assert.equal(files.length, 15, "Review this check when the pilot migration set changes");
 const sources = files.map((name) => {
   const source = readFileSync(new URL(name, migrations), "utf8");
   assert.ok(source.trimEnd().split("\n").length <= 300, `${name} exceeds 300 lines`);
@@ -28,8 +28,8 @@ const expected = Object.fromEntries(Object.entries(catalogs).map(([brand, questi
   questions.map(({ key, kind, options }) => options ? { key, kind, options } : { key, kind }),
 ]));
 const frozen = [...sql.matchAll(/\$catalog\$([\s\S]*?)\$catalog\$/g)];
-assert.equal(frozen.length, 1, "Exactly one frozen SQL catalog is expected");
-assert.deepEqual(JSON.parse(frozen[0][1]), expected, "SQL keys, kinds and options must match both TS catalogs");
+assert.equal(frozen.length, 2, "Review the catalog replacements when migrations change");
+assert.deepEqual(JSON.parse(frozen.at(-1)![1]), expected, "The latest SQL catalog must match both TS catalogs");
 
 for (const table of ["staff", "leads"]) {
   assert.ok(normalized.includes(`alter table public.${table} enable row level security;`), `${table} needs RLS`);

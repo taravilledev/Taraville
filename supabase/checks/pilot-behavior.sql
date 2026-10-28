@@ -13,7 +13,8 @@ insert into public.staff (id, full_name, role, is_active) values
   ('10000000-0000-0000-0000-000000000001', 'Synthetic Sale A', 'sale', true),
   ('10000000-0000-0000-0000-000000000002', 'Synthetic Sale B', 'sale', true),
   ('10000000-0000-0000-0000-000000000003', 'Synthetic Executive', 'executive', true),
-  ('10000000-0000-0000-0000-000000000004', 'Synthetic Inactive', 'sale', false);
+  ('10000000-0000-0000-0000-000000000004', 'Synthetic Inactive', 'sale', false)
+on conflict (id) do update set full_name = excluded.full_name, role = excluded.role, is_active = excluded.is_active;
 
 set local role authenticated;
 do $$

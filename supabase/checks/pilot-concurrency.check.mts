@@ -96,12 +96,12 @@ async function contend(holderSql: string, contenderSql: string, label: string) {
 
 await query(`insert into auth.users(id) values ('${saleA}'), ('${saleB}'), ('${executive}'), ('${deactivatingSale}')
   on conflict (id) do nothing;
-insert into public.staff(id, full_name, role) values
-  ('${saleA}', 'Synthetic Concurrent Sale A', 'sale'),
-  ('${saleB}', 'Synthetic Concurrent Sale B', 'sale'),
-  ('${executive}', 'Synthetic Concurrent Executive', 'executive'),
-  ('${deactivatingSale}', 'Synthetic Deactivation Sale', 'sale') on conflict (id) do nothing;
-update public.staff set is_active = true where id = '${deactivatingSale}';`);
+insert into public.staff(id, full_name, role, is_active) values
+  ('${saleA}', 'Synthetic Concurrent Sale A', 'sale', true),
+  ('${saleB}', 'Synthetic Concurrent Sale B', 'sale', true),
+  ('${executive}', 'Synthetic Concurrent Executive', 'executive', true),
+  ('${deactivatingSale}', 'Synthetic Deactivation Sale', 'sale', true)
+  on conflict (id) do update set full_name = excluded.full_name, role = excluded.role, is_active = excluded.is_active;`);
 const leadId = await query(actor(saleA, `walkin_setup_${runId}`)
   + `select id from public.walkin_create_lead('${randomUUID()}', 'TARAVILLE', ${contact}, '{}', '${saleA}'); commit;`);
 assert.match(leadId, /^[0-9a-f-]{36}$/, "Create must return exactly one lead UUID");

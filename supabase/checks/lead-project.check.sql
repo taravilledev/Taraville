@@ -48,7 +48,8 @@ insert into auth.users(id) values
 insert into public.staff(id, full_name, role, is_active) values
  ('81000000-0000-4000-a000-000000000001', 'Local project Sale A', 'sale', true),
  ('81000000-0000-4000-a000-000000000002', 'Local project Sale B', 'sale', true),
- ('81000000-0000-4000-a000-000000000003', 'Local project Executive', 'executive', true);
+ ('81000000-0000-4000-a000-000000000003', 'Local project Executive', 'executive', true)
+on conflict (id) do update set full_name = excluded.full_name, role = excluded.role, is_active = excluded.is_active;
 
 set local role authenticated;
 select pg_temp.as_user('81000000-0000-4000-a000-000000000001');

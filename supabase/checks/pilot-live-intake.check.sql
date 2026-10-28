@@ -31,7 +31,8 @@ insert into public.staff(id, full_name, role, is_active) values
  ('61000000-0000-4000-a000-000000000001', 'Local live Sale A', 'sale', true),
  ('61000000-0000-4000-a000-000000000002', 'Local live Sale B', 'sale', true),
  ('61000000-0000-4000-a000-000000000003', 'Local live Executive', 'executive', true),
- ('61000000-0000-4000-a000-000000000004', 'Local inactive Sale', 'sale', false);
+ ('61000000-0000-4000-a000-000000000004', 'Local inactive Sale', 'sale', false)
+on conflict (id) do update set full_name = excluded.full_name, role = excluded.role, is_active = excluded.is_active;
 
 -- Seed a genuine historical-mode row through the retired administrator-only path.
 select set_config('request.jwt.claim.sub', '61000000-0000-4000-a000-000000000001', true);
