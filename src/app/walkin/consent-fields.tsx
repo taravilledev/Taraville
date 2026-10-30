@@ -5,8 +5,11 @@ import { PRIVACY_NOTICE } from "@/lib/walkin/privacy";
 import { NoticeLink } from "./notice-dialog";
 import styles from "./walkin.module.css";
 
-const hasSurveyAnswer = (form: HTMLFormElement) => Array.from(new FormData(form)).some(([key, value]) =>
-  key.startsWith("survey.") && key !== "survey.sales_staff" && typeof value === "string" && value.trim() !== "");
+const hasSurveyAnswer = (form: HTMLFormElement) => Array.from(new FormData(form)).some(([key, value]) => {
+  if (!key.startsWith("survey.") || key === "survey.sales_staff" || typeof value !== "string" || !value.trim()) return false;
+  const field = form.elements.namedItem(key);
+  return !(field instanceof HTMLElement) || field.getClientRects().length > 0;
+});
 
 export function ConsentFields() {
   const root = useRef<HTMLElement>(null);
