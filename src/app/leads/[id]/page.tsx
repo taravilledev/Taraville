@@ -45,7 +45,7 @@ async function Detail({ params, searchParams }: Props) {
       {!canEdit && <p className={styles.hint}>ดูข้อมูลได้ · แก้ไขได้เฉพาะผู้ดูแลรายการและผู้บริหาร</p>}
     </section>
     <section className={styles.card}><h2>คำตอบแบบสอบถาม</h2><dl className={`${styles.answers} ${styles.answersGrid}`}>
-      {SURVEY_QUESTIONS[lead.brand].map(question => {
+      {SURVEY_QUESTIONS[lead.brand].filter(question => !question.legacy || lead.survey[question.key]).map(question => {
         const value = lead.survey[question.key];
         const answer = Array.isArray(value) ? value.join(" · ") : value;
         return <div key={question.key}><dt>{question.label}</dt><dd>{answer || "ไม่ได้ระบุ"}

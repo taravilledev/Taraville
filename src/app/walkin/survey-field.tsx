@@ -5,6 +5,15 @@ export function SurveyField({ question, answers = {} }: { question: SurveyQuesti
   const id = `survey-${question.key}`;
   const answer = answers[question.key];
 
+  if (question.legacy) {
+    return typeof answer === "string" && answer ? (
+      <label className={styles.field} htmlFor={id}>
+        {question.label}
+        <input id={id} name={`survey.${question.key}`} value={answer} readOnly />
+      </label>
+    ) : null;
+  }
+
   if (!("options" in question)) {
     return (
       <label className={styles.field} htmlFor={id}>
@@ -21,11 +30,12 @@ export function SurveyField({ question, answers = {} }: { question: SurveyQuesti
     <fieldset className={styles.question}>
       <legend>{question.label}</legend>
       <div className={styles.options}>
-        {question.options.map((option, index) => (
+        {question.options.filter(option => !question.legacyOptions?.includes(option)
+          || (Array.isArray(answer) ? answer.includes(option) : answer === option)).map((option, index) => (
           <label className={styles.option} key={option}>
             <input id={`${id}-${index}`} type={question.kind === "multi" ? "checkbox" : "radio"}
               name={`survey.${question.key}`} value={option} defaultChecked={Array.isArray(answer) ? answer.includes(option) : answer === option} />
-            <span>{option}</span>
+            <span>{option}{question.legacyOptions?.includes(option) ? " (ข้อมูลเดิม)" : ""}</span>
           </label>
         ))}
       </div>
