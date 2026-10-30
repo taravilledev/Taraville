@@ -8,20 +8,20 @@ import styles from "./walkin.module.css";
 
 type CloseInfo = { text: string | null; by: string | null } | null;
 
-export function LeadStatus({ lead, info, hasActiveProject }: { lead: Lead; info: CloseInfo; hasActiveProject: boolean }) {
+export function LeadStatus({ lead, info, hasActiveProject, canEdit }: { lead: Lead; info: CloseInfo; hasActiveProject: boolean; canEdit: boolean }) {
   const context = { id: lead.id, version: lead.version, requestId: randomUUID() };
   if (lead.closed_at && lead.closed_reason) {
     return <section className={styles.card}><h2>สถานะ: ปิด</h2>
       <p>{CLOSE_REASON_LABELS[lead.closed_reason]}{info?.text ? ` · ${info.text}` : ""}<br />
         โดย {info?.by ?? "เจ้าหน้าที่อื่น"} · {formatDate(lead.closed_at)}</p>
-      <details><summary>เปิดรายการนี้อีกครั้ง</summary>
+      {canEdit && <details><summary>เปิดรายการนี้อีกครั้ง</summary>
         <ActionForm action={reopenLead.bind(null, context)} label="ยืนยันเปิดรายการอีกครั้ง">
           <label className={styles.option}><input type="checkbox" name="confirm_operation" required /><span>ยืนยันเปิดรายการนี้อีกครั้ง</span></label>
         </ActionForm>
-      </details>
+      </details>}
     </section>;
   }
-  if (hasActiveProject) return null; // a lead with an active project cannot be closed (ADR 0008)
+  if (hasActiveProject || !canEdit) return null; // a lead with an active project cannot be closed (ADR 0008)
   return <section className={styles.card}>
     <details><summary>ปิดรายการนี้</summary>
       <ActionForm action={closeLead.bind(null, context)} label="ยืนยันปิดรายการ">

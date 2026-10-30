@@ -7,7 +7,7 @@ import ts from "typescript";
 
 const nodeRequire = createRequire(import.meta.url);
 const syntheticNoticePath = "../../../docs/walkin/notices/walkin-synthetic-2026-10-21.1.json";
-const liveNoticePath = "../../../docs/walkin/notices/walkin-live-2026-10-26.1.json";
+const liveNoticePath = "../../../docs/walkin/notices/walkin-live-2026-10-30.1.json";
 const liveNoticeV1Path = "../../../docs/walkin/notices/walkin-live-2026-10-22.1.json";
 function load(name: string, dependencies: Record<string, unknown> = {}) {
   const exports: Record<string, unknown> = {};
@@ -43,7 +43,13 @@ assert.equal(createHash("sha256").update(readFileSync(new URL(syntheticNoticePat
 assert.equal(SYNTHETIC_NOTICE.mode, "synthetic");
 assert.equal(SYNTHETIC_NOTICE.version, "walkin-synthetic-2026-10-21.1");
 assert.equal(PRIVACY_NOTICE.mode, "real");
-assert.equal(PRIVACY_NOTICE.version, "walkin-live-2026-10-26.1");
+assert.equal(PRIVACY_NOTICE.version, "walkin-live-2026-10-30.1");
+assert.equal(createHash("sha256").update(readFileSync(new URL("../../../docs/walkin/notices/walkin-live-2026-10-26.1.json", import.meta.url))).digest("hex"),
+  "dd1451f1c1fb74556f0ddd15085cf7c2658937fb4a14f9331b522e695f157749",
+  "Shared reads must preserve the exact live notice v2 archive");
+const sharedReadMigration = readFileSync(new URL("../../../supabase/migrations/20261030093616_walkin_shared_lead_read.sql", import.meta.url), "utf8");
+assert.deepEqual(JSON.parse(sharedReadMigration.match(/\$notice\$([\s\S]*?)\$notice\$/)![1]), plain(PRIVACY_NOTICE),
+  "Frontend and trusted database notice must disclose the same access");
 assert.equal(createHash("sha256").update(readFileSync(new URL(liveNoticeV1Path, import.meta.url))).digest("hex"),
   "06c8d726325499d89a3e92091875c9b9204ef1c59c2a13b04bb49075627bcafb",
   "Leads created under live notice v1 keep evidence of that exact text (ADR 0015)");

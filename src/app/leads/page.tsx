@@ -54,9 +54,9 @@ async function List({ searchParams }: Props) {
     </div>
     <RetentionReview session={session} />
     <BrandTiles filters={filters} counts={counts} />
-    <ListControls filters={filters} owners={isExecutive ? owners : undefined} activeCount={activeCount} />
+    <ListControls filters={filters} owners={owners} activeCount={activeCount} />
     <ListChips filters={filters} ownerName={ownerName} />
-    {leads.length ? <LeadCards leads={leads} projectCodes={projectCodes} ownerName={isExecutive ? ownerName : undefined} />
+    {leads.length ? <LeadCards leads={leads} projectCodes={projectCodes} ownerName={ownerName} />
       : activeCount || filters.q || filters.brand ? <p className={styles.empty}>ไม่พบรายการที่ตรงกับการค้นหา</p>
       : <p className={styles.empty}>ยังไม่มีผู้สนใจที่กำลังติดตาม · <Link href="/walkin" prefetch={false}>เริ่มรับลูกค้า Walk-in</Link></p>}
     <ListPager filters={filters} total={total} />

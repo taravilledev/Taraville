@@ -22,6 +22,7 @@ async function Detail({ params, searchParams }: Props) {
   const { id } = await params;
   const session = await leadDetail(id);
   const { lead, staff, events } = session;
+  const canEdit = staff.role === "executive" || lead.owner_id === staff.id;
   const [owners, closeDetails, { projects, names }] = await Promise.all([saleOwners(session), closeInfo(session), leadProjects(session)]);
   const saved = (await searchParams).saved === "1";
   const ownerResult = await session.supabase.from("staff").select("id,full_name,role,is_active").eq("id", lead.owner_id).maybeSingle();
@@ -39,8 +40,9 @@ async function Detail({ params, searchParams }: Props) {
         <dt>ติดต่อล่าสุด</dt><dd>{lead.last_contact_at ? formatDate(lead.last_contact_at) : "ยังไม่มีวันที่ติดต่อ"}</dd></dl>
       <div className={styles.actions}>
         <a href={`tel:${lead.phone.replace(/[^\d+]/g, "")}`} className={styles.primaryLink}>โทร</a>
-        <a href={`/leads/${lead.id}/edit`} className={styles.secondaryLink}>แก้ไขข้อมูล</a>
+        {canEdit && <a href={`/leads/${lead.id}/edit`} className={styles.secondaryLink}>แก้ไขข้อมูล</a>}
       </div>
+      {!canEdit && <p className={styles.hint}>ดูข้อมูลได้ · แก้ไขได้เฉพาะผู้ดูแลรายการและผู้บริหาร</p>}
     </section>
     <section className={styles.card}><h2>คำตอบแบบสอบถาม</h2><dl className={`${styles.answers} ${styles.answersGrid}`}>
       {SURVEY_QUESTIONS[lead.brand].map(question => {
@@ -49,17 +51,17 @@ async function Detail({ params, searchParams }: Props) {
         return <div key={question.key}><dt>{question.label}</dt><dd>{answer || "ไม่ได้ระบุ"}
           {lead.survey[`${question.key}_other`] && <span> · {lead.survey[`${question.key}_other`]}</span>}</dd></div>;
       })}</dl></section>
-    <LeadStatus lead={lead} info={closeDetails} hasActiveProject={projects.some(project => project.status === "active")} />
-    <LeadProject lead={lead} projects={projects} names={names} isExecutive={staff.role === "executive"} />
-    <ContactRecord lead={lead} />
+    <LeadStatus lead={lead} info={closeDetails} hasActiveProject={projects.some(project => project.status === "active")} canEdit={canEdit} />
+    <LeadProject lead={lead} projects={projects} names={names} isExecutive={staff.role === "executive"} canEdit={canEdit} />
+    {canEdit && <ContactRecord lead={lead} />}
     <details className={styles.more}><summary>ความยินยอม และการเปลี่ยนผู้ดูแล</summary>
-    <SurveyChoice lead={lead} events={events} />
+    <SurveyChoice lead={lead} events={events} canEdit={canEdit} />
     {staff.role === "executive" && <section className={styles.card}><h2>เปลี่ยนฝ่ายขายผู้ดูแล</h2>
       <ActionForm action={reassignLead.bind(null, lead.id, lead.version)} label="เปลี่ยนผู้ดูแล">
         <label className={styles.field}><span>ฝ่ายขายผู้ดูแล<RequiredMark /></span><select name="owner_id" defaultValue={owners.some(owner => owner.id === lead.owner_id) ? lead.owner_id : ""} required>
           <option value="">เลือกฝ่ายขาย</option>{owners.map(owner => <option key={owner.id} value={owner.id}>{owner.full_name}</option>)}
         </select></label>
-        <p className={styles.hint}>ผู้ดูแลคนใหม่จะเห็นรายการนี้ ส่วนผู้ดูแลเดิมจะไม่เห็นอีก</p>
+        <p className={styles.hint}>ผู้ดูแลคนใหม่จะแก้ไขรายการนี้ได้ ผู้ดูแลเดิมยังดูข้อมูลได้</p>
       </ActionForm>
     </section>}
     </details>

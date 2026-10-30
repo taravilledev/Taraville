@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
 assert.equal(process.argv.length, 2, "No alternate hosts, credentials or remote targets accepted");
-const archive = JSON.parse(readFileSync(new URL("../../docs/walkin/notices/walkin-live-2026-10-22.1.json", import.meta.url), "utf8"));
+const archive = JSON.parse(readFileSync(new URL("../../docs/walkin/notices/walkin-live-2026-10-30.1.json", import.meta.url), "utf8"));
 const source = String.raw`
 import assert from "node:assert/strict";
 import { createHmac, randomUUID } from "node:crypto";
@@ -16,7 +16,7 @@ const sale = "40000000-0000-4000-a000-000000000001";
 const executive = "40000000-0000-4000-a000-000000000002";
 const sale2 = "40000000-0000-4000-a000-000000000003";
 const inactive = "40000000-0000-4000-a000-000000000004";
-const noticeVersion = "walkin-live-2026-10-22.1";
+const noticeVersion = "walkin-live-2026-10-30.1";
 const contact = { first_name: "SyntheticPrivacyHTTP", phone: "0000000000" };
 const started = Date.now();
 function token(sub) {
@@ -140,7 +140,7 @@ const data = payload();
 const created = ok(await create(data), "Withdrawal fixture");
 const originalTime = created.last_contact_at;
 const originalEvents = await events(created.id);
-assert.deepEqual(await events(created.id, sale2), [], "Other Sale must not read evidence");
+assert.deepEqual(await events(created.id, sale2), originalEvents, "Other active Sale must read shared lead evidence");
 rejected(await event(eventPayload(created.id, 1, "survey_choice", false), sale2), ["42501"], "Other Sale privacy mutation");
 for (const [method, body, suffix] of [
   ["POST", { lead_id: created.id, actor_id: sale, request_id: randomUUID(), kind: "contact" }, ""],
@@ -223,7 +223,7 @@ assert.equal(executiveLead.privacy_mode, "real");
 assert.equal(executiveLead.survey.sales_staff, (await rows("staff?id=eq." + executive, executive))[0].full_name);
 assert.equal((await events(executiveLead.id, executive)).length, 1);
 trustedEvidence((await events(executiveLead.id, executive))[0], "BAAN_KUNAPAP", executiveCreate.p_request_id, executive);
-assert.deepEqual(await rows("leads?id=eq." + executiveLead.id, sale2), [], "Other Sale cannot read Lead");
+assert.deepEqual(await rows("leads?id=eq." + executiveLead.id, sale2), [executiveLead], "Other active Sale must read shared Lead");
 
 const parallelCreatePayload = payload();
 const parallelCreates = await Promise.all([create(parallelCreatePayload), create(parallelCreatePayload)]);

@@ -54,14 +54,14 @@ begin
       else '62000000-0000-4000-a000-000000000003'::uuid end;
     select * into v_lead from public.walkin_create_lead_with_privacy(v_request, v_brand,
       '{"first_name":"Local live fixture","phone":"0000000000"}', '{"sales_staff":"Spoofed name"}',
-      '61000000-0000-4000-a000-000000000001', 'walkin-live-2026-10-22.1', true, true, false);
+      '61000000-0000-4000-a000-000000000001', 'walkin-live-2026-10-30.1', true, true, false);
     if v_lead.privacy_mode <> 'real' or v_lead.version <> 1 or v_lead.last_contact_at is null
       or v_lead.survey <> '{"sales_staff":"Local live Sale A"}'::jsonb then
       raise exception 'Live creation mode, initial contact or trusted staff failed for %', v_brand;
     end if;
     select * into v_replay from public.walkin_create_lead_with_privacy(v_request, v_brand,
       '{"first_name":"Local live fixture","phone":"0000000000"}', '{"sales_staff":"Another spoof"}',
-      '61000000-0000-4000-a000-000000000001', 'walkin-live-2026-10-22.1', true, true, false);
+      '61000000-0000-4000-a000-000000000001', 'walkin-live-2026-10-30.1', true, true, false);
     if v_replay.id <> v_lead.id or v_replay.version <> 1
       or (select count(*) from public.lead_privacy_events where lead_id = v_lead.id) <> 1 then
       raise exception 'Create replay duplicated a lead or evidence';
@@ -72,10 +72,10 @@ end $$;
 
 select pg_temp.expect_error($q$select public.walkin_create_lead_with_privacy(
  '62000000-0000-4000-a000-000000000002','TARAVILLE','{"first_name":"Changed payload","phone":"0000000000"}',
- '{}','61000000-0000-4000-a000-000000000001','walkin-live-2026-10-22.1',true,true,false)$q$, '22023', 'request_conflict');
+ '{}','61000000-0000-4000-a000-000000000001','walkin-live-2026-10-30.1',true,true,false)$q$, '22023', 'request_conflict');
 select pg_temp.expect_error($q$select public.walkin_create_lead_with_privacy(
  '62000000-0000-4000-a000-000000000004','TARAVILLE','{"first_name":"Declined","phone":"0000000000"}',
- '{"gender":"หญิง"}','61000000-0000-4000-a000-000000000001','walkin-live-2026-10-22.1',true,true,false)$q$,
+ '{"gender":"หญิง"}','61000000-0000-4000-a000-000000000001','walkin-live-2026-10-30.1',true,true,false)$q$,
  '22023', 'survey_consent_required');
 select pg_temp.expect_error($q$select public.walkin_create_lead_with_privacy(
  '62000000-0000-4000-a000-000000000005','TARAVILLE','{"first_name":"Wrong notice","phone":"0000000000"}',
@@ -83,7 +83,7 @@ select pg_temp.expect_error($q$select public.walkin_create_lead_with_privacy(
  '22023', 'invalid_privacy_choice');
 select pg_temp.expect_error($q$select public.walkin_create_lead_with_privacy(
  '62000000-0000-4000-a000-000000000006','TARAVILLE','{"first_name":"Other owner","phone":"0000000000"}',
- '{}','61000000-0000-4000-a000-000000000002','walkin-live-2026-10-22.1',true,true,false)$q$, '42501', 'access_denied');
+ '{}','61000000-0000-4000-a000-000000000002','walkin-live-2026-10-30.1',true,true,false)$q$, '42501', 'access_denied');
 select pg_temp.expect_error($q$select public.walkin_create_lead(
  '62000000-0000-4000-a000-000000000007','TARAVILLE','{"first_name":"Legacy bypass","phone":"0000000000"}',
  '{}','61000000-0000-4000-a000-000000000001')$q$, '42501');
@@ -93,7 +93,7 @@ select pg_temp.expect_error($q$select private.walkin_create_lead(
 
 do $$ declare v_lead public.leads; v_id uuid := current_setting('walkin.test.taraville')::uuid; begin
   select * into v_lead from public.walkin_record_privacy_event(v_id, 1,
-    '63000000-0000-4000-a000-000000000001', 'survey_choice', true, 'walkin-live-2026-10-22.1', true);
+    '63000000-0000-4000-a000-000000000001', 'survey_choice', true, 'walkin-live-2026-10-30.1', true);
   select * into v_lead from public.walkin_update_lead(v_id, v_lead.version,
     '{"first_name":"Local edited fixture","phone":"0000000000"}', '{"gender":"หญิง"}');
   select * into v_lead from public.walkin_record_privacy_event(v_id, v_lead.version,
@@ -128,9 +128,9 @@ select public.walkin_record_privacy_event(current_setting('walkin.test.synthetic
 
 select set_config('request.jwt.claim.sub', '61000000-0000-4000-a000-000000000002', true);
 do $$ begin
-  if exists (select 1 from public.leads where id = current_setting('walkin.test.taraville')::uuid)
-    or exists (select 1 from public.lead_privacy_events where lead_id = current_setting('walkin.test.taraville')::uuid) then
-    raise exception 'Sale B can read Sale A lead or evidence';
+  if not exists (select 1 from public.leads where id = current_setting('walkin.test.taraville')::uuid)
+    or not exists (select 1 from public.lead_privacy_events where lead_id = current_setting('walkin.test.taraville')::uuid) then
+    raise exception 'Sale B must read shared lead and evidence';
   end if;
 end $$;
 select pg_temp.expect_error($q$select public.walkin_record_privacy_event(
@@ -138,7 +138,7 @@ select pg_temp.expect_error($q$select public.walkin_record_privacy_event(
 select set_config('request.jwt.claim.sub', '61000000-0000-4000-a000-000000000004', true);
 select pg_temp.expect_error($q$select public.walkin_create_lead_with_privacy(
  '62000000-0000-4000-a000-000000000008','TARAVILLE','{"first_name":"Inactive","phone":"0000000000"}',
- '{}','61000000-0000-4000-a000-000000000004','walkin-live-2026-10-22.1',true,true,false)$q$, '42501', 'access_denied');
+ '{}','61000000-0000-4000-a000-000000000004','walkin-live-2026-10-30.1',true,true,false)$q$, '42501', 'access_denied');
 select set_config('request.jwt.claim.sub', '', true);
 select pg_temp.expect_error($q$select public.walkin_record_privacy_event(
  current_setting('walkin.test.taraville')::uuid,4,'63000000-0000-4000-a000-000000000007','contact')$q$, '42501', 'access_denied');

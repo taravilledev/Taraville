@@ -129,7 +129,7 @@ const data = payload();
 const created = ok(await create(data), "Withdrawal fixture");
 const originalTime = created.last_contact_at;
 const originalEvents = await events(created.id);
-assert.deepEqual(await events(created.id, sale2), [], "Other Sale must not read evidence");
+assert.deepEqual(await events(created.id, sale2), originalEvents, "Other active Sale must read shared lead evidence");
 rejected(await event(eventPayload(created.id, 1, "survey_choice", false), sale2), ["42501"], "Other Sale privacy mutation");
 for (const [method, body, suffix] of [
   ["POST", { lead_id: created.id, actor_id: sale, request_id: randomUUID(), kind: "contact" }, ""],

@@ -5,10 +5,10 @@ import { cancelProject, openProject } from "./project-actions";
 import { formatDate } from "./privacy-controls";
 import styles from "./walkin.module.css";
 
-type Props = { lead: Lead; projects: Project[]; names: Map<string, string>; isExecutive: boolean };
+type Props = { lead: Lead; projects: Project[]; names: Map<string, string>; isExecutive: boolean; canEdit: boolean };
 
 // Baan Kunapap only (ADR 0009). Cancelled projects stay listed so an issued code never disappears.
-export function LeadProject({ lead, projects, names, isExecutive }: Props) {
+export function LeadProject({ lead, projects, names, isExecutive, canEdit }: Props) {
   if (lead.brand !== "BAAN_KUNAPAP") return null;
   const active = projects.find(project => project.status === "active");
   const cancelled = projects.filter(project => project.status === "cancelled");
@@ -24,12 +24,12 @@ export function LeadProject({ lead, projects, names, isExecutive }: Props) {
         </ActionForm>
       </details>}
     </> : lead.closed_at ? <p className={styles.hint}>รายการนี้ปิดอยู่ เปิดรายการอีกครั้งก่อนจึงจะเปิดโครงการได้</p>
-      : <details><summary>เปิดโครงการ</summary>
+      : canEdit ? <details><summary>เปิดโครงการ</summary>
         <ActionForm action={openProject.bind(null, { id: lead.id, version: lead.version, requestId: randomUUID() })} label="ยืนยันเปิดโครงการ">
           <p className={styles.hint}>ระบบออกรหัสโครงการให้ทันที แต่ละรายการมีโครงการที่ใช้งานอยู่ได้ครั้งละหนึ่งโครงการ และปิดรายการไม่ได้ขณะมีโครงการ</p>
           <label className={styles.option}><input type="checkbox" name="confirm_operation" required /><span>ยืนยันเปิดโครงการสำหรับรายการนี้</span></label>
         </ActionForm>
-      </details>}
+      </details> : <p className={styles.hint}>ยังไม่ได้เปิดโครงการ</p>}
     {cancelled.map(project => <p key={project.id} className={styles.hint}>
       {project.code} · ยกเลิก · {project.cancel_reason} · โดย {(project.cancelled_by && names.get(project.cancelled_by)) || "ผู้บริหาร"}
       {project.cancelled_at ? ` · ${formatDate(project.cancelled_at)}` : ""}</p>)}

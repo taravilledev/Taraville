@@ -29,7 +29,7 @@ export function filteredLeads(session: Awaited<ReturnType<typeof requireStaff>>,
   if (filters.stage) request = request.eq("stage", filters.stage);
   else if (hidesClosed(filters)) request = request.neq("stage", "closed");
   if (filters.brand) request = request.eq("brand", filters.brand);
-  if (filters.owner) request = request.eq("owner_id", session.staff.role === "executive" ? filters.owner : session.staff.id);
+  if (filters.owner) request = request.eq("owner_id", filters.owner);
   if (filters.from) request = request.gte("created_at", `${filters.from}T00:00:00+07:00`);
   if (filters.to) request = request.lte("created_at", `${filters.to}T23:59:59.999999+07:00`);
   const ascending = filters.dir === "asc";
@@ -48,14 +48,13 @@ export async function brandCounts(session: Awaited<ReturnType<typeof requireStaf
 }
 
 export async function saleOwners(session: Awaited<ReturnType<typeof requireStaff>>) {
-  if (session.staff.role !== "executive") return [];
   const { data, error } = await session.supabase.from("staff").select("id,full_name,role,is_active")
     .eq("role", "sale").eq("is_active", true).order("full_name");
   if (error) throw new Error("โหลดรายชื่อผู้ดูแลไม่ได้ กรุณาลองใหม่");
   return staffSchema.array().parse(data);
 }
 
-/** Who closed the lead and the free-text reason; Sale cannot read other staff, so the name can be absent. */
+/** Who closed the lead and the free-text reason. */
 export async function closeInfo(session: Awaited<ReturnType<typeof leadDetail>>) {
   const { lead, supabase } = session;
   if (!lead.closed_at || !lead.closed_by) return null;
@@ -68,7 +67,7 @@ export async function closeInfo(session: Awaited<ReturnType<typeof leadDetail>>)
   return { text: (event.data?.reason_text as string | null) ?? null, by: (closer.data?.full_name as string | undefined) ?? null };
 }
 
-/** Projects of a lead, newest first, with the names of whoever cancelled them (Sale may not read other staff). */
+/** Projects of a lead, newest first, with the names of whoever cancelled them. */
 export async function leadProjects(session: Awaited<ReturnType<typeof leadDetail>>) {
   const { lead, supabase } = session;
   const { data, error } = await supabase.from("projects").select(PROJECT_COLUMNS).eq("lead_id", lead.id)

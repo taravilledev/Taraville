@@ -21,19 +21,19 @@ export function ContactRecord({ lead }: { lead: Lead }) {
   </section>;
 }
 
-export function SurveyChoice({ lead, events }: { lead: Lead; events: PrivacyEvent[] }) {
+export function SurveyChoice({ lead, events, canEdit }: { lead: Lead; events: PrivacyEvent[]; canEdit: boolean }) {
   const choice = surveyChoice(events);
   const notice = privacyNotice(lead.privacy_mode);
   return <section className={styles.card}><h2>ตัวเลือกแบบสอบถามเพิ่มเติม</h2>
     <p>{choice === null ? "ยังไม่มีหลักฐานตัวเลือก" : choice ? "ลูกค้าเลือกให้ข้อมูลเพิ่มเติม" : "ลูกค้าไม่ให้ข้อมูลเพิ่มเติม"}</p>
-    {choice !== true && <details><summary>เลือกให้ข้อมูลแบบสอบถามเพิ่มเติม</summary>
+    {canEdit && choice !== true && <details><summary>เลือกให้ข้อมูลแบบสอบถามเพิ่มเติม</summary>
       <VersionedNotice brand={lead.brand} mode={lead.privacy_mode} />
       <ActionForm action={mutation(lead, "opt_in")} label="ยืนยันตัวเลือกให้ข้อมูลเพิ่มเติม">
         <label className={styles.option}><input type="checkbox" name="notice_presented" required /><span>{notice.choices.notice_presented}</span></label>
         <label className={styles.option}><input type="checkbox" name="confirm_operation" required /><span>{notice.choices.survey_consent}</span></label>
       </ActionForm>
     </details>}
-    {choice !== false && <details><summary>ถอนหรือไม่ให้ข้อมูลแบบสอบถามเพิ่มเติม</summary>
+    {canEdit && choice !== false && <details><summary>ถอนหรือไม่ให้ข้อมูลแบบสอบถามเพิ่มเติม</summary>
       <ActionForm action={mutation(lead, "withdraw")} label="ยืนยันถอนตัวเลือกและล้างคำตอบเพิ่มเติม">
         <p>จะล้างคำตอบแบบสอบถามเพิ่มเติมรวมที่อยู่ คงข้อมูลติดต่อ ผู้ดูแล และประวัติหลักฐานไว้</p>
         <label className={styles.option}><input type="checkbox" name="confirm_operation" required /><span>ยืนยันการถอนตัวเลือกและล้างคำตอบเพิ่มเติม</span></label>

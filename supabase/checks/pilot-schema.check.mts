@@ -5,7 +5,7 @@ import ts from "typescript";
 
 const migrations = new URL("../migrations/", import.meta.url);
 const files = readdirSync(migrations).filter((name) => name.endsWith(".sql")).sort();
-assert.equal(files.length, 15, "Review this check when the pilot migration set changes");
+assert.equal(files.length, 16, "Review this check when the pilot migration set changes");
 const sources = files.map((name) => {
   const source = readFileSync(new URL(name, migrations), "utf8");
   assert.ok(source.trimEnd().split("\n").length <= 300, `${name} exceeds 300 lines`);

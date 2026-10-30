@@ -88,7 +88,7 @@ begin
   if replay.brand is distinct from 'BAAN_KUNAPAP' then raise exception 'Valid BK answer rejected/mis-saved'; end if;
 
   perform set_config('request.jwt.claim.sub', sale_b::text, true);
-  if (select count(*) from public.leads) <> 0 then raise exception 'Other Sale can read leads'; end if;
+  if not exists (select 1 from public.leads where id = lead.id) then raise exception 'Other active Sale cannot read shared lead'; end if;
   begin
     perform public.walkin_update_lead(lead.id, 1, contact, answers);
     raise exception 'Other Sale update unexpectedly succeeded';
@@ -121,8 +121,8 @@ begin
   end if;
 
   perform set_config('request.jwt.claim.sub', sale_a::text, true);
-  if exists (select 1 from public.leads where id = lead.id) then
-    raise exception 'Old Sale can still read reassigned lead';
+  if not exists (select 1 from public.leads where id = lead.id) then
+    raise exception 'Reassignment must not remove shared read access';
   end if;
   begin
     perform public.walkin_create_lead(request_id, 'TARAVILLE', contact, answers, sale_a);

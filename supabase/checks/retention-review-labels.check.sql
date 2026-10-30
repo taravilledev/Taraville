@@ -29,7 +29,7 @@ begin
       ('85000000-0000-4000-a000-00000000000' || v_n)::uuid,
       case when v_n in (2, 4) then 'TARAVILLE' else 'BAAN_KUNAPAP' end,
       '{"first_name":"Local retention fixture","phone":"0000000000"}', '{}',
-      '84000000-0000-4000-a000-000000000001', 'walkin-live-2026-10-22.1', true, true, false);
+      '84000000-0000-4000-a000-000000000001', 'walkin-live-2026-10-30.1', true, true, false);
     perform set_config('walkin.test.l' || v_n, v_lead.id::text, true);
   end loop;
   perform public.walkin_open_project(current_setting('walkin.test.l1')::uuid, 1, '86000000-0000-4000-a000-000000000001');

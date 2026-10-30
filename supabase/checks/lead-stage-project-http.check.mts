@@ -48,7 +48,7 @@ const lead = async id => (await rows("leads?id=eq." + id))[0];
 const stage = async (id, actor = sale) => (await rows("walkin_leads_staged?id=eq." + id + "&select=stage", actor))[0]?.stage;
 const create = brand => request("rpc/walkin_create_lead_with_privacy", sale, {
   p_request_id: randomUUID(), p_brand: brand, p_contact: { first_name: "SyntheticStageHTTP", phone: "0000000000" },
-  p_survey: {}, p_owner: sale, p_notice_version: "walkin-live-2026-10-22.1",
+  p_survey: {}, p_owner: sale, p_notice_version: "walkin-live-2026-10-30.1",
   p_notice_presented: true, p_followup_requested: true, p_survey_consent: false,
 });
 const close = (id, version, reason, text, actor = sale, requestId = randomUUID()) =>
@@ -63,7 +63,7 @@ const cancel = (id, version, reason, actor = executive, requestId = randomUUID()
 // Stage through the view; close/reopen over HTTP
 const tv = ok(await create("TARAVILLE"), "create Taraville lead");
 assert.equal(await stage(tv.id), "received");
-assert.equal(await stage(tv.id, sale2), undefined, "another Sale must not see the stage view row");
+assert.equal(await stage(tv.id, sale2), "received", "another active Sale must see the shared stage view row");
 rejected(await close(tv.id, tv.version, "other"), 400, "22023", "invalid_close_reason", "other without text");
 rejected(await close(tv.id, tv.version, "duplicate", null, sale2), 403, "42501", "access_denied", "another Sale closing");
 rejected(await close(tv.id, tv.version + 5, "duplicate"), 409, "PT409", "stale_lead", "stale close");
@@ -93,7 +93,7 @@ assert.equal(project.status, "active");
 assert.equal(ok(await open(bk.id, bk.version, sale, openRequest), "open replay").id, project.id);
 assert.equal((await lead(bk.id)).version, bk.version + 1, "open bumps the lead version once");
 assert.equal(await stage(bk.id), "project_opened");
-assert.equal((await rows("projects?lead_id=eq." + bk.id + "&select=id", sale2)).length, 0, "another Sale must not see the project");
+assert.deepEqual(await rows("projects?lead_id=eq." + bk.id + "&select=id", sale2), [{ id: project.id }], "another active Sale must see the shared lead project");
 rejected(await close(bk.id, bk.version + 1, "duplicate"), 400, "22023", "invalid_lead_state", "close with an active project");
 rejected(await cancel(project.id, 1, "mistake", sale), 403, "42501", "access_denied", "Sale cancelling");
 rejected(await cancel(project.id, 1, "   "), 400, "22023", "invalid_cancel_reason", "blank cancel reason");

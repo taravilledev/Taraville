@@ -54,7 +54,7 @@ begin
       case when v_brand = 'TARAVILLE' then '72000000-0000-4000-a000-000000000001'::uuid
         else '72000000-0000-4000-a000-000000000002'::uuid end, v_brand,
       '{"first_name":"Local stage fixture","phone":"0000000000"}', '{}',
-      '71000000-0000-4000-a000-000000000001', 'walkin-live-2026-10-22.1', true, true, false);
+      '71000000-0000-4000-a000-000000000001', 'walkin-live-2026-10-30.1', true, true, false);
     perform set_config('walkin.test.' || lower(v_brand), v_lead.id::text, true);
     if pg_temp.stage(v_lead.id) <> 'received' or v_lead.closed_at is not null then
       raise exception 'A new lead must be received and open (%)', v_brand;
@@ -88,11 +88,11 @@ begin
   if pg_temp.events(v_id) <> 0 or pg_temp.events(v_bk) <> 0 then raise exception 'Rejected closes left events'; end if;
 end $$;
 
--- another Sale cannot see or close it; stale version conflicts
+-- another Sale can read it but cannot close it; stale version conflicts
 select pg_temp.as_user('71000000-0000-4000-a000-000000000002');
 do $$ declare v_id uuid := current_setting('walkin.test.taraville')::uuid;
 begin
-  if pg_temp.stage(v_id) is not null then raise exception 'Sale B can see Sale A lead'; end if;
+  if pg_temp.stage(v_id) is null then raise exception 'Sale B cannot see shared lead stage'; end if;
   perform pg_temp.expect_error(format($q$select public.walkin_close_lead(%L, 2, %L, 'duplicate')$q$,
     v_id, '74000000-0000-4000-a000-000000000006'), '42501', 'access_denied');
   perform pg_temp.expect_error(format($q$select public.walkin_reopen_lead(%L, 2, %L)$q$,

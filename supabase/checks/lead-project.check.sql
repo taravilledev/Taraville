@@ -61,7 +61,7 @@ begin
       ('82000000-0000-4000-a000-00000000000' || v_n)::uuid,
       case when v_n = 2 then 'TARAVILLE' else 'BAAN_KUNAPAP' end,
       '{"first_name":"Local project fixture","phone":"0000000000"}', '{}',
-      '81000000-0000-4000-a000-000000000001', 'walkin-live-2026-10-22.1', true, true, false);
+      '81000000-0000-4000-a000-000000000001', 'walkin-live-2026-10-30.1', true, true, false);
     perform set_config('walkin.test.l' || v_n, v_lead.id::text, true);
   end loop;
 end $$;
@@ -122,7 +122,7 @@ end $$;
 -- visibility follows the lead; application roles cannot write
 select pg_temp.as_user('81000000-0000-4000-a000-000000000002');
 do $$ begin
-  if (select count(*) from public.projects) <> 0 then raise exception 'Sale B can see Sale A projects'; end if;
+  if (select count(*) from public.projects) <> 2 then raise exception 'Sale B must see shared lead projects'; end if;
   perform pg_temp.expect_error($q$select public.walkin_cancel_project(gen_random_uuid(), 1, gen_random_uuid(), 'x')$q$, '42501', 'access_denied');
 end $$;
 select pg_temp.as_user('81000000-0000-4000-a000-000000000001');
