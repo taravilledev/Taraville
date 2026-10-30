@@ -86,6 +86,74 @@ for (const value of ["-1", "1e3", "NaN", "Infinity", "1,000", " 15000 ", "1.", "
   assert.throws(() => parseLeadForm(context(), form([["survey.monthly_installment", value]])), `Invalid number: ${value}`);
 }
 assert.throws(() => parseLeadForm(context("BAAN_KUNAPAP"), form([["survey.monthly_installment", "15000"]])));
+for (const value of ["เงินสด", "สินเชื่อธนาคาร"]) {
+  assert.equal(parseLeadForm(context("BAAN_KUNAPAP"), form([["survey.payment_method", value]])).survey.payment_method, value);
+}
+assert.ok(!Object.hasOwn(parseLeadForm(context("BAAN_KUNAPAP"), form()).survey, "payment_method"),
+  "Financing remains optional");
+for (const value of ["เงินกู้", "เงินสด,สินเชื่อธนาคาร", new File(["synthetic"], "synthetic.txt")]) {
+  assert.throws(() => parseLeadForm(context("BAAN_KUNAPAP"), form([["survey.payment_method", value]])), "Only a known financing string is accepted");
+}
+assert.throws(() => parseLeadForm(context("BAAN_KUNAPAP"), form([
+  ["survey.payment_method", "เงินสด"], ["survey.payment_method", "สินเชื่อธนาคาร"],
+])), "Financing accepts only one answer");
+assert.throws(() => parseLeadForm(context(), form([["survey.payment_method", "เงินสด"]])), "Taraville has no financing question");
+const revisedBk = parseLeadForm(context("BAAN_KUNAPAP"), form([
+  ["survey.address", "สถานที่ก่อสร้างทดสอบ"], ["survey.occupation", "อื่นๆ"], ["survey.occupation_other", "เกษตรกร"],
+  ["survey.house_type", "รีโนเวท / ต่อเติม / ซ่อมแซม"],
+]));
+assert.equal(revisedBk.survey.address, "สถานที่ก่อสร้างทดสอบ");
+assert.equal(revisedBk.survey.occupation_other, "เกษตรกร");
+assert.equal(revisedBk.survey.house_type, "รีโนเวท / ต่อเติม / ซ่อมแซม");
+assert.ok(!Object.hasOwn(parseLeadForm(context("BAAN_KUNAPAP"), form([
+  ["survey.occupation", "ค้าขาย"], ["survey.occupation_other", "คำตอบเดิม"],
+])).survey, "occupation_other"), "Unselected occupation Other must be omitted");
+assert.equal(parseLeadForm(context(), form([["survey.occupation", "อื่นๆ"], ["survey.occupation_other", "เกษตรกร"]])).survey.occupation_other,
+  "เกษตรกร", "Both brands accept occupation Other");
+assert.throws(() => parseLeadForm(context("BAAN_KUNAPAP"), form([
+  ["survey.occupation", "อื่นๆ"], ["survey.occupation_other", "หนึ่ง"], ["survey.occupation_other", "สอง"],
+])), "Duplicate occupation Other text is rejected");
+const legacyBk = parseLeadForm(context("BAAN_KUNAPAP"), form([
+  ["survey.house_type", "คอนโด"], ["survey.monthly_installment", "6,000-8,000"],
+]));
+assert.equal(legacyBk.survey.house_type, "คอนโด", "Existing condo answers remain saveable");
+assert.equal(legacyBk.survey.monthly_installment, "6,000-8,000", "Existing installment answers remain saveable");
+const revisedTv = parseLeadForm(context(), form([
+  ["survey.decision_factors", "ทำเลที่ตั้ง"], ["survey.decision_factors", "เชื่อมั่นในแบรนด์"], ["survey.decision_factors", "คุณภาพของวัสดุ"],
+  ["survey.preferred_location", "  ทำเลทดสอบ  "], ["survey.budget_range", "3-4 ล้าน"], ["survey.purchase_reason", "ซื้อเพื่อปล่อยเช่า"],
+]));
+assert.deepEqual(plain(revisedTv.survey.decision_factors), ["ทำเลที่ตั้ง", "เชื่อมั่นในแบรนด์", "คุณภาพของวัสดุ"]);
+assert.equal(revisedTv.survey.preferred_location, "  ทำเลทดสอบ  ", "Location text is preserved without silently trimming");
+assert.equal(revisedTv.survey.purchase_reason, "ซื้อเพื่อปล่อยเช่า");
+assert.equal(revisedTv.survey.budget_range, "3-4 ล้าน");
+assert.equal(parseLeadForm(context(), form([["survey.budget_range", "4 ล้านขึ้นไป"]])).survey.budget_range, "4 ล้านขึ้นไป");
+assert.ok(!Object.hasOwn(parseLeadForm(context(), form([["survey.decision_factors", "ทำเลที่ตั้ง"]])).survey, "preferred_location"),
+  "Selecting location does not require a location description");
+for (const parent of [undefined, "ราคาที่เหมาะสม"]) {
+  const entries: [string, string][] = [["survey.preferred_location", "คำตอบทำเลเก่า"]];
+  if (parent) entries.push(["survey.decision_factors", parent]);
+  assert.ok(!Object.hasOwn(parseLeadForm(context(), form(entries)).survey, "preferred_location"),
+    "Unselected dependent location text must be discarded");
+}
+const locationForm = () => form([["survey.decision_factors", "ทำเลที่ตั้ง"]]);
+const locationBoundary = locationForm();
+locationBoundary.set("survey.preferred_location", "x".repeat(4000));
+assert.equal(parseLeadForm(context(), locationBoundary).survey.preferred_location, "x".repeat(4000));
+for (const value of ["x".repeat(4001), new File(["synthetic"], "synthetic.txt")]) {
+  const invalid = locationForm();
+  invalid.set("survey.preferred_location", value);
+  assert.throws(() => parseLeadForm(context(), invalid), "Location must be a text value no longer than 4000 characters");
+}
+assert.throws(() => parseLeadForm(context(), form([
+  ["survey.decision_factors", "ทำเลที่ตั้ง"], ["survey.preferred_location", "หนึ่ง"], ["survey.preferred_location", "สอง"],
+])), "Duplicate location fields are rejected");
+assert.throws(() => parseLeadForm(context("BAAN_KUNAPAP"), form([["survey.preferred_location", "ทำเลทดสอบ"]])), "Location detail is Taraville-only");
+const legacyTv = parseLeadForm(context(), form([
+  ["survey.house_type", "คอนโด"], ["survey.budget_range", "3 ล้านขึ้นไป"], ["survey.decision_time", "2 สัปดาห์"],
+]));
+assert.equal(legacyTv.survey.house_type, "คอนโด");
+assert.equal(legacyTv.survey.budget_range, "3 ล้านขึ้นไป");
+assert.equal(legacyTv.survey.decision_time, "2 สัปดาห์");
 assert.throws(() => parseLeadForm(context(), form([["survey.occupation", "พนักงานประจำ"]])));
 assert.throws(() => parseLeadForm(context("BAAN_KUNAPAP"), form([["survey.occupation", "พนักงานบริษัท"]])));
 assert.throws(() => parseLeadForm(context(), form([["survey.gender", "หญิง"], ["survey.gender", "หญิง"]])),

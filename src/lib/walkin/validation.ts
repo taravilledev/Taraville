@@ -50,6 +50,11 @@ export function parseLeadForm(context: MutationContext, form: FormData, isSurvey
   for (const key of form.keys()) {
     if (key.startsWith("survey.") && !allowed.has(key)) throw new Error("Unknown question");
   }
+  for (const question of SURVEY_QUESTIONS[context.brand]) {
+    if (!question.dependsOn) continue;
+    const selected = survey[question.dependsOn.key];
+    if (!Array.isArray(selected) || !selected.includes(question.dependsOn.option)) delete survey[question.key];
+  }
   if (new TextEncoder().encode(JSON.stringify(survey)).length > 32000) throw new Error("Survey too large");
   return { contact, survey, owner };
 }

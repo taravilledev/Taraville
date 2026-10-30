@@ -40,7 +40,7 @@ export function LeadForm({ brand, staff, owners, lead, requestId, choice = null 
       </section>
       {isSurveyShown ? <section id="survey" className={styles.card} aria-labelledby="survey-title">
         <h2 id="survey-title">แบบสอบถามความต้องการ</h2><p className={styles.sectionHint}>ไม่บังคับ ข้อที่ลูกค้าไม่ตอบ เว้นว่างได้</p>
-        <div className={styles.questions}>{questions.filter(question => question.key !== "sales_staff").map(question =>
+        <div className={styles.questions}>{questions.filter(question => question.key !== "sales_staff" && (!question.legacy || lead?.survey[question.key])).map(question =>
           <SurveyField key={question.key} question={question} answers={lead?.survey} />)}</div>
       </section> : <p className={styles.hint} role="status">ลูกค้าไม่ให้ข้อมูลแบบสอบถามเพิ่มเติม · เปลี่ยนตัวเลือกได้จากหน้ารายละเอียด</p>}
       {!lead && <ConsentFields />}
