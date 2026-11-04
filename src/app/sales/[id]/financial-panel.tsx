@@ -39,13 +39,14 @@ export function PreparePayment({ sale, finance }: Props) {
   const identity = identityOf(sale, finance);
   const plan = finance.design_plan;
   const max = today();
+  const canPayDesign = sale.brand === "BAAN_KUNAPAP" && plan != null && sale.status !== "cancelled";
   if (!sale.permissions["financial.prepare"]) return null;
   return <>
     <section className={styles.panel} id="prepare"><h2>บันทึกเงินเข้า (รอยืนยัน)</h2><p className={styles.muted}>ขั้นนี้ยังไม่ลงยอดรับเงินจริง ผู้มีสิทธิ์ต้องตรวจและยืนยันพร้อมออกใบเสร็จอีกครั้ง</p>
       {sale.brand === "TARAVILLE" && sale.status === "reserved" && <p className={styles.muted}>ก่อนเตรียมรับเงินจอง ให้บันทึกยอดจองในสรุปการจองของแปลงและราคาปัจจุบัน</p>}
       <ActionForm action={preparePayment.bind(null, identity())} label="บันทึกเงินเข้า"><div className={styles.grid}>
-        <label className={styles.field}>รายการ<select name="kind" defaultValue={sale.brand === "BAAN_KUNAPAP" && plan ? "design_fee" : "unallocated"}>
-          {sale.brand === "BAAN_KUNAPAP" && plan && <option value="design_fee">ค่าออกแบบ</option>}
+        <label className={styles.field}>รายการ<select name="kind" defaultValue={canPayDesign ? "design_fee" : "unallocated"}>
+          {canPayDesign && <option value="design_fee">ค่าออกแบบ</option>}
           {sale.brand === "TARAVILLE" && sale.status === "reserved" && <option value="booking">เงินจอง</option>}
           <option value="unallocated">เงินเข้าที่ยังไม่ระบุงวด</option></select></label>
         <label className={styles.field}>จำนวนเงิน (บาท)<input name="amount" inputMode="decimal" required /></label>

@@ -3,10 +3,10 @@ import type { SalesCase } from "./models";
 export type CaseTab = "overview" | "documents" | "money" | "adjust";
 export type NextStepInput = {
   brand: SalesCase["brand"]; status: SalesCase["status"]; can: Record<string, boolean>;
-  hasNetPrice: boolean; hasSummary: boolean; hasBookingReceipt: boolean; hasDesignPlan: boolean;
+  hasNetPrice: boolean; hasSummary: boolean; hasBookingReceipt: boolean; isBookingDue: boolean; hasDesignPlan: boolean;
   pendingPayments: number; refundsToAct: number; plotHeld: boolean; isSettled: boolean;
   quotations: { offered: number; accepted: number }; contract: "none" | "awaiting" | "signed";
-  instalment: { label: string; needsAcceptance: boolean; accepted: boolean; hasInvoice: boolean; outstanding: boolean } | null;
+  instalment: { label: string; needsAcceptance: boolean; accepted: boolean; hasInvoice: boolean; outstanding: boolean; isCreditCovered: boolean } | null;
 };
 export type NextStep = { title: string; hint?: string; tab: CaseTab; anchor?: string; allowed: boolean; kind?: "reserve" | "done" };
 
@@ -31,7 +31,7 @@ export function nextStep(input: NextStepInput): NextStep | null {
     const row = input.instalment;
     if (!row) return null;
     if (row.needsAcceptance && !row.accepted) return step(`ตรวจรับงาน ${row.label}`, "money", can["acceptance.record"], { anchor: "schedule" });
-    if (!row.hasInvoice) return step(`ออกใบแจ้งชำระ ${row.label}`, "money", can["billing.issue"], { anchor: "schedule" });
+    if (!row.hasInvoice) return step(`${row.isCreditCovered ? "บันทึกงวดที่ชำระครบด้วยเครดิตเดิม" : "ออกใบแจ้งชำระ"} ${row.label}`, "money", can["billing.issue"], { anchor: "schedule" });
     return row.outstanding ? step(`รับชำระ ${row.label}`, "money", can["financial.prepare"], { anchor: "schedule" }) : null;
   }
   const prepare = can["financial.prepare"];
@@ -41,7 +41,7 @@ export function nextStep(input: NextStepInput): NextStep | null {
         : step("กรอกข้อมูลการขายและราคา", "overview", prepare, { anchor: "edit" });
     }
     if (!input.hasSummary) return step("บันทึกสรุปการจอง", "documents", prepare, { anchor: "summary" });
-    if (!input.hasBookingReceipt) return step("รับเงินจอง", "money", prepare, { anchor: "prepare" });
+    if (input.isBookingDue && !input.hasBookingReceipt) return step("รับเงินจอง", "money", prepare, { anchor: "prepare" });
     return step("บันทึกสัญญาขายที่ลงนามแล้ว", "documents", can["contract.sign"], { anchor: "summary" });
   }
   if (input.contract === "awaiting") return step("บันทึกลงนามสัญญา", "documents", can["contract.sign"], { anchor: "contract" });

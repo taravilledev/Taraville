@@ -14,7 +14,7 @@ export const financialSchema = z.object({
   payments: z.object({ id: z.uuid(), kind: z.string(), amount_cents: cents, method: z.string(), paid_date: z.string(),
     payer_name: z.string(), totals: z.record(z.string(), z.string()) }).array(),
   documents: z.object({ id: z.uuid(), kind: z.string(), number: z.string().nullable(), state: z.string(),
-    document_date: z.string(), amount_cents: cents.nullable() }).array(),
+    document_date: z.string(), amount_cents: cents.nullable(), booking_cents: cents.nullish() }).array(),
 });
 export const issuerSchema = z.object({ brand: brandSchema, legal_name: z.string(), address: z.string(), tax_id: z.string(),
   contact: z.string(), contract_text: z.string(), is_synthetic: z.boolean(), version: z.number().int().positive() });

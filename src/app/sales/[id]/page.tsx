@@ -68,13 +68,14 @@ async function CaseDetail({ params, searchParams }: Props) {
   const step = finance && agreement ? nextStep({
     brand: sale.brand, status: sale.status, can: sale.permissions, hasNetPrice: sale.net_price_cents != null,
     hasSummary: finance.documents.some(doc => doc.kind === "summary"), hasBookingReceipt: finance.payments.some(payment => payment.kind === "booking"),
+    isBookingDue: BigInt(finance.documents.findLast(doc => doc.kind === "summary")?.booking_cents ?? "0") > BigInt(0),
     hasDesignPlan: finance.design_plan != null, pendingPayments: pending,
     refundsToAct: refunds.filter(refund => refund.state === "pending" || refund.state === "approved").length,
     plotHeld: reservation?.active ?? false, isSettled: agreement.is_settled,
     quotations: { offered: quotations.filter(doc => doc.state === "offered").length, accepted: quotations.filter(doc => doc.state === "accepted").length },
     contract: contract ? contract.state === "signed" ? "signed" : "awaiting" : "none",
     instalment: row ? { label: row.label, needsAcceptance: row.needs_acceptance, accepted: row.accepted_at != null,
-      hasInvoice: row.invoice_id != null, outstanding: row.balance?.outstanding_cents !== "0" } : null,
+      hasInvoice: row.invoice_id != null, outstanding: row.balance?.outstanding_cents !== "0", isCreditCovered: row.net_cents === "0" } : null,
   }) : null;
   const canEditSale = sale.permissions["financial.prepare"] && ["draft", "reserved"].includes(sale.status);
 
