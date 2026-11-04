@@ -30,7 +30,7 @@ async function Catalog() {
         <label className={styles.check}><input type="checkbox" name="is_active" defaultChecked={development.is_active} />เปิดใช้งาน</label>
       </ActionForm></details>}
       <ul className={styles.list}>{development.units.map(unit => <li className={styles.case} key={unit.id}>
-        <div><strong>{unit.code}</strong><p className={styles.muted}>{typeof unit.details.model === "string" ? unit.details.model : "—"} · ราคาทะเบียน {unit.list_price_cents != null ? `${formatMoney(unit.list_price_cents)} บาท` : "—"}</p>
+        <div><strong>{unit.code}</strong><p className={styles.muted}>{[unit.details.model, unit.details.layout, unit.details.build_status].filter(value => typeof value === "string" && value).join(" · ") || "—"} · ราคาทะเบียน {unit.list_price_cents != null ? `${formatMoney(unit.list_price_cents)} บาท` : "—"}</p>
           {workspace.can_catalog && <details><summary>แก้ไขบ้าน/แปลง {unit.code}</summary><UnitForm developmentId={development.id} unit={unit} requestId={randomUUID()} /></details>}</div>
         <span className={styles.tag}>{!development.is_active || !unit.is_active ? "ปิดใช้งาน" : unit.is_available ? "ว่าง" : "กันไว้แล้ว"}</span>
       </li>)}</ul>

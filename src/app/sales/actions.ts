@@ -93,7 +93,8 @@ export async function saveUnit(context: unknown, _state: ActionState, form: Form
   const parsed = catalogIdentity.extend({ developmentId: z.uuid() }).safeParse(context);
   const fields = z.object({ code: z.string().trim().min(1).max(80), model: z.string().max(200),
     usable_area: z.string().regex(/^(?:\d{1,9}(?:\.\d{1,3})?)?$/), land_area: z.string().regex(/^(?:\d{1,9}(?:\.\d{1,3})?)?$/),
-  }).safeParse(Object.fromEntries(["code", "model", "usable_area", "land_area"].map(key => [key, form.get(key) ?? ""])));
+    layout: z.string().trim().max(500), build_status: z.string().trim().max(100),
+  }).safeParse(Object.fromEntries(["code", "model", "usable_area", "land_area", "layout", "build_status"].map(key => [key, form.get(key) ?? ""])));
   if (!parsed.success || !fields.success) return invalid;
   let price;
   try { const raw = form.get("list_price"); if (typeof raw !== "string") return invalid; price = raw.trim() ? parseMoney(raw) : null; }
@@ -106,7 +107,7 @@ export async function saveUnit(context: unknown, _state: ActionState, form: Form
   const unit = existing.data.developments.flatMap(development => development.units).find(item => item.id === parsed.data.id);
   return salesMutation(session, "sales_save_unit", {
     p_id: parsed.data.id, p_expected_version: parsed.data.version, p_development_id: parsed.data.developmentId,
-    p_code: fields.data.code, p_details: { ...unit?.details, model: fields.data.model, usable_area: fields.data.usable_area, land_area: fields.data.land_area },
+    p_code: fields.data.code, p_details: { ...unit?.details, model: fields.data.model, usable_area: fields.data.usable_area, land_area: fields.data.land_area, layout: fields.data.layout, build_status: fields.data.build_status },
     p_list_price_cents: price, p_is_active: form.get("is_active") === "on", p_request_id: parsed.data.requestId,
   }, "/sales/catalog");
 }
