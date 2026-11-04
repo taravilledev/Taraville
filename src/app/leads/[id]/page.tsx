@@ -1,4 +1,7 @@
 import { Suspense } from "react";
+import Link from "next/link";
+import { z } from "zod";
+import { caseStatusLabels } from "@/lib/sales/models";
 import { closeInfo, leadDetail, leadProjects, saleOwners } from "@/lib/walkin/queries";
 import { staffSchema } from "@/lib/walkin/models";
 import { SURVEY_QUESTIONS } from "@/lib/walkin/survey-questions";
@@ -23,6 +26,11 @@ async function Detail({ params, searchParams }: Props) {
   const session = await leadDetail(id);
   const { lead, staff, events } = session;
   const canEdit = staff.role === "executive" || lead.owner_id === staff.id;
+  const salesResult = lead.brand === "TARAVILLE" ? await session.supabase.rpc("sales_cases_for_lead", { p_lead_id: lead.id }) : null;
+  if (salesResult?.error) throw new Error("โหลดรายการขายของลูกค้าไม่ได้ กรุณาลองใหม่");
+  const sales = salesResult ? z.object({ can_create: z.boolean(), cases: z.object({
+    id: z.uuid(), code: z.string(), status: z.enum(["draft", "reserved", "contracted", "completed", "cancelled"]),
+  }).array() }).parse(salesResult.data) : null;
   const [owners, closeDetails, { projects, names }] = await Promise.all([saleOwners(session), closeInfo(session), leadProjects(session)]);
   const saved = (await searchParams).saved === "1";
   const ownerResult = await session.supabase.from("staff").select("id,full_name,role,is_active").eq("id", lead.owner_id).maybeSingle();
@@ -53,6 +61,13 @@ async function Detail({ params, searchParams }: Props) {
       })}</dl></section>
     <LeadStatus lead={lead} info={closeDetails} hasActiveProject={projects.some(project => project.status === "active")} canEdit={canEdit} />
     <LeadProject lead={lead} projects={projects} names={names} isExecutive={staff.role === "executive"} canEdit={canEdit} />
+    {sales && (sales.can_create || sales.cases.length > 0) && <section className={styles.card}>
+      <h2>รายการขาย</h2>
+      {sales.cases.length > 0 && <ul>{sales.cases.map(item => <li key={item.id}>
+        <Link href={`/sales/${item.id}`} prefetch={false}>{item.code} · {caseStatusLabels[item.status]}</Link>
+      </li>)}</ul>}
+      {sales.can_create && <Link href={`/sales/new?lead=${lead.id}`} prefetch={false}>เปิดรายการขายใหม่</Link>}
+    </section>}
     {canEdit && <ContactRecord lead={lead} />}
     <details className={styles.more}><summary>ความยินยอม และการเปลี่ยนผู้ดูแล</summary>
     <SurveyChoice lead={lead} events={events} canEdit={canEdit} />

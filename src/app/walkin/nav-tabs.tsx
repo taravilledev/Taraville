@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Users, UserPlus } from "lucide-react";
+import { BriefcaseBusiness, Users, UserPlus } from "lucide-react";
 import styles from "./walkin.module.css";
 
-const TABS = [{ href: "/walkin", label: "รับลูกค้า", Icon: UserPlus }, { href: "/leads", label: "รายการ", Icon: Users }];
+const TABS = [{ href: "/walkin", label: "รับลูกค้า", Icon: UserPlus }, { href: "/leads", label: "รายการ", Icon: Users }, { href: "/sales", label: "งาน/ขาย", Icon: BriefcaseBusiness }];
 
 export function NavTabs() {
   const pathname = usePathname();
