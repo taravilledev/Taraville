@@ -218,7 +218,9 @@ async function page(path: string, user: Actor) {
 assert.ok((await page("/sales", executive)).includes("งานและรายการขาย"));
 assert.ok((await page("/sales/admin", executive)).includes('name="staff_id"'));
 assert.ok((await page("/sales/catalog", executive)).includes("ราคาทะเบียน"));
-assert.ok((await page("/sales/new", owner)).includes('name="lead_id"'));
+assert.ok((await page(`/sales/new?lead=${tvLead}`, owner)).includes('name="lead_id"'));
+const noLead = await page("/sales/new", owner);
+assert.ok(!noLead.includes('name="lead_id"') && noLead.includes("เปิดรายการขายได้จากหน้า Lead เท่านั้น"), "No form without a Lead");
 const ownerPage = await page(`/sales/${tv.id}`, owner);
 assert.ok(ownerPage.includes("3,540,000.00"));
 const operatorPage = await page(`/sales/${created.id}`, operator);

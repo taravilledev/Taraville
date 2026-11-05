@@ -7,12 +7,12 @@ import styles from "./leads.module.css";
 
 const thaiDate = (iso: string) => new Date(iso).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" });
 
-type Props = { leads: ListLead[]; projectCodes: Map<string, string>; ownerName?: Map<string, string> };
+type Props = { leads: ListLead[]; workTags: Map<string, string>; ownerName?: Map<string, string> };
 
-export function LeadCards({ leads, projectCodes, ownerName }: Props) {
+export function LeadCards({ leads, workTags, ownerName }: Props) {
   return <ul className={styles.cards}>
     {leads.map(lead => {
-      const projectCode = projectCodes.get(lead.id);
+      const workTag = workTags.get(lead.id);
       return <li key={lead.id} className={styles.card}>
         <div className={styles.cardMain}>
           <div className={styles.cardTitle}>
@@ -21,7 +21,7 @@ export function LeadCards({ leads, projectCodes, ownerName }: Props) {
             <span className={`${styles.brand} ${lead.brand === "TARAVILLE" ? styles.brandTv : styles.brandBk}`}>
               {lead.brand === "TARAVILLE" ? "ธาราวิล" : "บ้านคุณภาพ"}</span>
             <span className={styles.stage}>{STAGE_LABELS[lead.stage]}</span>
-            {projectCode && <span className={styles.projectTag}>{projectCode}</span>}
+            {workTag && <span className={styles.projectTag}>{workTag}</span>}
             {lead.privacy_mode === "synthetic" && <span className={styles.stage}>ข้อมูลสมมติ</span>}
           </div>
           <p className={styles.meta}>

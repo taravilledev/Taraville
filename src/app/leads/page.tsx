@@ -3,7 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireStaff } from "@/lib/supabase/staff";
 import { listLeadSchema } from "@/lib/walkin/models";
-import { activeProjectCodes, brandCounts, filteredLeads, saleOwners } from "@/lib/walkin/queries";
+import { leadTags } from "@/lib/sales/lead-work";
+import { brandCounts, filteredLeads, saleOwners } from "@/lib/walkin/queries";
 import { PAGE_SIZE, filtersSchema, listHref } from "@/lib/walkin/lead-list";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { AppShell } from "@/app/walkin/app-shell";
@@ -38,7 +39,7 @@ async function List({ searchParams }: Props) {
   if (error) throw new Error("โหลดรายการไม่ได้ กรุณาลองใหม่");
   const leads = listLeadSchema.array().parse(data ?? []);
   const total = count ?? leads.length;
-  const projectCodes = await activeProjectCodes(session, leads.map(lead => lead.id));
+  const workTags = await leadTags(session.supabase, leads.map(lead => lead.id));
   const ownerName = new Map(owners.map(owner => [owner.id, owner.full_name]));
   const activeCount = [filters.owner, filters.from, filters.to, filters.stage, filters.sort !== "created" || filters.dir !== "desc"].filter(Boolean).length;
   return <AppShell staff={session.staff} wide>
@@ -56,7 +57,7 @@ async function List({ searchParams }: Props) {
     <BrandTiles filters={filters} counts={counts} />
     <ListControls filters={filters} owners={owners} activeCount={activeCount} />
     <ListChips filters={filters} ownerName={ownerName} />
-    {leads.length ? <LeadCards leads={leads} projectCodes={projectCodes} ownerName={ownerName} />
+    {leads.length ? <LeadCards leads={leads} workTags={workTags} ownerName={ownerName} />
       : activeCount || filters.q || filters.brand ? <p className={styles.empty}>ไม่พบรายการที่ตรงกับการค้นหา</p>
       : <p className={styles.empty}>ยังไม่มีผู้สนใจที่กำลังติดตาม · <Link href="/walkin" prefetch={false}>เริ่มรับลูกค้า Walk-in</Link></p>}
     <ListPager filters={filters} total={total} />

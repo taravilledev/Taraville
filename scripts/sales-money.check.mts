@@ -104,7 +104,7 @@ async function page(path: string) {
   const response = await fetch(`http://127.0.0.1:3100${path}`, { headers: { Cookie: cookie } });
   const html = await response.text(); assert.equal(response.status, 200); return html;
 }
-assert.ok((await page(`/sales/${sale.id}`)).includes("รายการรอยืนยันรับเงิน"));
+assert.ok((await page(`/sales/${sale.id}?tab=money`)).includes("ใบเสร็จรับเงิน"));
 assert.ok((await page(`/sales/documents/${received.document_id}`)).includes(String(received.number)));
 // Real RSC Server Action: exact-satang input must persist through the form boundary.
 const require = createRequire(import.meta.url);
@@ -218,7 +218,7 @@ part = ok(await rpc("sales_prepare_payment", owner, { p_case_id: sale.id, p_vers
 ok(await rpc("sales_confirm_payment", owner, { p_payment_request_id: part.payment_request_id, p_version: part.version,
   p_funds_confirmed: true, p_request_id: randomUUID() }));
 assert.equal(sql(`select sum(amount_cents) from private.sales_allocations where invoice_id='${depositBill.invoice_id}'`), "100000");
-assert.ok((await page(`/sales/${sale.id}`)).includes("งวดชำระตามสัญญา"));
+assert.ok((await page(`/sales/${sale.id}?tab=money`)).includes("งวดชำระตามสัญญา"));
 assert.ok((await page(`/sales/documents/${contract.document_id}`)).includes("SYNTHETIC DEV CONTRACT"));
 assert.ok((await page(`/sales/documents/${quote.document_id}`)).includes("Synthetic test construction"));
 assert.ok((await page(`/sales/documents/${zeroBill.document_id}`)).includes("ไม่มีการรับเงินใหม่"));
@@ -249,7 +249,7 @@ const blockedApproved = ok(await rpc("sales_decide_refund", executive, { ...deci
   p_version: blockedRefund.version, p_request_id: randomUUID() }));
 assert.equal((await rpc("sales_pay_refund", owner, { ...payout, p_refund_id: blockedRefund.refund_id,
   p_version: blockedApproved.version, p_request_id: randomUUID() })).status, 400, "Cannot refund still-applied design credit");
-assert.ok((await page(`/sales/${sale.id}`)).includes("คืนเงินจริง"));
+assert.ok((await page(`/sales/${sale.id}?tab=adjust`)).includes("คืนเงินจริง"));
 assert.ok((await page(`/sales/documents/${paid.document_id}`)).includes("เอกสารจ่ายคืนเงิน"));
 const amendment = ok(await rpc("sales_amend_contract", executive, {
   p_case_id: sale.id, p_version: blockedApproved.version, p_request_id: randomUUID(),
@@ -281,7 +281,7 @@ assert.equal(closeBalance.remaining_cents, "0");
 assert.equal(closeBalance.refund_due_cents, "0");
 assert.equal((await rpc("sales_request_refund", owner, { p_root_payment_id: received.payment_id, p_version: closed.version,
   p_amount_cents: "1", p_reason: "Exceeds signed close-out", p_request_id: randomUUID() })).status, 400);
-assert.ok((await page(`/sales/${sale.id}`)).includes("ยอดปิดงานปัจจุบัน"));
+assert.ok((await page(`/sales/${sale.id}?tab=adjust`)).includes("ยอดปิดงานปัจจุบัน"));
 console.log("PASS local HTTP/SSR/Server Action: receipts/evidence, agreements/credit/QC, partial billing, independent refunds and allocation/credit guards");
 const tvLead = randomUUID(), development = randomUUID(), unit = randomUUID();
 sql(`insert into public.leads(id,brand,first_name,last_name,phone,owner_id,created_by,create_request_id,create_payload_hash,privacy_mode)
@@ -444,7 +444,29 @@ assert.equal(ok(await rpc("sales_closeout_detail", owner, { p_case_id: waiting.i
 const leadSales = ok(await rpc("sales_cases_for_lead", owner, { p_lead_id: tvLead }));
 assert.equal(leadSales.can_create, true);
 assert.ok(Array.isArray(leadSales.cases) && leadSales.cases.length === 3);
-assert.deepEqual(Object.keys(leadSales.cases[0]).sort(), ["code", "id", "status"]);
+assert.deepEqual(Object.keys(leadSales.cases[0]).sort(), ["brand", "can_finance", "can_open", "code", "id", "project_id", "status"]);
+const reader = await actor("reader", "sale");
+const readerSales = ok(await rpc("sales_cases_for_lead", reader, { p_lead_id: tvLead })) as { cases: Record<string, unknown>[]; can_create: boolean };
+assert.equal(readerSales.cases.length, 3);
+for (const row of readerSales.cases) {
+  assert.equal(row.can_open, false); assert.equal(row.id, null);
+  assert.deepEqual(Object.keys(row).sort(), ["brand", "can_finance", "can_open", "code", "id", "project_id", "status"]);
+}
+assert.equal(JSON.stringify(readerSales).includes("cents"), false);
+assert.equal(readerSales.can_create, false);
+const bkSales = ok(await rpc("sales_cases_for_lead", owner, { p_lead_id: lead })) as { cases: Record<string, unknown>[]; can_create: boolean };
+assert.equal(bkSales.cases[0].project_id, project.id); assert.equal(bkSales.can_create, false, "Project already has a case");
+const freshLead = randomUUID();
+sql(`insert into public.leads(id,brand,first_name,last_name,phone,owner_id,created_by,create_request_id,create_payload_hash,privacy_mode)
+values('${freshLead}','BAAN_KUNAPAP','Synthetic Fresh','Project','0000000000','${owner.id}','${owner.id}','${randomUUID()}',repeat('0',64),'synthetic')`);
+assert.equal(ok(await rpc("sales_cases_for_lead", owner, { p_lead_id: freshLead })).can_create, false, "No Project yet");
+ok(await rpc("walkin_open_project", owner, { p_lead_id: freshLead, p_expected_version: 1, p_request_id: randomUUID() }));
+assert.equal(ok(await rpc("sales_cases_for_lead", owner, { p_lead_id: freshLead })).can_create, true);
+const tags = ok(await rpc("sales_lead_tags", reader, { p_lead_ids: [tvLead, lead, freshLead] })) as Record<string, { count: number; plot_code: string | null }>;
+assert.ok(tags[tvLead].count >= 1); assert.equal(tags[tvLead].plot_code, null, "No Plot code without financial access");
+assert.equal(freshLead in tags, false);
+const ownerTags = ok(await rpc("sales_lead_tags", owner, { p_lead_ids: [tvLead] })) as Record<string, { count: number; plot_code: string | null }>;
+assert.equal(ownerTags[tvLead].count, tags[tvLead].count);
 const leadHtml = await page(`/leads/${tvLead}`);
 assert.ok(leadHtml.includes(`/sales/${waiting.id}`) && leadHtml.includes("เปิดรายการขายใหม่"));
 const otherCurrent = ok(await rpc("sales_case_detail", owner, { p_case_id: other.id }));
@@ -554,7 +576,7 @@ for (const row of settlementRows) {
 assert.equal((await settlementDetail()).is_settled, true);
 assert.equal(sql(`select sum(amount_cents) from private.sales_payments where case_id='${other.id}' and voided_at is null`), "1300000");
 assert.equal(sql(`select count(*) from private.sales_receipts where case_id='${other.id}'`), "6");
-assert.ok((await page(`/sales/${other.id}`)).includes("ชำระครบทุกงวดตามสัญญาแล้ว"));
+assert.ok((await page(`/sales/${other.id}?tab=money`)).includes("ชำระครบทุกงวดตามสัญญาแล้ว"));
 ok(await rpc("sales_request_refund", owner, { p_root_payment_id: settlementPaymentId, p_version: settlement.version,
   p_amount_cents: "1", p_reason: "Synthetic pending refund", p_request_id: randomUUID() }));
 assert.equal((await settlementDetail()).is_settled, false);

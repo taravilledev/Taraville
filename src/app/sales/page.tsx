@@ -22,7 +22,6 @@ async function Workspace({ searchParams }: Props) {
   return <AppShell staff={staff} wide><div className={styles.page}>
     <div className={styles.header}><div><h1>งานและรายการขาย</h1><p>บ้านคุณภาพ · ธาราวิลล์</p></div>
       <div className={styles.links}>
-        {workspace.leads.length > 0 && <Link className={styles.primary} href="/sales/new" prefetch={false}>เปิดงาน/รายการขาย</Link>}
         {(workspace.can_catalog || workspace.developments.length > 0) && <Link className={styles.link} href="/sales/catalog" prefetch={false}>โครงการและบ้าน/แปลง</Link>}
         {workspace.can_admin && <Link className={styles.link} href="/sales/admin" prefetch={false}>จัดสิทธิ์</Link>}
       </div>

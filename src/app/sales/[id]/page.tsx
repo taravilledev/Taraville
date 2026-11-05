@@ -3,8 +3,9 @@ import { randomUUID } from "node:crypto";
 import Link from "next/link";
 import { z } from "zod";
 import { salesCase } from "@/lib/sales/queries";
+import { loadCaseData } from "@/lib/sales/case-loader";
 import { formatMoney } from "@/lib/sales/money";
-import { moneySummary, nextStep, type CaseTab } from "@/lib/sales/case-progress";
+import { type CaseTab } from "@/lib/sales/case-progress";
 import { AppShell } from "@/app/walkin/app-shell";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { ActionForm } from "@/app/walkin/action-form";
@@ -12,10 +13,7 @@ import { assignCase } from "../actions";
 import { CaseForm } from "./case-form";
 import { CaseHeader } from "./case-header";
 import { DesignPanel, PendingPayments, PreparePayment, Receipts } from "./financial-panel";
-import { financialSchema } from "@/lib/sales/financial-models";
 import { QuotationPanel, SchedulePanel } from "./agreement-panel";
-import { agreementSchema } from "@/lib/sales/agreement-models";
-import { refundSchema } from "@/lib/sales/refund-models";
 import { RefundPanel } from "./refund-panel";
 import { AdjustmentPanel } from "./adjustment-panel";
 import { BookingSummary } from "./booking-summary";
@@ -31,52 +29,13 @@ async function CaseDetail({ params, searchParams }: Props) {
   const { id } = await params;
   const raw = (await searchParams).tab;
   const { staff, sale, supabase } = await salesCase(id);
-  const workResult = !sale.can_finance && sale.brand === "BAAN_KUNAPAP" && sale.status === "contracted" && sale.permissions["acceptance.record"]
-    ? await supabase.rpc("sales_acceptance_detail", { p_case_id: id }) : null;
-  if (workResult?.error) throw new Error("โหลดรายการตรวจรับไม่ได้ กรุณาลองใหม่");
-  const work = workResult ? z.object({ id: z.uuid(), position: z.number().int(), progress_percent: z.number().nullable(),
-    accepted: z.boolean() }).array().parse(workResult.data) : [];
-  const financeResult = sale.can_finance ? await supabase.rpc("sales_financial_detail", { p_case_id: id }) : null;
-  if (financeResult?.error) throw new Error("โหลดข้อมูลรับเงินไม่ได้ กรุณาลองใหม่");
-  const finance = financeResult ? financialSchema.parse(financeResult.data) : null;
-  const agreementResult = sale.can_finance ? await supabase.rpc("sales_agreement_detail", { p_case_id: id }) : null;
-  if (agreementResult?.error) throw new Error("โหลดข้อมูลสัญญาไม่ได้ กรุณาลองใหม่");
-  const agreement = agreementResult ? agreementSchema.parse(agreementResult.data) : null;
-  const closeoutResult = sale.can_finance && sale.status === "cancelled"
-    ? await supabase.rpc("sales_closeout_detail", { p_case_id: id }) : null;
-  if (closeoutResult?.error) throw new Error("โหลดยอดปิดงานไม่ได้ กรุณาลองใหม่");
-  const closeout = z.object({ document_id: z.uuid(), retained_cents: z.string(), received_cents: z.string(),
-    remaining_cents: z.string(), refund_due_cents: z.string() }).nullable().parse(closeoutResult?.data ?? null);
-  const reservationResult = sale.can_finance && sale.brand === "TARAVILLE" ? await supabase.rpc("sales_reservation_detail", { p_case_id: id }) : null;
-  if (reservationResult?.error) throw new Error("โหลดสถานะจองไม่ได้ กรุณาลองใหม่");
-  const reservation = reservationResult ? z.object({ active: z.boolean(), options: z.object({ id: z.uuid(), label: z.string() }).array() }).parse(reservationResult.data) : null;
-  const refundResult = sale.can_finance ? await supabase.rpc("sales_refund_detail", { p_case_id: id }) : null;
-  if (refundResult?.error) throw new Error("โหลดข้อมูลคืนเงินไม่ได้ กรุณาลองใหม่");
-  const refunds = refundResult ? refundSchema.array().parse(refundResult.data) : [];
+  const { work, finance, agreement, closeout, reservation, refunds, pending, summary, step } = await loadCaseData(supabase, sale);
   const assignments = sale.can_assign ? await supabase.from("staff").select("id,full_name").eq("is_active", true).order("full_name") : { data: [], error: null };
   if (assignments.error) throw new Error("โหลดผู้รับผิดชอบไม่ได้ กรุณาลองใหม่");
   const owners = z.object({ id: z.uuid(), full_name: z.string() }).array().parse(assignments.data);
 
   const tabs = (sale.can_finance ? ["overview", "documents", "money", "adjust"] : ["overview"]) as CaseTab[];
   const tab = tabs.find(item => item === raw) ?? "overview";
-  const pending = finance?.pending.length ?? 0;
-  const rows = (agreement?.instalments ?? []).filter(row => row.is_active).sort((a, b) => a.position - b.position);
-  const row = rows.find(item => item.balance?.outstanding_cents !== "0");
-  const contract = agreement?.documents.find(doc => doc.kind === "contract" && ["awaiting_signature", "signed"].includes(doc.state));
-  const quotations = agreement?.documents.filter(doc => doc.kind === "quotation") ?? [];
-  const summary = finance && agreement ? moneySummary({ net: sale.net_price_cents ?? null, payments: finance.payments, instalments: agreement.instalments }) : null;
-  const step = finance && agreement ? nextStep({
-    brand: sale.brand, status: sale.status, can: sale.permissions, hasNetPrice: sale.net_price_cents != null,
-    hasSummary: finance.documents.some(doc => doc.kind === "summary"), hasBookingReceipt: finance.payments.some(payment => payment.kind === "booking"),
-    isBookingDue: BigInt(finance.documents.findLast(doc => doc.kind === "summary")?.booking_cents ?? "0") > BigInt(0),
-    hasDesignPlan: finance.design_plan != null, pendingPayments: pending,
-    refundsToAct: refunds.filter(refund => refund.state === "pending" || refund.state === "approved").length,
-    plotHeld: reservation?.active ?? false, isSettled: agreement.is_settled,
-    quotations: { offered: quotations.filter(doc => doc.state === "offered").length, accepted: quotations.filter(doc => doc.state === "accepted").length },
-    contract: contract ? contract.state === "signed" ? "signed" : "awaiting" : "none",
-    instalment: row ? { label: row.label, needsAcceptance: row.needs_acceptance, accepted: row.accepted_at != null,
-      hasInvoice: row.invoice_id != null, outstanding: row.balance?.outstanding_cents !== "0", isCreditCovered: row.net_cents === "0" } : null,
-  }) : null;
   const canEditSale = sale.permissions["financial.prepare"] && ["draft", "reserved"].includes(sale.status);
 
   return <AppShell staff={staff} wide><div className={styles.page}>

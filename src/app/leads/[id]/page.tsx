@@ -1,19 +1,14 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { z } from "zod";
-import { caseStatusLabels } from "@/lib/sales/models";
-import { closeInfo, leadDetail, leadProjects, saleOwners } from "@/lib/walkin/queries";
+import { leadWork } from "@/lib/sales/lead-work";
+import { leadDetail, leadProjects } from "@/lib/walkin/queries";
 import { staffSchema } from "@/lib/walkin/models";
 import { SURVEY_QUESTIONS } from "@/lib/walkin/survey-questions";
 import { COMPANIES } from "@/lib/walkin/companies";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { AppShell } from "@/app/walkin/app-shell";
-import { RequiredMark } from "@/app/walkin/required-mark";
-import { ActionForm } from "@/app/walkin/action-form";
-import { reassignLead } from "@/app/walkin/actions";
-import { LeadStatus } from "@/app/walkin/status-controls";
-import { LeadProject } from "@/app/walkin/project-controls";
-import { ContactRecord, EvidenceHistory, SurveyChoice, formatDate } from "@/app/walkin/privacy-controls";
+import { ContactRecord, formatDate } from "@/app/walkin/privacy-controls";
+import { CustomerWork } from "./customer-work";
 import styles from "@/app/walkin/walkin.module.css";
 
 export const metadata = { title: "รายละเอียดผู้สนใจ · Taraville Group", robots: { index: false, follow: false } };
@@ -24,14 +19,9 @@ export default function LeadPage(props: Props) {
 async function Detail({ params, searchParams }: Props) {
   const { id } = await params;
   const session = await leadDetail(id);
-  const { lead, staff, events } = session;
+  const { lead, staff } = session;
   const canEdit = staff.role === "executive" || lead.owner_id === staff.id;
-  const salesResult = lead.brand === "TARAVILLE" ? await session.supabase.rpc("sales_cases_for_lead", { p_lead_id: lead.id }) : null;
-  if (salesResult?.error) throw new Error("โหลดรายการขายของลูกค้าไม่ได้ กรุณาลองใหม่");
-  const sales = salesResult ? z.object({ can_create: z.boolean(), cases: z.object({
-    id: z.uuid(), code: z.string(), status: z.enum(["draft", "reserved", "contracted", "completed", "cancelled"]),
-  }).array() }).parse(salesResult.data) : null;
-  const [owners, closeDetails, { projects, names }] = await Promise.all([saleOwners(session), closeInfo(session), leadProjects(session)]);
+  const [work, { projects, names }] = await Promise.all([leadWork(session.supabase, lead.id), leadProjects(session)]);
   const saved = (await searchParams).saved === "1";
   const ownerResult = await session.supabase.from("staff").select("id,full_name,role,is_active").eq("id", lead.owner_id).maybeSingle();
   if (ownerResult.error) throw new Error("โหลดผู้ดูแลไม่ได้ กรุณาลองใหม่");
@@ -52,6 +42,8 @@ async function Detail({ params, searchParams }: Props) {
       </div>
       {!canEdit && <p className={styles.hint}>ดูข้อมูลได้ · แก้ไขได้เฉพาะผู้ดูแลรายการและผู้บริหาร</p>}
     </section>
+    <CustomerWork lead={lead} projects={projects} names={names} work={work} canEdit={canEdit} />
+    {canEdit && <ContactRecord lead={lead} />}
     <section className={styles.card}><h2>คำตอบแบบสอบถาม</h2><dl className={`${styles.answers} ${styles.answersGrid}`}>
       {SURVEY_QUESTIONS[lead.brand].filter(question => !question.legacy || lead.survey[question.key]).map(question => {
         const value = lead.survey[question.key];
@@ -59,27 +51,7 @@ async function Detail({ params, searchParams }: Props) {
         return <div key={question.key}><dt>{question.label}</dt><dd>{answer || "ไม่ได้ระบุ"}
           {lead.survey[`${question.key}_other`] && <span> · {lead.survey[`${question.key}_other`]}</span>}</dd></div>;
       })}</dl></section>
-    <LeadStatus lead={lead} info={closeDetails} hasActiveProject={projects.some(project => project.status === "active")} canEdit={canEdit} />
-    <LeadProject lead={lead} projects={projects} names={names} isExecutive={staff.role === "executive"} canEdit={canEdit} />
-    {sales && (sales.can_create || sales.cases.length > 0) && <section className={styles.card}>
-      <h2>รายการขาย</h2>
-      {sales.cases.length > 0 && <ul>{sales.cases.map(item => <li key={item.id}>
-        <Link href={`/sales/${item.id}`} prefetch={false}>{item.code} · {caseStatusLabels[item.status]}</Link>
-      </li>)}</ul>}
-      {sales.can_create && <Link href={`/sales/new?lead=${lead.id}`} prefetch={false}>เปิดรายการขายใหม่</Link>}
-    </section>}
-    {canEdit && <ContactRecord lead={lead} />}
-    <details className={styles.more}><summary>ความยินยอม และการเปลี่ยนผู้ดูแล</summary>
-    <SurveyChoice lead={lead} events={events} canEdit={canEdit} />
-    {staff.role === "executive" && <section className={styles.card}><h2>เปลี่ยนฝ่ายขายผู้ดูแล</h2>
-      <ActionForm action={reassignLead.bind(null, lead.id, lead.version)} label="เปลี่ยนผู้ดูแล">
-        <label className={styles.field}><span>ฝ่ายขายผู้ดูแล<RequiredMark /></span><select name="owner_id" defaultValue={owners.some(owner => owner.id === lead.owner_id) ? lead.owner_id : ""} required>
-          <option value="">เลือกฝ่ายขาย</option>{owners.map(owner => <option key={owner.id} value={owner.id}>{owner.full_name}</option>)}
-        </select></label>
-        <p className={styles.hint}>ผู้ดูแลคนใหม่จะแก้ไขรายการนี้ได้ ผู้ดูแลเดิมยังดูข้อมูลได้</p>
-      </ActionForm>
-    </section>}
-    </details>
-    <EvidenceHistory events={events} />
+    <p className={styles.actions}><Link href={`/leads/${lead.id}/manage`} prefetch={false} className={styles.secondaryLink}>จัดการ Lead</Link>
+      <Link href={`/leads/${lead.id}/history`} prefetch={false} className={styles.secondaryLink}>ประวัติหลักฐาน</Link></p>
   </AppShell>;
 }
