@@ -44,6 +44,7 @@ Alternative: `numeric(...,2)` THB with string transport and exact decimal calcul
 - Block ordinary Lead removal for issued documents or active unit commitments. Never cascade-release a unit or detach the Lead link used for owner-default finance access.
 - Drafts are editable; signed/issued snapshots use the agreed amendment/correction route. A zero-net instalment has no new payment/receipt/income and no cash reminder; work acceptance remains independent.
 - Read minimal customer/case identity for an authorized financial action; financial access is not blanket access to Lead surveys. Keep shared Lead reading independently authorized.
+- Exception (2026-11-05, plan-lead-centred-flow): `sales_cases_for_lead` may return case code and status, plus Project code for BKP, to Lead readers without financial access. No amounts, documents or Plot codes.
 
 ## Implementation and verification sequence
 

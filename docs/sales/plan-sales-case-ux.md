@@ -1,6 +1,6 @@
 # Plan — Sales case page UX redesign
 
-Status: agreed 2026-11-04 (grilling session). Tag: R1 (multi-file UI refactor, no business-rule change).
+Status: superseded on 2026-11-05 by [plan-lead-centred-flow](plan-lead-centred-flow.md) and [ADR 0030](../adr/0030-lead-centred-customer-work.md). Agreed 2026-11-04 (grilling session). Tag: R1 (multi-file UI refactor, no business-rule change).
 
 ## Problem (observed on local dev, executive fixture)
 
