@@ -15,6 +15,7 @@ import { ReportOutputDialog } from "./report-output-dialog";
 import { collectionFilters, summaryPageRange, summaryQuery, summaryReport, summaryStages, type SummaryReport } from "./summary-model";
 import styles from "./summary.module.css";
 import { noticeClass } from "@/components/notice";
+import { pageHeaderClass } from "@/components/page-header";
 import { buttonVariants } from "@/components/ui/button";
 
 export const metadata = { title: "สรุปโครงการและการเงิน · บ้านคุณภาพ", robots: { index: false, follow: false } };
@@ -64,7 +65,7 @@ async function Summary({ searchParams }: Props) {
 
   return <AppShell staff={staff} wide>
     <div className={styles.page}>
-      <header className={salesStyles.header}>
+      <header className={pageHeaderClass}>
         <div><h1>{title}</h1><p>บ้านคุณภาพ</p></div>
         <div className={styles.actions}>
           {!query.isPeriodView && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href="/dashboard" prefetch={false}>แดชบอร์ด</Link>}
