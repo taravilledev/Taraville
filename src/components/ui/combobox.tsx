@@ -44,6 +44,7 @@ function Combobox({
   name?: string
   required?: boolean
 }) {
+  const trigger = React.useRef<HTMLButtonElement>(null)
   const [open, setOpen] = React.useState(false)
   const [inner, setInner] = React.useState(defaultValue)
   const current = value ?? inner
@@ -70,6 +71,7 @@ function Combobox({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
+            ref={trigger}
             id={id}
             type="button"
             variant="outline"
@@ -92,7 +94,8 @@ function Combobox({
                 {options.map(option => (
                   <CommandItem
                     key={option.id}
-                    value={`${option.label} ${option.detail ?? ""} ${option.search ?? ""}`}
+                    value={option.id}
+                    keywords={[option.label, option.detail ?? "", option.search ?? ""]}
                     onSelect={() => select(option.id)}
                   >
                     <CheckIcon className={cn(option.id === current ? "opacity-100" : "opacity-0")} aria-hidden="true" />
@@ -114,7 +117,10 @@ function Combobox({
           size="icon-sm"
           aria-label="ล้างตัวเลือก"
           className="absolute top-1/2 right-8 -translate-y-1/2"
-          onClick={() => select("")}
+          onClick={() => {
+            trigger.current?.focus()
+            select("")
+          }}
         >
           <XIcon aria-hidden="true" />
         </Button>

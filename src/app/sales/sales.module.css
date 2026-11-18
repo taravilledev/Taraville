@@ -1,19 +1,3 @@
-.field { display: flex; flex-direction: column; gap: var(--space-2); font-weight: 600; min-width: 0; }
-.field input, .field select, .field textarea { min-height: var(--control-h); padding: var(--space-2) var(--space-3); width: 100%; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--paper); font: inherit; color: var(--ink); }
-.field textarea { min-height: 100px; resize: vertical; }
-.field :is(input,select,textarea):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.unitPicker { position: relative; }
-.unitInput { display: flex; align-items: center; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--paper); }
-.unitInput:focus-within { outline: 2px solid var(--primary); outline-offset: 3px; }
-.unitInput input { min-width: 0; border: 0; background: transparent; }
-.unitInput input:focus-visible { outline: none; }
-.pickerButton { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 var(--tap-min); min-height: var(--tap-min); padding: 0; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--muted-foreground); font: inherit; cursor: pointer; }
-.pickerButton:hover { background: var(--tint); color: var(--ink); }
-.pickerButton:focus-visible { outline: 2px solid var(--primary); outline-offset: -3px; }
-.unitOptions { position: absolute; top: 100%; left: 0; right: 0; z-index: 2; max-height: 280px; overflow-y: auto; margin: 0; padding: var(--space-2); list-style: none; background: var(--paper); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); }
-.unitOptions button { display: grid; gap: var(--space-1); width: 100%; min-height: var(--tap-min); padding: var(--space-3); border: 0; background: transparent; color: var(--ink); text-align: start; font: inherit; cursor: pointer; overflow-wrap: anywhere; }
-.unitOptions span { color: var(--muted-foreground); font-size: var(--text-sm); font-weight: 400; }
-.unitOptions [data-active="true"], .unitOptions [aria-selected="true"], .unitOptions button:hover { background: var(--tint); }
 .managementList { grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); margin-top: var(--space-3); }
 .managementList li[data-close="true"] { grid-column: 1 / -1; }
 .managementLink { display: flex; width: 100%; height: 100%; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) var(--space-4); }

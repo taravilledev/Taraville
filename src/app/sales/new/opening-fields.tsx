@@ -4,12 +4,12 @@ import { useEffect, useId, useRef, useState } from "react";
 import { ActionForm } from "@/app/walkin/action-form";
 import { formatMoney } from "@/lib/sales/money";
 import { createCase } from "../actions";
-import { SearchPicker } from "./search-picker";
 import styles from "../sales.module.css";
 import { factsClass } from "@/components/facts";
 import { pageHeaderClass } from "@/components/page-header";
 import dialogStyles from "@/app/walkin/walkin.module.css";
 import { buttonVariants } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,18 @@ export function OpeningFields({ units, leadId, requestId }: { units: Unit[]; lea
   return <div className={styles.unitBrowser}>
     <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
       <Field><FieldLabel htmlFor={`${id}-query`}>ค้นหาแปลงหรือแบบบ้าน</FieldLabel><Input id={`${id}-query`} type="search" placeholder="เลขแปลง หรือชื่อแบบบ้าน" value={query} onChange={event => setQuery(event.target.value)} /></Field>
-      <SearchPicker label="โครงการ" placeholder="ทุกโครงการ" options={developments} selectedId={developmentId} onChange={setDevelopmentId} />
+      <Field>
+        <FieldLabel htmlFor={`${id}-development`}>โครงการ</FieldLabel>
+        <Combobox
+          id={`${id}-development`}
+          options={developments}
+          value={developmentId}
+          onValueChange={setDevelopmentId}
+          placeholder="ทุกโครงการ"
+          searchPlaceholder="ค้นหาโครงการ"
+          emptyText="ไม่พบโครงการที่ตรงกับคำค้น"
+        />
+      </Field>
     </div>
     <div className={cn(pageHeaderClass, "items-center gap-2 [&_p]:m-0")}><h2>เลือกแปลงเพื่อเปิดโครงการ</h2><p role="status">{matches.length} จาก {units.length} แปลงว่าง</p></div>
     {!matches.length ? <div className={styles.unitEmpty}><strong>ไม่พบแปลงที่ตรงกับเงื่อนไข</strong><p>ลองเปลี่ยนคำค้นหรือล้างตัวกรองโครงการ</p></div> : <>
