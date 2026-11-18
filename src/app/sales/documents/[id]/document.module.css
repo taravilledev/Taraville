@@ -30,7 +30,7 @@
 .quoteSpecs caption { text-align: left; font-weight: 700; padding-bottom: var(--space-2); }
 .quoteSpecs th:first-child { width: 28%; }
 .quoteSpecs th:last-child, .quoteSpecs td:last-child { width: 20%; text-align: left; }
-.quoteSpecs thead th { background: var(--tint); color: var(--accent); }
+.quoteSpecs thead th { background: var(--tint); color: var(--primary); }
 .quoteConditions ol { padding-left: var(--space-5); }
 .quoteConditions li { padding-bottom: var(--space-2); white-space: pre-wrap; }
 @media print {
@@ -66,7 +66,7 @@
 .quoteSheet .quoteSpecs :is(th,td):last-child { width: 16%; }
 .quoteSheet .quoteConditions h3 { font-size: var(--text-md); margin: var(--space-2) 0; }
 .quoteSheet .signatures { margin-top: var(--space-6); }
-.quotePageNumber { margin-top: auto; padding-top: var(--space-5); text-align: right; font-size: var(--text-sm); color: var(--muted); }
+.quotePageNumber { margin-top: auto; padding-top: var(--space-5); text-align: right; font-size: var(--text-sm); color: var(--muted-foreground); }
 .quoteNotice { border: 1px solid var(--warn-line); background: var(--warn-tint); color: var(--warn-ink); padding: var(--space-2); margin: 0 0 var(--space-3); font-size: var(--text-sm); }
 .quoteTextSection { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--line-strong); }
 .quotation .quoteTextSection h3 { font-size: var(--text-md); font-weight: 700; margin: 0 0 var(--space-3); break-after: avoid; }

@@ -1,35 +1,35 @@
 .card { display: grid; gap: var(--space-5); padding: var(--space-5); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--paper); min-width: 0; }
 .compact { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-3) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--paper); font-size: var(--text-sm); }
 .compact p { margin: 0; }
-.compact span { color: var(--muted); }
-.compact a { min-height: 44px; display: inline-flex; align-items: center; color: var(--accent); }
+.compact span { color: var(--muted-foreground); }
+.compact a { min-height: 44px; display: inline-flex; align-items: center; color: var(--primary); }
 .card h2, .card h3, .card h4, .card p { margin: 0; }
 .card h2 { font-size: var(--text-lg); }
 .card h3, .card h4 { font-size: var(--text-md); }
 .heading p { margin-bottom: var(--space-1); font-size: var(--text-sm); }
 .stages { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
-.stages li { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-2); border-top: 3px solid var(--line); color: var(--muted); min-width: 0; font-size: var(--text-sm); text-align: center; }
+.stages li { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-2); border-top: 3px solid var(--line); color: var(--muted-foreground); min-width: 0; font-size: var(--text-sm); text-align: center; }
 .stages li > span:last-child { width: 100%; }
-.stages li[data-done="true"] { color: var(--ink); border-color: var(--accent); }
-.stages li[aria-current="step"] { color: var(--accent); border-color: var(--accent); background: var(--tint); font-weight: 700; border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
+.stages li[data-done="true"] { color: var(--ink); border-color: var(--primary); }
+.stages li[aria-current="step"] { color: var(--primary); border-color: var(--primary); background: var(--tint); font-weight: 700; border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
 .marker { display: grid; place-items: center; flex-shrink: 0; width: 24px; height: 24px; border: 1px solid currentColor; border-radius: 50%; }
 .stages small { display: block; font-size: var(--text-xs); font-weight: 400; margin-top: var(--space-1); }
-.action { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4); padding: var(--space-4); border-left: 4px solid var(--accent); background: var(--tint); border-radius: var(--radius-md); }
+.action { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4); padding: var(--space-4); border-left: 4px solid var(--primary); background: var(--tint); border-radius: var(--radius-md); }
 .action h3 { margin-top: var(--space-1); }
 .action a { flex-shrink: 0; }
 .body { display: grid; gap: var(--space-4); }
 .body h3 + p, .rows h4 + p { margin-top: var(--space-1); font-size: var(--text-sm); }
 .checks { display: grid; gap: var(--space-2); margin: var(--space-3) 0 0; padding: 0; list-style: none; }
-.checks li { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: flex-start; color: var(--muted); padding: var(--space-2) var(--space-3); border-left: 3px solid transparent; border-radius: var(--radius-sm); }
-.checks li[aria-current="step"] { background: var(--tint); border-left-color: var(--accent); color: var(--accent); font-weight: 700; }
+.checks li { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: flex-start; color: var(--muted-foreground); padding: var(--space-2) var(--space-3); border-left: 3px solid transparent; border-radius: var(--radius-sm); }
+.checks li[aria-current="step"] { background: var(--tint); border-left-color: var(--primary); color: var(--primary); font-weight: 700; }
 .checks svg { flex-shrink: 0; margin-top: 4px; }
-.checks li[data-done="true"] svg { color: var(--accent); }
+.checks li[data-done="true"] svg { color: var(--primary); }
 .checks a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 .checks small { display: block; font-size: var(--text-xs); }
 .checks li[data-done="true"] { color: var(--ink); }
-.checks .documentLink { margin-left: var(--space-2); min-height: 24px; font-size: var(--text-sm); color: var(--accent); }
+.checks .documentLink { margin-left: var(--space-2); min-height: 24px; font-size: var(--text-sm); color: var(--primary); }
 .details { border-top: 1px solid var(--line); padding-top: var(--space-3); }
-.details summary { cursor: pointer; padding: var(--space-2) 0; min-height: 44px; color: var(--accent); font-weight: 600; }
+.details summary { cursor: pointer; padding: var(--space-2) 0; min-height: 44px; color: var(--primary); font-weight: 600; }
 .rows { display: grid; gap: var(--space-4); padding-left: var(--space-5); margin-bottom: 0; }
 .rows > li { padding: var(--space-3) 0; }
 .shortcuts { display: flex; flex-wrap: wrap; gap: var(--space-3); }

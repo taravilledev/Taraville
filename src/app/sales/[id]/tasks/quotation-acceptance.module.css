@@ -7,7 +7,7 @@
 .evidence input[type="file"] { padding: var(--space-2); background: var(--tint); border: 0; cursor: pointer; }
 .evidence input::file-selector-button { border: 1px solid var(--line-strong); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3); margin-right: var(--space-3); background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
 .evidence > button { justify-self: start; }
-.help { margin: 0 0 var(--space-3); color: var(--muted); }
+.help { margin: 0 0 var(--space-3); color: var(--muted-foreground); }
 .confirmation { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); cursor: pointer; }
-.confirmation input { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--accent); margin-top: 3px; }
+.confirmation input { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--primary); margin-top: 3px; }
 @media (max-width: 640px) { .quote > a { width: 100%; } }

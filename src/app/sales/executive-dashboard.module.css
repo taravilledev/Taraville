@@ -2,27 +2,27 @@
 .priorities h2, .bar h2 { margin: 0; font-size: var(--text-lg); }
 .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); margin-top: var(--space-3); }
 .metric { position: relative; display: grid; gap: var(--space-3); min-width: 0; padding: var(--space-4); color: var(--ink); text-decoration: none; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-md); }
-.metric[aria-current], .metric:hover { border-color: var(--accent); background: var(--tint); }
-.metricLabel { display: flex; align-items: center; gap: var(--space-2); padding-right: var(--space-4); color: var(--muted); }
-.metricLabel svg { flex: none; color: var(--accent); }
+.metric[aria-current], .metric:hover { border-color: var(--primary); background: var(--tint); }
+.metricLabel { display: flex; align-items: center; gap: var(--space-2); padding-right: var(--space-4); color: var(--muted-foreground); }
+.metricLabel svg { flex: none; color: var(--primary); }
 .metric strong { font-size: var(--text-title); font-variant-numeric: tabular-nums; }
 .metric small { font-size: var(--text-sm); font-weight: 500; }
-.arrow { position: absolute; right: var(--space-3); top: var(--space-4); color: var(--accent); }
+.arrow { position: absolute; right: var(--space-3); top: var(--space-4); color: var(--primary); }
 .projects { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg); }
 .bar, .pager { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-4); }
 .bar p { margin: var(--space-1) 0 0; }
 .tableScroll { overflow-x: auto; }
-.tableScroll:focus-visible, .metric:focus-visible, .action:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.tableScroll:focus-visible, .metric:focus-visible, .action:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 .table { width: 100%; min-width: 43rem; border-collapse: collapse; text-align: start; font-size: var(--text-sm); }
 .table th, .table td { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--line); text-align: start; }
-.table thead { background: var(--tint); color: var(--muted); }
+.table thead { background: var(--tint); color: var(--muted-foreground); }
 .table tbody tr:hover { background: var(--tint); }
-.table tbody th span, .table small { display: block; color: var(--muted); font-weight: 400; }
+.table tbody th span, .table small { display: block; color: var(--muted-foreground); font-weight: 400; }
 .table a { text-underline-offset: var(--space-1); }
-.action { display: inline-flex; min-height: var(--tap-min); align-items: center; gap: var(--space-1); color: var(--accent); font-weight: 600; }
+.action { display: inline-flex; min-height: var(--tap-min); align-items: center; gap: var(--space-1); color: var(--primary); font-weight: 600; }
 .action svg { flex: none; }
 .pager { justify-content: flex-end; border-top: 1px solid var(--line); }
-.empty { padding: var(--space-4); margin: 0; color: var(--muted); }
+.empty { padding: var(--space-4); margin: 0; color: var(--muted-foreground); }
 @media (max-width: 900px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 440px) { .metric { padding: var(--space-3); } .arrow { display: none; } .metricLabel { padding-right: 0; } }
 .priorities[data-compact] .cards { display: flex; flex-wrap: wrap; gap: var(--space-2); }
