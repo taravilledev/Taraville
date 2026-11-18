@@ -69,6 +69,7 @@ Done when: no file outside `src/app/walkin/` imports `walkin.module.css`; `sales
 - Look: primitives as they are (darker `--input` border for WCAG 1.4.11, focus ring, regular-weight input text, auto-growing textarea), except `FieldLabel` set to `text-md font-semibold` with an 8px gap, and long-text textareas keep `min-h-[100px]`. Deliberate exception to "the look does not change".
 - Slices, smallest first: (1) dashboard and summary; (2) sales settings, `/sales/new`, `evidence-upload`; (3) `sales/[id]`. Rules in other single-route modules that target `label` are retargeted to `[data-slot="field"]` in the same slice. `search-picker` → `ui/combobox` is a separate slice after these. The `.field` of `walkin.module.css`, `leads.module.css` and `report.module.css` (login, account, leads, ~15 uses) migrates with the walkin split and the `/leads` PR.
 - Verify per slice: every control has an accessible name and no duplicate ids; screenshots at 1280/1024/768; submit one form per route on the local backend (password forms: no submit).
+- Paper exception: `quotation-editor.tsx` and `quotation-paper-fields.tsx` (13 fields) keep label-wrapped markup because paper components do not use `ui/` (ADR 0031); their `.field` rules moved into `quotation-editor.module.css`. They follow with the paper documents in P3.
 - Rejected: composite class over raw controls, label wrapping primitives without ids, fixed ids everywhere, a `<LabeledField>` wrapper, restoring the old look exactly.
 
 ### P3 — Page layouts (one PR each)
