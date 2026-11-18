@@ -16,6 +16,9 @@ import { noticeClass } from "@/components/notice";
 import { panelClass } from "@/components/panel";
 import { tagClass } from "@/components/tag";
 import { buttonVariants } from "@/components/ui/button";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 
 export const metadata = { title: "แดชบอร์ด · Taraville Group", robots: { index: false, follow: false } };
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -37,12 +40,12 @@ async function Workspace({ searchParams }: Props) {
   const filtered = status !== "active" || brand !== "" || query !== "" || attention !== "";
   const brands = [{ value: "", label: "ทั้งสองแบรนด์" }, ...Object.entries(brandLabels).map(([value, label]) => ({ value, label }))];
   const filterForm = <form className={`${styles.filters} ${executive ? styles.dashboardFilters : ""}`} method="get" role="search">
-      <label className={styles.field}>ค้นหาชื่อลูกค้าหรือรหัส<input type="search" name="q" defaultValue={query} maxLength={100} /></label>
+      <Field><FieldLabel htmlFor="dashboard-q">ค้นหาชื่อลูกค้าหรือรหัส</FieldLabel><Input id="dashboard-q" type="search" name="q" defaultValue={query} maxLength={100} /></Field>
       {executive ? <input type="hidden" name="brand" value={brand} />
-        : <label className={styles.field}>แบรนด์<select name="brand" defaultValue={brand}>
-          {brands.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}</select></label>}
-      <label className={styles.field}>สถานะ<select name="status" defaultValue={status}>
-        {Object.entries(statusOptions).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+        : <Field><FieldLabel htmlFor="dashboard-brand">แบรนด์</FieldLabel><NativeSelect id="dashboard-brand" name="brand" defaultValue={brand}>
+          {brands.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}</NativeSelect></Field>}
+      <Field><FieldLabel htmlFor="dashboard-status">สถานะ</FieldLabel><NativeSelect id="dashboard-status" name="status" defaultValue={status}>
+        {Object.entries(statusOptions).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</NativeSelect></Field>
       {ownership !== "all" && <input type="hidden" name="ownership" value={ownership} />}
       <button className={buttonVariants({ size: "auto" })} type="submit">ค้นหา</button>
       {filtered && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={ownership === "all" ? "/dashboard" : `/dashboard?ownership=${ownership}`} prefetch={false}>ล้างตัวกรอง</Link>}

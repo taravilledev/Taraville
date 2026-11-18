@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useId } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/app/walkin/app-shell";
@@ -8,7 +8,6 @@ import { formatDate } from "@/lib/sales/date";
 import { executiveSummary } from "@/lib/sales/executive";
 import { requireStaff } from "@/lib/supabase/staff";
 import { pageWindow } from "@/lib/walkin/lead-list";
-import salesStyles from "../sales/sales.module.css";
 import { AmountGuideDialog } from "./amount-guide-dialog";
 import { ProjectTable, identityColumns } from "./project-table";
 import { ReportOutputDialog } from "./report-output-dialog";
@@ -17,6 +16,9 @@ import styles from "./summary.module.css";
 import { noticeClass } from "@/components/notice";
 import { pageHeaderClass } from "@/components/page-header";
 import { buttonVariants } from "@/components/ui/button";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 
 export const metadata = { title: "สรุปโครงการและการเงิน · บ้านคุณภาพ", robots: { index: false, follow: false } };
 
@@ -86,29 +88,30 @@ async function Summary({ searchParams }: Props) {
 }
 
 function SummaryFilters({ query, report }: { query: Query; report: Report | null }) {
+  const id = useId();
   return <form className={styles.filters} method="get" action="/summary">
     {query.isPeriodView && <input type="hidden" name="view" value="period" />}
-    <label className={salesStyles.field}>ค้นหาโครงการ<input type="search" name="q" maxLength={150}
-      placeholder="รหัสโครงการหรือชื่อลูกค้า" defaultValue={query.filters.query} /></label>
-    <label className={salesStyles.field}>ขั้นโครงการ<select name="stage" defaultValue={query.filters.stage}>
+    <Field><FieldLabel htmlFor={`${id}-q`}>ค้นหาโครงการ</FieldLabel><Input id={`${id}-q`} type="search" name="q" maxLength={150}
+      placeholder="รหัสโครงการหรือชื่อลูกค้า" defaultValue={query.filters.query} /></Field>
+    <Field><FieldLabel htmlFor={`${id}-stage`}>ขั้นโครงการ</FieldLabel><NativeSelect id={`${id}-stage`} name="stage" defaultValue={query.filters.stage}>
       <option value="">ทุกขั้น</option>
-      {Object.entries(summaryStages).map(([id, label]) => <option value={id} key={id}>{label}</option>)}
-    </select></label>
-    <label className={salesStyles.field}>กรองตามยอดเงิน<select name="money" defaultValue={query.filters.money}>
+      {Object.entries(summaryStages).map(([key, label]) => <option value={key} key={key}>{label}</option>)}
+    </NativeSelect></Field>
+    <Field><FieldLabel htmlFor={`${id}-money`}>กรองตามยอดเงิน</FieldLabel><NativeSelect id={`${id}-money`} name="money" defaultValue={query.filters.money}>
       <option value="">ทุกโครงการ</option>
-      {Object.entries(collectionFilters).map(([id, label]) => <option value={id} key={id}>{label}</option>)}
-    </select></label>
-    {report && <label className={`${salesStyles.field} ${styles.mobileSort}`}>เรียงตาม<select name="sort" defaultValue={query.params.get("sort") ?? ""}>
+      {Object.entries(collectionFilters).map(([key, label]) => <option value={key} key={key}>{label}</option>)}
+    </NativeSelect></Field>
+    {report && <Field className={styles.mobileSort}><FieldLabel htmlFor={`${id}-sort`}>เรียงตาม</FieldLabel><NativeSelect id={`${id}-sort`} name="sort" defaultValue={query.params.get("sort") ?? ""}>
       <option value="">บิลเกินกำหนดก่อน</option>
       {[...identityColumns, ...report.columns].map(column => <optgroup key={column.key} label={column.label}>
         <option value={`${column.key}.asc`}>{column.label} ↑</option>
         <option value={`${column.key}.desc`}>{column.label} ↓</option>
       </optgroup>)}
-    </select></label>}
+    </NativeSelect></Field>}
     {!report && query.sort && <input type="hidden" name="sort" value={query.params.get("sort") ?? ""} />}
     {query.isPeriodView && <>
-      <label className={salesStyles.field}>รับและคืนเงินตั้งแต่<input type="date" name="from" defaultValue={query.from ?? ""} /></label>
-      <label className={salesStyles.field}>ถึงวันที่<input type="date" name="to" defaultValue={query.to ?? ""} /></label>
+      <Field><FieldLabel htmlFor={`${id}-from`}>รับและคืนเงินตั้งแต่</FieldLabel><Input id={`${id}-from`} type="date" name="from" defaultValue={query.from ?? ""} /></Field>
+      <Field><FieldLabel htmlFor={`${id}-to`}>ถึงวันที่</FieldLabel><Input id={`${id}-to`} type="date" name="to" defaultValue={query.to ?? ""} /></Field>
     </>}
     <button type="submit" className={buttonVariants({ size: "auto" })}>{query.isPeriodView ? "แสดงรายงาน" : "กรอง"}</button>
     {(query.params.size > (query.isPeriodView ? 1 : 0) || !query.isPeriodValid) &&

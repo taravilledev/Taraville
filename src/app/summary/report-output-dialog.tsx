@@ -1,10 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { createPortal, flushSync } from "react-dom";
 import { toast } from "sonner";
 import walkinStyles from "@/app/walkin/walkin.module.css";
-import salesStyles from "../sales/sales.module.css";
 import { ProjectTable } from "./project-table";
 import {
   amountState, collectionFilters, displayAmount, filterSummaryReportRows, selectSummaryReport, summaryCsv,
@@ -12,8 +11,12 @@ import {
 } from "./summary-model";
 import styles from "./summary.module.css";
 import { buttonVariants } from "@/components/ui/button";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 
 export function ReportOutputDialog({ report, title, today }: { report: SummaryReport; title: string; today: string }) {
+  const id = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const [mode, setMode] = useState<"csv" | "print">("print");
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
@@ -74,22 +77,25 @@ export function ReportOutputDialog({ report, title, today }: { report: SummaryRe
         <fieldset className={styles.selectionGroup}>
           <legend>เลือกโครงการ</legend>
           <div className={styles.selectionFilters}>
-            <label className={salesStyles.field}>ค้นหาในรายการ
-              <input type="search" maxLength={150} placeholder="รหัสโครงการหรือชื่อลูกค้า" value={filters.query}
+            <Field>
+              <FieldLabel htmlFor={`${id}-query`}>ค้นหาในรายการ</FieldLabel>
+              <Input id={`${id}-query`} type="search" maxLength={150} placeholder="รหัสโครงการหรือชื่อลูกค้า" value={filters.query}
                 onChange={event => setFilters({ ...filters, query: event.currentTarget.value })} />
-            </label>
-            <label className={salesStyles.field}>ขั้นโครงการ
-              <select value={filters.stage} onChange={event => setFilters({ ...filters, stage: event.currentTarget.value })}>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor={`${id}-stage`}>ขั้นโครงการ</FieldLabel>
+              <NativeSelect id={`${id}-stage`} value={filters.stage} onChange={event => setFilters({ ...filters, stage: event.currentTarget.value })}>
                 <option value="">ทุกขั้น</option>
                 {Object.entries(summaryStages).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
-              </select>
-            </label>
-            <label className={salesStyles.field}>กรองตามยอดเงิน
-              <select value={filters.money} onChange={event => setFilters({ ...filters, money: event.currentTarget.value })}>
+              </NativeSelect>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor={`${id}-money`}>กรองตามยอดเงิน</FieldLabel>
+              <NativeSelect id={`${id}-money`} value={filters.money} onChange={event => setFilters({ ...filters, money: event.currentTarget.value })}>
                 <option value="">ทุกโครงการ</option>
                 {Object.entries(collectionFilters).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
-              </select>
-            </label>
+              </NativeSelect>
+            </Field>
           </div>
           <div className={styles.selectionTools}>
             <p aria-live="polite">พบ {visible.length.toLocaleString("th-TH")} โครงการ
