@@ -6,6 +6,7 @@ import type { ExecutiveWork } from "@/lib/sales/executive";
 import { brandLabels } from "@/lib/sales/models";
 import styles from "./sales.module.css";
 import dashboard from "./executive-dashboard.module.css";
+import { tagClass } from "@/components/tag";
 
 const priorities = [
   { key: "pending", label: "เงินรอยืนยัน", Icon: Receipt, anchor: "pending" },
@@ -69,7 +70,7 @@ export function ExecutiveDashboard({ rows, filters, filterForm, compact = false 
             return <tr key={row.id}>
               <th scope="row"><Link href={`/sales/${row.id}?tab=overview`} prefetch={false}>{row.code}</Link>
                 <span>{row.customer} · {brandLabels[row.brand]}</span></th>
-              <td>{row.owner}</td><td><span className={styles.tag}>{row.stage}</span></td>
+              <td>{row.owner}</td><td><span className={tagClass}>{row.stage}</span></td>
               <td>{row.waiting_since ? <><small>รอตั้งแต่</small>{localDate(row.waiting_since)}</>
                 : <><small>อัปเดต</small>{localDate(row.updated_at)}</>}</td>
               <td>{action ? <Link href={action.href} prefetch={false} className={dashboard.action}>{action.title}<ArrowUpRight size={15} aria-hidden="true" /></Link> : "—"}</td>

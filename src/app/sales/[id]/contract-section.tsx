@@ -7,6 +7,7 @@ import type { SummaryData } from "./summary-sections";
 import { WorkspaceHeading } from "./workspace-heading";
 import shared from "../sales.module.css";
 import styles from "./workspace-section.module.css";
+import { noticeClass } from "@/components/notice";
 
 type Document = AgreementDetail["documents"][number];
 const money = (value?: string) => value == null ? "ยังไม่ระบุ" : `${formatMoney(value)} บาท`;
@@ -45,7 +46,7 @@ export function ContractSection({ data }: { data: SummaryData }) {
   return <section className={styles.section} aria-labelledby="contract-section-title">
     <WorkspaceHeading caseId={sale.id} title="สัญญาและเอกสารแนบท้าย" titleId="contract-section-title"
       description={contract ? `${currentLabel} · ${stateLabel(contract)}` : "ยังไม่มีสัญญาที่ใช้งานอยู่"} />
-    {sale.status === "cancelled" && <p className={shared.notice}>โครงการยกเลิกแล้ว เอกสารเดิมยังเปิดดูเพื่ออ้างอิงได้</p>}
+    {sale.status === "cancelled" && <p className={noticeClass}>โครงการยกเลิกแล้ว เอกสารเดิมยังเปิดดูเพื่ออ้างอิงได้</p>}
     {contract ? <article className={`${styles.card} ${styles.current}`} aria-labelledby="current-contract-title">
       <div className={styles.rowHeading}><div><p className={styles.eyebrow}>{currentLabel} · ฉบับที่ {contract.revision}</p>
         <h3 id="current-contract-title">{contract.number ?? "ร่างสัญญา · ยังไม่ออกเลข"}</h3></div>

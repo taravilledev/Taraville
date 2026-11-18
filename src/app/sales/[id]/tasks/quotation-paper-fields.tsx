@@ -13,7 +13,7 @@ export const paperFields = [
 export function QuotationPaperFields({ value, onChange, error }: {
   value: QuotationPaper; onChange: (value: QuotationPaper) => void; error?: string;
 }) {
-  return <div className={styles.grid}>{paperFields.filter(field => field.key !== "manager").map(field => <label className={styles.field} key={field.key}>{field.label}
+  return <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">{paperFields.filter(field => field.key !== "manager").map(field => <label className={styles.field} key={field.key}>{field.label}
     {"multiline" in field ? <textarea value={value[field.key]} maxLength={field.max} onChange={event => onChange({ ...value, [field.key]: event.target.value })} />
       : <input value={value[field.key]} maxLength={field.max} aria-invalid={field.key === "customer_name" && !!error}
         aria-describedby={field.key === "customer_name" && error ? "quote-customer-error" : undefined}

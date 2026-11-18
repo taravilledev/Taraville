@@ -6,6 +6,7 @@ import { decideRefund, payRefund, requestRefund } from "../../refund-actions";
 import { EvidenceUpload } from "../../evidence-upload";
 import styles from "../../sales.module.css";
 import { idOf, type TaskData } from "./task-data";
+import { noticeClass } from "@/components/notice";
 
 function AgreementFields({ caseId }: { caseId: string }) {
   return <>
@@ -15,7 +16,7 @@ function AgreementFields({ caseId }: { caseId: string }) {
     <label className={styles.check}><input type="checkbox" name="confirmed" required />ตรวจสอบยอดและหลักฐานข้อตกลงที่ลงนามแล้ว</label>
   </>;
 }
-const Effect = ({ children }: { children: string }) => <p className={styles.notice} role="note">{children}</p>;
+const Effect = ({ children }: { children: string }) => <p className={noticeClass} role="note">{children}</p>;
 
 export function ChangeUnitTask({ sale, reservation }: TaskData) {
   return <ActionForm action={changeReservedUnit.bind(null, idOf(sale))} label="ยืนยันเปลี่ยนแปลง">
@@ -36,7 +37,7 @@ export function AmendTask({ sale, agreement }: TaskData) {
   const rows = agreement?.instalments.filter(row => row.is_active) ?? [];
   return <ActionForm action={saveAdjustment.bind(null, "amend", idOf(sale))} label="บันทึกข้อตกลงแก้ไข">
     <Effect>ยอดงวดตามสัญญาจะถูกแทนด้วยข้อตกลงนี้ ใบเสร็จและเงินรับเดิมยังอยู่</Effect>
-    {rows.map(row => <fieldset key={row.id} className={styles.grid}><legend>{row.label}</legend>
+    {rows.map(row => <fieldset key={row.id} className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1"><legend>{row.label}</legend>
       <input type="hidden" name="instalment_id" value={row.id} />
       <label className={styles.field}>ยอดเต็ม (บาท)<input name={`gross_${row.id}`} inputMode="decimal" required defaultValue={formatMoney(row.gross_cents).replaceAll(",", "")} /></label>
       <label className={styles.field}>เครดิตที่ใช้ (บาท)<input name={`credit_${row.id}`} inputMode="decimal" required defaultValue={formatMoney(row.credit_cents).replaceAll(",", "")} /></label>
@@ -63,9 +64,9 @@ export function ReleaseTask({ sale }: TaskData) {
 }
 
 export function RequestRefundTask({ sale, finance }: TaskData) {
-  return <ActionForm action={requestRefund.bind(null, idOf(sale))} label="ส่งคำขอคืนเงิน"><div className={styles.grid}>
-    <p className={`${styles.muted} ${styles.full}`}>คำขอและการอนุมัติยังไม่ใช่การจ่ายคืน ต้องมีผู้ใช้อีกคนอนุมัติและบันทึกการจ่ายจริงพร้อมหลักฐาน เงินที่เป็นเครดิตสัญญาแล้วต้องแก้ข้อตกลงเครดิตก่อนจ่ายคืน</p>
-    <label className={`${styles.field} ${styles.full}`}>คืนจากยอดรับ<select name="payment_id" required defaultValue="">
+  return <ActionForm action={requestRefund.bind(null, idOf(sale))} label="ส่งคำขอคืนเงิน"><div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
+    <p className={`${styles.muted} col-span-full`}>คำขอและการอนุมัติยังไม่ใช่การจ่ายคืน ต้องมีผู้ใช้อีกคนอนุมัติและบันทึกการจ่ายจริงพร้อมหลักฐาน เงินที่เป็นเครดิตสัญญาแล้วต้องแก้ข้อตกลงเครดิตก่อนจ่ายคืน</p>
+    <label className={`${styles.field} col-span-full`}>คืนจากยอดรับ<select name="payment_id" required defaultValue="">
       <option value="" disabled>เลือกยอดรับ</option>
       {(finance?.payments ?? []).map(payment => <option key={payment.id} value={payment.id}>
         {formatMoney(payment.amount_cents)} บาท · {formatDate(payment.paid_date)} · คืนแล้ว {formatMoney(payment.totals.refunded_cents)} · รอดำเนินการ {formatMoney(payment.totals.reserved_refund_cents)}
@@ -92,7 +93,7 @@ export function PayRefundTask({ sale, refunds, row }: TaskData) {
   if (!refund) return null;
   return <ActionForm action={payRefund.bind(null, idOf(sale, refund.id))} label="ยืนยันจ่ายคืนเงินจริง">
     <p>{formatMoney(refund.amount_cents)} บาท · อนุมัติแล้ว</p>
-    <div className={styles.grid}><label className={styles.field}>วันที่จ่ายเงินจริง<input type="date" name="paid_date" required /></label>
+    <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1"><label className={styles.field}>วันที่จ่ายเงินจริง<input type="date" name="paid_date" required /></label>
       <label className={styles.field}>วิธีจ่าย<select name="method"><option value="transfer">โอนเงิน</option><option value="cash">เงินสด</option><option value="cheque">เช็คที่เรียกเก็บแล้ว</option></select></label><EvidenceUpload caseId={sale.id} category="refund" /></div>
     <label className={styles.check}><input type="checkbox" name="funds_confirmed" required />ตรวจสอบว่าจ่ายเงินจริงตามยอดอนุมัติและมีหลักฐานแล้ว</label>
   </ActionForm>;

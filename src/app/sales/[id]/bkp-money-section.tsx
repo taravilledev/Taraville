@@ -10,6 +10,7 @@ import { FinanceCollection } from "./finance-collection";
 import shared from "../sales.module.css";
 import styles from "./workspace-section.module.css";
 import local from "./finance-collection.module.css";
+import { noticeClass } from "@/components/notice";
 
 const refundStates = { pending: "รออนุมัติ", approved: "อนุมัติ รอจ่าย", rejected: "ไม่อนุมัติ", withdrawn: "ถอนคำขอ", paid: "จ่ายคืนแล้ว" };
 
@@ -35,14 +36,14 @@ export function BkpMoneySection({ data }: { data: SummaryData }) {
       <div><dt>{isClosed ? "ยอดคงเหลือตามปิดงาน" : "งวดสัญญาคงเหลือ"}</dt><dd>{totals.contractRemaining === null ? isClosed ? "ยังไม่มีสรุปปิดงาน" : "ยังไม่มีงวดตามสัญญา" : amount(totals.contractRemaining)}</dd></div>
     </dl>
     <p className={styles.note}>ยอดรับจริงสุทธิรวมค่าแบบที่รับแล้วเพียงครั้งเดียว · เงินรอยืนยันยังไม่ใช่ยอดรับจริง · เครดิตไม่ใช่เงินเข้าใหม่</p>
-    {isClosed && <p className={shared.notice}>โครงการนี้ยกเลิกแล้ว รายการค่าแบบและงวดเดิมด้านล่างใช้สำหรับอ้างอิง ยอดที่ยังต้องรับยึดตามสรุปปิดงาน</p>}
-    {!finance.issuer_ready && <p className={shared.notice}>ยังไม่ได้ตั้งค่าบริษัทผู้ออกเอกสาร ให้ผู้บริหารตั้งค่าก่อนยืนยันรับเงินและออกใบเสร็จ</p>}
-    {totals.isDesignIncluded && finance.pending.some(payment => payment.kind === "design_fee") && <p className={shared.notice}>มีเงินค่าแบบที่เตรียมไว้ก่อนลงนาม ตรวจหลักฐานและยอดตามสัญญาก่อนยืนยัน เพื่อป้องกันการเรียกเก็บซ้ำ</p>}
+    {isClosed && <p className={noticeClass}>โครงการนี้ยกเลิกแล้ว รายการค่าแบบและงวดเดิมด้านล่างใช้สำหรับอ้างอิง ยอดที่ยังต้องรับยึดตามสรุปปิดงาน</p>}
+    {!finance.issuer_ready && <p className={noticeClass}>ยังไม่ได้ตั้งค่าบริษัทผู้ออกเอกสาร ให้ผู้บริหารตั้งค่าก่อนยืนยันรับเงินและออกใบเสร็จ</p>}
+    {totals.isDesignIncluded && finance.pending.some(payment => payment.kind === "design_fee") && <p className={noticeClass}>มีเงินค่าแบบที่เตรียมไว้ก่อนลงนาม ตรวจหลักฐานและยอดตามสัญญาก่อนยืนยัน เพื่อป้องกันการเรียกเก็บซ้ำ</p>}
     <PendingPayments data={data} payments={finance.pending} />
     {!finance.pending.length && <p id="pending" className={styles.note}>ไม่มีรายการรับเงินรอยืนยัน</p>}
-    {hasLegacyDesign && <p className={shared.notice}>ยอดรับจริงรวมเงินค่าแบบเดิมแล้ว แต่ยังไม่ระบุว่าชำระบิลใด กรุณาตรวจประวัติรับเงินก่อนเรียกเก็บซ้ำ</p>}
+    {hasLegacyDesign && <p className={noticeClass}>ยอดรับจริงรวมเงินค่าแบบเดิมแล้ว แต่ยังไม่ระบุว่าชำระบิลใด กรุณาตรวจประวัติรับเงินก่อนเรียกเก็บซ้ำ</p>}
     <FinanceCollection rows={rows} caseId={sale.id} isClosed={isClosed} />
-    {sale.status === "contracted" && agreement.is_settled && <p className={shared.notice}>ชำระครบทุกงวดตามสัญญาแล้ว</p>}
+    {sale.status === "contracted" && agreement.is_settled && <p className={noticeClass}>ชำระครบทุกงวดตามสัญญาแล้ว</p>}
     <div className={styles.card} id="prepare"><div><h3>เงินเข้าอื่นของโครงการ</h3><p className={styles.note}>หากรับเงินตามรายการ ให้ใช้ปุ่มของรายการนั้นเพื่อผูกยอดให้ถูกต้อง</p></div>
       {prepare ? <div className={styles.actions}><Link className={shared.link} href={taskHref(sale.id, prepare.name)} prefetch={false}>บันทึกเงินเข้าอื่น</Link></div>
         : <p className={styles.note}>ยังไม่มีงานบันทึกเงินเข้าอื่นที่บัญชีนี้ทำได้</p>}</div>

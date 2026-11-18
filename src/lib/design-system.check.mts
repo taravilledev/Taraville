@@ -4,7 +4,6 @@ import { join } from "node:path";
 
 // ADR 0031: shadcn + Tailwind utilities with semantic colour tokens; CSS modules only shrink.
 const srcRoot = new URL("..", import.meta.url).pathname;
-const appRoot = join(srcRoot, "app");
 const all = (readdirSync(srcRoot, { recursive: true }) as string[]).map(file => file.split("\\").join("/"));
 
 // 1. Colours in .ts/.tsx (whole file, so cn()/cva() arguments are covered) must be semantic tokens.

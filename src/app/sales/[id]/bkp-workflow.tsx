@@ -10,6 +10,7 @@ import { ContractSection } from "./contract-section";
 import { WorkspaceHeading } from "./workspace-heading";
 import { formatMoney } from "@/lib/sales/money";
 import workspace from "./workspace-section.module.css";
+import { panelClass } from "@/components/panel";
 
 export function BkpOverview({ data, step }: { data: SummaryData; step: NextStep | null }) {
   const { sale, finance, agreement } = data;
@@ -44,7 +45,7 @@ export function BkpOverview({ data, step }: { data: SummaryData; step: NextStep 
         </li>;
       })}</ol>
     </section>}
-    <section className={`${shared.panel} ${styles.context}`}>
+    <section className={`${panelClass} ${styles.context}`}>
       <div><h2>งานถัดไป</h2><p>{step?.title ?? "ไม่มีงานถัดไปในขณะนี้"}</p>
         {step?.hint && <p className={shared.muted}>{step.hint}</p>}
         {step && !step.allowed && <p className={shared.muted}>รอผู้มีสิทธิ์ดำเนินการ</p>}

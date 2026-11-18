@@ -6,6 +6,7 @@ import { PaymentPaper } from "./payment-paper";
 import { AcceptanceForm } from "../acceptance-form";
 import styles from "../../sales.module.css";
 import { idOf, type TaskData } from "./task-data";
+import { noticeClass } from "@/components/notice";
 
 export function PreparePaymentTask({ sale, finance }: TaskData) {
   const kindOptions = [
@@ -75,7 +76,7 @@ export function IssueInvoiceTask({ sale, agreement, row }: TaskData) {
   if (!item) return null;
   const contract = agreement?.documents.find(doc => doc.id === item.contract_id);
   const hasAcceptanceDue = sale.brand === "BAAN_KUNAPAP" && item.needs_acceptance && contract?.payload.contract_paper?.payment_due_days === 30;
-  if (hasAcceptanceDue && (!item.acceptance_date || !item.due_date)) return <p className={styles.notice}>ยังไม่มีวันที่ตรวจรับจริงและวันครบกำหนดของงวดนี้ กรุณาตรวจข้อมูลการตรวจรับก่อนออกบิล</p>;
+  if (hasAcceptanceDue && (!item.acceptance_date || !item.due_date)) return <p className={noticeClass}>ยังไม่มีวันที่ตรวจรับจริงและวันครบกำหนดของงวดนี้ กรุณาตรวจข้อมูลการตรวจรับก่อนออกบิล</p>;
   return <>
     {item.net_cents === "0" && <p className={styles.muted}>ชำระครบด้วยเครดิตเดิม ไม่รับเงินใหม่และไม่ออกใบเสร็จซ้ำ</p>}
     <PaymentPaper brand={sale.brand} mode="invoice" action={issueInvoice.bind(null, idOf(sale, item.id))} caseId={sale.id}

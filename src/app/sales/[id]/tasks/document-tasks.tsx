@@ -16,6 +16,7 @@ import { idOf, type TaskData } from "./task-data";
 import { DesignPackages } from "./design-packages";
 import { formatMoney } from "@/lib/sales/money";
 import acceptance from "./quotation-acceptance.module.css";
+import { noticeClass } from "@/components/notice";
 
 export function DesignTask({ sale, finance }: TaskData) {
   const plan = finance?.design_plan;
@@ -65,7 +66,7 @@ export function LockContractTask({ sale, agreement, row, contractTemplate }: Tas
   return <>
     <p>ตรวจข้อมูลก่อนออกเลขสัญญา ยอดเครดิตจะคำนวณจากเงินที่รับจริง ณ ตอนล็อก</p>
     <AgreementContent payload={draft.payload} />
-    {!canLock && <p className={styles.notice} role="status">{needsApproval
+    {!canLock && <p className={noticeClass} role="status">{needsApproval
       ? "รอตรวจข้อความบริษัท หรือบันทึกร่างอีกครั้งเพื่อใช้ข้อความที่อนุมัติล่าสุด"
       : missing.length ? `กรอกข้อมูลก่อนออกเลข: ${missing.join(" · ")}` : "กลับไปบันทึกร่างบนแม่แบบใหม่และตรวจข้อความบริษัทก่อนออกเลข"}</p>}
     {!canLock && <p><Link className={styles.link} href={`/sales/${sale.id}?task=edit-contract&row=${draft.id}`} prefetch={false}>กลับไปแก้ร่าง</Link></p>}
@@ -108,7 +109,7 @@ export function SignContractTask({ sale, agreement, row }: TaskData) {
 export function BookingSummaryTask({ sale }: TaskData) {
   return <ActionForm action={saveBookingSummary.bind(null, idOf(sale))} label="บันทึกสรุปการจอง">
     <p>บันทึกเอกสารแต่ละฉบับจากข้อมูลการขายล่าสุด การบันทึกเอกสารไม่กันแปลง</p>
-    <div className={styles.grid}>
+    <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
       <label className={styles.field}>ยอดจอง (บาท)<input name="booking" inputMode="decimal" /></label>
       <label className={styles.field}>ยอดวันทำสัญญา (บาท)<input name="contract" inputMode="decimal" /></label>
       <label className={styles.field}>ยอดดาวน์รวม (บาท)<input name="down" inputMode="decimal" /></label>

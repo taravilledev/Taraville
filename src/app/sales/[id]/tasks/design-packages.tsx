@@ -55,7 +55,7 @@ export function DesignPackages({ initialArea, plan }: {
   return <div className={styles.designPackages}>
     <fieldset className={styles.designChoices}>
       <legend>เลือกแพ็กเกจค่าออกแบบ</legend>
-      <div className={styles.grid}>{designPackages.map(item => {
+      <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">{designPackages.map(item => {
         const isSelected = tier === item.id;
         const isEditing = isSelected && override;
         return <div key={item.id} className={styles.designPackage}>
@@ -88,7 +88,7 @@ export function DesignPackages({ initialArea, plan }: {
     <p className={styles.muted}>สิ่งที่ได้รับทุกแพ็กเกจมาตรฐาน ได้แก่ แบบแปลน, 3D, แบบขออนุญาตก่อสร้าง และ BOQ สำหรับยื่นธนาคาร</p>
     <input type="hidden" name="tier" value={tier} />
     {(tier === "custom" || (override && selected)) && <input type="hidden" name="custom" value="on" />}
-    {tier === "custom" && <div className={styles.grid}>
+    {tier === "custom" && <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
       {milestones.map((milestone, index) => <label className={styles.field} key={milestone}>{milestone} (บาท){amountInput(index)}</label>)}
     </div>}
     <label className={styles.field}>หมายเหตุ<textarea name="note" maxLength={3000} defaultValue={plan?.note} /></label>

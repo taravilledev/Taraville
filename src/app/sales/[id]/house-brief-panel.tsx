@@ -7,6 +7,7 @@ import type { Task } from "@/lib/sales/tasks";
 import { saveHouseBrief } from "../house-brief-actions";
 import styles from "../sales.module.css";
 import { HouseBriefEditor } from "./house-brief-editor";
+import { panelClass } from "@/components/panel";
 
 const fieldGroups = ([
   { label: "ตัวบ้าน", keys: ["model", "usable_area", "stories", "roof"] },
@@ -26,10 +27,10 @@ export function HouseBriefPanel({ sale, task, tab }: { sale: SalesCase; task?: T
   const filledFields = fields.filter(({ key }) => brief[key]);
   const summary = filledFields.length > 0
     ? <dl className={`${styles.facts} ${styles.houseBriefFacts}`}>{filledFields.map(({ key, label }) =>
-      <div key={key} className={key === "layout" ? styles.full : undefined}><dt>{label}</dt><dd>{brief[key]}</dd></div>)}</dl>
+      <div key={key} className={key === "layout" ? "col-span-full" : undefined}><dt>{label}</dt><dd>{brief[key]}</dd></div>)}</dl>
     : <p className={styles.muted}>ยังไม่ได้ระบุความต้องการบ้าน</p>;
 
-  return <section className={`${styles.panel} ${styles.houseBrief}`} aria-labelledby="house-brief">
+  return <section className={`${panelClass} ${styles.houseBrief}`} aria-labelledby="house-brief">
     {canEdit ? <HouseBriefEditor key={`${sale.id}:${sale.version}`}
       label={filledFields.length > 0 ? "แก้ไขความต้องการ" : "เพิ่มความต้องการ"} summary={summary}>
       <ActionForm action={saveHouseBrief.bind(null, {
@@ -37,8 +38,8 @@ export function HouseBriefPanel({ sale, task, tab }: { sale: SalesCase; task?: T
       })} label="บันทึกความต้องการบ้าน">
         {fieldGroups.map(({ label, fields }) => <fieldset key={label} className={styles.houseBriefGroup}>
           <legend>{label}</legend>
-          <div className={styles.grid}>{fields.map(field =>
-            <label key={field.key} className={`${styles.field} ${field.key === "layout" ? styles.full : ""}`}>{field.label}
+          <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">{fields.map(field =>
+            <label key={field.key} className={`${styles.field} ${field.key === "layout" ? "col-span-full" : ""}`}>{field.label}
             {field.key === "payment_method" ? <select name={field.key} defaultValue={brief[field.key] ?? ""}>
               <option value="">ยังไม่ระบุ</option><option>เงินสด</option><option>สินเชื่อธนาคาร</option>
             </select> : field.key === "layout" ? <textarea name={field.key} defaultValue={brief[field.key] ?? ""} maxLength={1000} />

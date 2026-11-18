@@ -13,6 +13,8 @@ import { PendingPayments } from "./pending-payments";
 export { PendingPayments } from "./pending-payments";
 import styles from "../sales.module.css";
 import workspace from "./workspace-section.module.css";
+import { panelClass } from "@/components/panel";
+import { noticeClass } from "@/components/notice";
 
 export type Closeout = { document_id: string; retained_cents: string; received_cents: string; remaining_cents: string; refund_due_cents: string } | null;
 export type SummaryData = {
@@ -45,7 +47,7 @@ export function OverviewSection({ data, houseBrief }: { data: SummaryData; house
     ...exceptions.filter(task => task.name === "close"),
   ];
   return <>
-    <section className={styles.panel}><h2>{sale.brand === "BAAN_KUNAPAP" && sale.can_finance ? "ข้อมูลลูกค้าและโครงการ" : "ข้อมูลงาน"}</h2><dl className={styles.facts}>
+    <section className={panelClass}><h2>{sale.brand === "BAAN_KUNAPAP" && sale.can_finance ? "ข้อมูลลูกค้าและโครงการ" : "ข้อมูลงาน"}</h2><dl className={styles.facts}>
       <div><dt>ผู้รับผิดชอบงาน/รายการขาย</dt><dd>{sale.responsible_name}</dd></div><div><dt>เจ้าของ Lead ปัจจุบัน</dt><dd>{sale.lead_owner_name}</dd></div>
       {sale.can_finance && <>
         {sale.brand === "TARAVILLE" && <>
@@ -57,15 +59,15 @@ export function OverviewSection({ data, houseBrief }: { data: SummaryData; house
       </>}
     </dl><p><Link href={`/leads/${sale.lead_id}`} prefetch={false}>เปิด Lead ต้นทาง</Link>{" "}<TaskLink data={data} name="edit-case" /></p></section>
     {houseBrief}
-    {!sale.can_finance && <p className={styles.notice}>คุณดูข้อมูลงานได้ แต่ไม่มีสิทธิ์ดูเอกสารและข้อมูลการเงินของรายการนี้ ให้ผู้บริหารตรวจสอบสิทธิ์หากจำเป็นต้องใช้</p>}
-    {work.length > 0 && <section className={styles.panel}><h2>ตรวจรับงานก่อสร้าง</h2><ul className={sale.brand === "BAAN_KUNAPAP" ? workspace.rows : styles.list}>
+    {!sale.can_finance && <p className={noticeClass}>คุณดูข้อมูลงานได้ แต่ไม่มีสิทธิ์ดูเอกสารและข้อมูลการเงินของรายการนี้ ให้ผู้บริหารตรวจสอบสิทธิ์หากจำเป็นต้องใช้</p>}
+    {work.length > 0 && <section className={panelClass}><h2>ตรวจรับงานก่อสร้าง</h2><ul className={sale.brand === "BAAN_KUNAPAP" ? workspace.rows : styles.list}>
       {work.map(item => sale.brand === "BAAN_KUNAPAP" ? <li key={item.id} className={workspace.card}>
         <div className={workspace.rowHeading}><strong>งวดที่ {item.position}{item.progress_percent == null ? "" : ` · ความคืบหน้า ${item.progress_percent}%`}</strong>
           <span className={workspace.status} data-done={item.accepted}>{item.accepted ? "ตรวจรับแล้ว" : "รอตรวจรับ"}</span></div>
         <div className={workspace.actions}><TaskLink data={data} name="acceptance" row={item.id} /></div>
       </li> : <li key={item.id}>งวดที่ {item.position}{item.progress_percent == null ? "" : ` · ความคืบหน้า ${item.progress_percent}%`} · {item.accepted ? "ตรวจรับแล้ว" : "รอตรวจรับ"}{" "}
         <TaskLink data={data} name="acceptance" row={item.id} /></li>)}</ul></section>}
-    {managementTasks.length > 0 && <section className={styles.panel} id="manage" aria-labelledby="manage-title">
+    {managementTasks.length > 0 && <section className={panelClass} id="manage" aria-labelledby="manage-title">
       <h2 id="manage-title">{sale.brand === "BAAN_KUNAPAP" ? "จัดการโครงการ" : "จัดการรายการขาย"}</h2>
       <ul className={`${styles.list} ${styles.managementList}`}>{managementTasks.map(task => {
         const action = managementActions[task.name];
@@ -89,13 +91,13 @@ export function DocumentsSection({ data }: { data: SummaryData }) {
   const summaries = finance.documents.filter(doc => doc.kind === "summary");
   const history = agreement.documents.filter(doc => doc.kind === "amendment" || doc.kind === "closeout");
   return <>
-    {sale.brand === "TARAVILLE" && <section className={styles.panel} id="summary"><h2>สรุปการจองและสัญญาขาย</h2>
+    {sale.brand === "TARAVILLE" && <section className={panelClass} id="summary"><h2>สรุปการจองและสัญญาขาย</h2>
       {!summaries.length && <p className={styles.muted}>ยังไม่มีสรุปการจอง</p>}
       {summaries.map(doc => <p key={doc.id}><Link href={`/sales/documents/${doc.id}`} prefetch={false}>สรุปการจอง {doc.number} · {formatDate(doc.document_date)}</Link></p>)}
       {finance.documents.filter(doc => doc.kind === "contract").map(doc => <p key={doc.id}><Link href={`/sales/documents/${doc.id}`} prefetch={false}>สัญญาขาย {doc.number}</Link></p>)}
       <p><TaskLink data={data} name="booking-summary" /> <TaskLink data={data} name="sign-property-contract" /></p>
     </section>}
-    {history.length > 0 && <section className={styles.panel}><h2>ข้อตกลงแก้ไขและปิดงาน</h2>
+    {history.length > 0 && <section className={panelClass}><h2>ข้อตกลงแก้ไขและปิดงาน</h2>
       {history.map(doc => <p key={doc.id}><Link href={`/sales/documents/${doc.id}`} prefetch={false}>{doc.kind === "amendment" ? "ข้อตกลงแก้ไข" : "ข้อตกลงปิดงาน"} {doc.number}</Link></p>)}</section>}
   </>;
 }
@@ -107,9 +109,9 @@ export function MoneySection({ data }: { data: SummaryData }) {
   const rows = agreement.instalments.filter(row => row.is_active).sort((a, b) => a.position - b.position);
   const receiptCount = finance.documents.filter(doc => doc.kind === "receipt").length;
   return <>
-    {!finance.issuer_ready && <p className={styles.notice}>ยังไม่ได้ตั้งค่าบริษัทผู้ออกเอกสาร ให้ผู้บริหารตั้งค่าก่อนยืนยันรับเงินและออกใบเสร็จ</p>}
+    {!finance.issuer_ready && <p className={noticeClass}>ยังไม่ได้ตั้งค่าบริษัทผู้ออกเอกสาร ให้ผู้บริหารตั้งค่าก่อนยืนยันรับเงินและออกใบเสร็จ</p>}
     <PendingPayments data={data} payments={finance.pending} />
-    {rows.length > 0 && <section className={styles.panel} id="schedule"><h2>งวดชำระตามสัญญา</h2>
+    {rows.length > 0 && <section className={panelClass} id="schedule"><h2>งวดชำระตามสัญญา</h2>
       <ul className={styles.list}>{rows.map(row => <li key={row.id}>
         <p><strong>{row.label}</strong> · สุทธิ {formatMoney(row.net_cents)} บาท{row.balance ? row.balance.outstanding_cents === "0" ? " · ครบยอดแล้ว" : ` · ค้าง ${formatMoney(row.balance.outstanding_cents)} บาท` : ""}</p>
         <p className={styles.muted}>ยอดงวด {formatMoney(row.gross_cents)} · หักเงินที่รับไว้ {formatMoney(row.credit_cents)} · {row.needs_acceptance ? row.accepted_at ? "ตรวจรับและลูกค้ายอมรับแล้ว" : "รอตรวจรับงานและหลักฐานลูกค้ายอมรับ" : "เงินมัดจำวันเซ็น ไม่ต้องตรวจรับงานก่อสร้าง"}</p>
@@ -117,16 +119,16 @@ export function MoneySection({ data }: { data: SummaryData }) {
         {row.invoice_document_id && <p><Link href={`/sales/documents/${row.invoice_document_id}`} prefetch={false}>เปิดใบแจ้งชำระ / สรุปเครดิต</Link></p>}
         <p><TaskLink data={data} name="acceptance" row={row.id} /> <TaskLink data={data} name="issue-invoice" row={row.id} /> <TaskLink data={data} name="prepare-instalment" row={row.id} /></p>
       </li>)}</ul>
-      {sale.status === "contracted" && agreement.is_settled && <p className={styles.notice}>ชำระครบทุกงวดตามสัญญาแล้ว</p>}
+      {sale.status === "contracted" && agreement.is_settled && <p className={noticeClass}>ชำระครบทุกงวดตามสัญญาแล้ว</p>}
     </section>}
-    {findTask(data.tasks, "prepare-payment", undefined) && <section className={styles.panel} id="prepare"><h2>บันทึกเงินเข้า</h2><p><TaskLink data={data} name="prepare-payment" /></p></section>}
-    <details className={`${styles.panel} ${styles.moneyDisclosure}`} open><summary>ประวัติใบเสร็จรับเงิน ({receiptCount})</summary>
+    {findTask(data.tasks, "prepare-payment", undefined) && <section className={panelClass} id="prepare"><h2>บันทึกเงินเข้า</h2><p><TaskLink data={data} name="prepare-payment" /></p></section>}
+    <details className={`${panelClass} ${styles.moneyDisclosure}`} open><summary>ประวัติใบเสร็จรับเงิน ({receiptCount})</summary>
       {!finance.documents.some(doc => doc.kind === "receipt") && <p className={styles.muted}>ยังไม่มีใบเสร็จ</p>}
       <ul className={styles.list}>{finance.documents.filter(doc => doc.kind === "receipt").map(doc => <li key={doc.id}>
         <Link href={`/sales/documents/${doc.id}`} prefetch={false}>{doc.number} · {formatDate(doc.document_date)} · {doc.amount_cents ? `${formatMoney(doc.amount_cents)} บาท` : "—"}{doc.state === "cancelled" ? " · ยกเลิก" : ""}</Link>{" "}
         <TaskLink data={data} name="fix-receipt" row={doc.id} /></li>)}</ul>
     </details>
-    {closeout && <section className={styles.panel}><h2>ยอดปิดงานปัจจุบัน</h2>
+    {closeout && <section className={panelClass}><h2>ยอดปิดงานปัจจุบัน</h2>
       <dl className={styles.facts}>
         <div><dt>ยอดตามข้อตกลงปิดงาน</dt><dd>{formatMoney(closeout.retained_cents)} บาท</dd></div>
         <div><dt>รับสุทธิหลังหักยอดคืนแล้ว</dt><dd>{formatMoney(closeout.received_cents)} บาท</dd></div>
@@ -135,7 +137,7 @@ export function MoneySection({ data }: { data: SummaryData }) {
       </dl>
       <Link href={`/sales/documents/${closeout.document_id}`} prefetch={false}>เปิดข้อตกลงปิดงาน</Link>
     </section>}
-    {(finance.payments.length > 0 || refunds.length > 0) && <details className={`${styles.panel} ${styles.moneyDisclosure}`} id="refunds" open><summary>คืนเงินจริง ({refunds.length})</summary>
+    {(finance.payments.length > 0 || refunds.length > 0) && <details className={`${panelClass} ${styles.moneyDisclosure}`} id="refunds" open><summary>คืนเงินจริง ({refunds.length})</summary>
       {!refunds.length && <p className={styles.muted}>ยังไม่มีคำขอคืนเงิน</p>}
       <ul className={styles.list}>{refunds.map(refund => <li key={refund.id}>
         <p>{formatMoney(refund.amount_cents)} บาท · {refundStates[refund.state]} · {refund.requested_by_name}</p>

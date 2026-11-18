@@ -14,6 +14,7 @@ import { ProjectTable, identityColumns } from "./project-table";
 import { ReportOutputDialog } from "./report-output-dialog";
 import { collectionFilters, summaryPageRange, summaryQuery, summaryReport, summaryStages, type SummaryReport } from "./summary-model";
 import styles from "./summary.module.css";
+import { noticeClass } from "@/components/notice";
 
 export const metadata = { title: "สรุปโครงการและการเงิน · บ้านคุณภาพ", robots: { index: false, follow: false } };
 
@@ -114,7 +115,7 @@ function SummaryFilters({ query, report }: { query: Query; report: Report | null
 }
 
 function ReportError({ query }: { query: Query }) {
-  return <p className={salesStyles.notice} role="alert">{query.isPeriodValid ? "โหลดสรุปโครงการไม่ได้ กรุณาลองใหม่"
+  return <p className={noticeClass} role="alert">{query.isPeriodValid ? "โหลดสรุปโครงการไม่ได้ กรุณาลองใหม่"
     : "กรุณาเลือกช่วงวันที่ที่ถูกต้อง วันที่เริ่มต้นต้องไม่เกินวันที่สิ้นสุด"}</p>;
 }
 

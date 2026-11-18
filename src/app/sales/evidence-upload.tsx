@@ -5,6 +5,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import { supabaseConfig } from "@/lib/supabase/config";
 import styles from "./sales.module.css";
 import local from "./evidence-upload.module.css";
+import { noticeClass } from "@/components/notice";
 
 const extensions: Record<string, string> = { "application/pdf": "pdf", "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 export function EvidenceUpload({ caseId, category = "payment", className, title = "หลักฐานการยอมรับ" }: {
@@ -46,6 +47,6 @@ export function EvidenceUpload({ caseId, category = "payment", className, title 
       {uploadButton}
       {path && <small className={styles.muted} role="status">อัปโหลดสำเร็จ · พร้อมบันทึกรายการ</small>}
     </>}
-    {error && <p role="alert" className={styles.notice}>{error}</p>}
+    {error && <p role="alert" className={noticeClass}>{error}</p>}
   </div>;
 }

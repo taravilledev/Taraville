@@ -5,6 +5,7 @@ import type { NextStep } from "@/lib/sales/case-progress";
 import { taskHref } from "@/lib/sales/tasks";
 import { formatMoney } from "@/lib/sales/money";
 import styles from "../sales.module.css";
+import { tagClass } from "@/components/tag";
 
 const stages = {
   TARAVILLE: ["draft", "reserved", "contracted", "completed"],
@@ -21,7 +22,7 @@ export function CaseHeader({ sale, summary, step, workflow, navigation, showProg
   return <>
     <div className={styles.header}>
       <div><p className={styles.muted}>{brandLabels[sale.brand]}{sale.unit_label ? ` · ${sale.unit_label}` : ""}</p><h1>{sale.code} · {sale.customer_name}</h1></div>
-      <div className={styles.links}><span className={styles.tag}>{caseStatusLabels[sale.status]}</span><Link className={styles.link} href="/dashboard" prefetch={false}>กลับแดชบอร์ด</Link></div>
+      <div className="flex flex-wrap items-center gap-3"><span className={tagClass}>{caseStatusLabels[sale.status]}</span><Link className={styles.link} href="/dashboard" prefetch={false}>กลับแดชบอร์ด</Link></div>
     </div>
     {navigation}
     {showProgress && !workflow && current >= 0 && <ol className={styles.steps} aria-label="สถานะงาน">{flow.map((status, index) =>

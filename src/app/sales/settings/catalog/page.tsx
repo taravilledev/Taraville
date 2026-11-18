@@ -13,6 +13,7 @@ import { setUnitActivity } from "./unit-activity";
 import { UnitForm } from "./unit-form";
 import sales from "../../sales.module.css";
 import styles from "../settings.module.css";
+import { panelClass } from "@/components/panel";
 
 const base = "/sales/settings/catalog";
 const statusLabels = { available: "ว่าง", reserved: "กันไว้แล้ว", inactive: "ปิดใช้งาน" };
@@ -48,7 +49,7 @@ async function Catalog({ searchParams }: SettingsPageProps) {
     const title = development ? "แก้ไขโครงการหมู่บ้าน" : "เพิ่มโครงการหมู่บ้าน";
     return <SettingsShell {...shell} title={title} description={development?.name}
       back={{ href: backHref, label: development ? "ทะเบียนบ้านและแปลง" : "โครงการหมู่บ้าน" }}>
-      <section className={`${sales.panel} ${styles.editor}`}>
+      <section className={`${panelClass} ${styles.editor}`}>
         <DevelopmentForm development={development} backHref={backHref} />
       </section>
     </SettingsShell>;
@@ -56,7 +57,7 @@ async function Catalog({ searchParams }: SettingsPageProps) {
   if (canEdit && development && (mode === "unit" && unit || mode === "new-unit" && development.is_active)) {
     return <SettingsShell {...shell} title={mode === "unit" && unit ? "แก้ไขบ้าน/แปลง " + unit.code : "เพิ่มบ้าน/แปลง"}
       description={development.name} back={{ href: backHref, label: "ทะเบียนบ้านและแปลง" }}>
-      <section className={`${sales.panel} ${styles.editor}`}>
+      <section className={`${panelClass} ${styles.editor}`}>
         <UnitForm developmentId={development.id} unit={mode === "unit" ? unit : undefined}
           requestId={randomUUID()} backHref={backHref} />
       </section>
@@ -83,7 +84,7 @@ async function Catalog({ searchParams }: SettingsPageProps) {
       <Link href={editHref("project")} className={sales.link} prefetch={false}>แก้ไขโครงการ</Link>
       {development.is_active && <Link href={editHref("new-unit")} className={sales.primary} prefetch={false}>เพิ่มบ้าน/แปลง</Link>}
     </> : <Link href={editHref("new-project")} className={sales.primary} prefetch={false}>เพิ่มโครงการ</Link>)}>
-    <form className={`${sales.panel} ${styles.filters}`} action={base} role="search">
+    <form className={`${panelClass} ${styles.filters}`} action={base} role="search">
       {development && <input type="hidden" name="project" value={development.id} />}
       <label className={sales.field}>{development ? "ค้นหาบ้าน/แปลง" : "ค้นหาโครงการ"}
         <input type="search" name="q" maxLength={200} defaultValue={q} placeholder={development ? "เลขแปลงหรือแบบบ้าน" : "ชื่อโครงการหรือที่ตั้ง"} /></label>
@@ -94,7 +95,7 @@ async function Catalog({ searchParams }: SettingsPageProps) {
       <button className={sales.primary}>ค้นหา</button>
       {(q || status) && <Link href={project} className={sales.link} prefetch={false}>ล้างตัวกรอง</Link>}
     </form>
-    {!page.rows.length ? <p className={sales.panel}>{q || status ? "ไม่พบรายการตามตัวกรอง" : development ? "โครงการนี้ยังไม่มีบ้าน/แปลง" : "ยังไม่มีโครงการที่คุณดูได้"}</p>
+    {!page.rows.length ? <p className={panelClass}>{q || status ? "ไม่พบรายการตามตัวกรอง" : development ? "โครงการนี้ยังไม่มีบ้าน/แปลง" : "ยังไม่มีโครงการที่คุณดูได้"}</p>
       : <div className={styles.tableWrap} tabIndex={0} role="region" aria-label={development ? "ทะเบียนบ้านและแปลง" : "รายการโครงการหมู่บ้าน"}>
         {development ? <table className={styles.table}>
           <thead><tr><th scope="col">บ้าน/แปลง</th><th scope="col">แบบบ้าน</th><th scope="col" className={styles.amount}>ราคาทะเบียน (บาท)</th><th scope="col">สถานะ</th>{canEdit && <th scope="col">ดำเนินการ</th>}</tr></thead>
@@ -125,7 +126,7 @@ async function Catalog({ searchParams }: SettingsPageProps) {
       </div>}
     <footer className={styles.footer}>
       <p className={sales.muted}>{development ? units?.length : developments.length} รายการ{page.pages > 1 && ` · หน้า ${page.page} จาก ${page.pages}`}</p>
-      {page.pages > 1 && <nav className={sales.links} aria-label="หน้ารายการ">
+      {page.pages > 1 && <nav className="flex flex-wrap items-center gap-3" aria-label="หน้ารายการ">
         {page.page > 1 && <Link className={sales.link} href={listHref(page.page - 1)} prefetch={false}>ก่อนหน้า</Link>}
         {page.page < page.pages && <Link className={sales.link} href={listHref(page.page + 1)} prefetch={false}>ถัดไป</Link>}
       </nav>}
@@ -136,9 +137,9 @@ async function Catalog({ searchParams }: SettingsPageProps) {
 function DevelopmentForm({ development, backHref }: { development?: Development; backHref: string }) {
   return <ActionForm action={saveDevelopment.bind(null, { id: development?.id ?? null, version: development?.version ?? null, requestId: randomUUID() })}
     label={development ? "บันทึกโครงการ" : "เพิ่มโครงการ"} secondaryAction={{ href: backHref, label: "ยกเลิก" }}>
-    <div className={sales.grid}>
+    <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
       <label className={sales.field}>ชื่อโครงการ<input name="name" required maxLength={200} defaultValue={development?.name} /></label>
-      <label className={`${sales.field} ${sales.full}`}>ที่ตั้งโครงการ<textarea name="address" maxLength={2000} defaultValue={development?.address} /></label>
+      <label className={`${sales.field} col-span-full`}>ที่ตั้งโครงการ<textarea name="address" maxLength={2000} defaultValue={development?.address} /></label>
     </div>
     <label className={sales.check}><input type="checkbox" name="is_active" defaultChecked={development?.is_active ?? true} />เปิดใช้งาน</label>
   </ActionForm>;

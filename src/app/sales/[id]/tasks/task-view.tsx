@@ -2,7 +2,6 @@ import type { ComponentType, ReactNode } from "react";
 import Link from "next/link";
 import { taskReturnTab } from "@/lib/sales/case-navigation";
 import { taskLabels, type Task, type TaskName } from "@/lib/sales/tasks";
-import styles from "../../sales.module.css";
 import type { TaskData } from "./task-data";
 import quotation from "./quotation-editor.module.css";
 import { AssignTask, EditCaseTask, ReserveTask } from "./case-tasks";
@@ -13,6 +12,7 @@ import { AmendTask, ChangeUnitTask, CloseTask, DecideRefundTask, PayRefundTask, 
 import { IssueDesignInvoiceTask, PrepareDesignPaymentTask, CancelDesignInvoiceTask } from "./design-billing-tasks";
 import { ConfirmPaymentTask } from "./confirm-payment-task";
 import { usesFocusedTaskHeader, TaskHeader } from "./task-header";
+import { panelClass } from "@/components/panel";
 
 const views: Record<TaskName, ComponentType<TaskData>> = {
   "issue-design-invoice": IssueDesignInvoiceTask, "prepare-design-payment": PrepareDesignPaymentTask, "cancel-design-invoice": CancelDesignInvoiceTask,
@@ -41,7 +41,7 @@ export function TaskView({ task, data, context }: { task: Task; data: TaskData; 
   const ownsHeader = ["issue-quotation", "prepare-contract", "edit-contract"].includes(task.name);
   const hasPaperBody = ["issue-quotation", "prepare-contract", "edit-contract", "contract-addendum", "issue-invoice", "prepare-instalment",
     "prepare-payment", "issue-design-invoice", "prepare-design-payment", "confirm-payment"].includes(task.name);
-  return <section className={isFocused ? quotation.task : styles.panel}>
+  return <section className={isFocused ? quotation.task : panelClass}>
     {isFocused && !ownsHeader && <TaskHeader sale={data.sale} title={taskLabels[task.name]} backTab={visibleBackTab}
       backLabel={`กลับ${backLabels[visibleBackTab]}`} phase={backLabels[visibleBackTab]} />}
     {!isFocused && <>
@@ -49,7 +49,7 @@ export function TaskView({ task, data, context }: { task: Task; data: TaskData; 
       <h2>{taskLabels[task.name]}</h2>
     </>}
     {context}
-    <div className={isFocused && !hasPaperBody ? styles.panel : undefined}
+    <div className={isFocused && !hasPaperBody ? panelClass : undefined}
       key={`${data.sale.version}:${data.finance?.version ?? 0}:${task.name}:${task.row ?? ""}`}><View {...data} row={task.row} /></div>
   </section>;
 }

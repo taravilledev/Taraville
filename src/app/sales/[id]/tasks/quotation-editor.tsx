@@ -177,7 +177,7 @@ export function QuotationEditor({ sale, agreement, designArea, action }: {
         <fieldset className={local.section}><legend>เงื่อนไขเพิ่มเติม</legend>
           <p className={local.note}>ตรวจข้อความและขอบเขตงานให้ตรงกับข้อตกลงของโครงการนี้</p>
           <ol className={local.conditions}>{exclusions.map((text, index) => <li key={index}>
-            <div className={local.exclusion}><label className={styles.field}><span className={styles.srOnly}>เงื่อนไขข้อที่ {index + 1}</span><textarea value={text} maxLength={2000} aria-label={`เงื่อนไขข้อที่ ${index + 1}`} aria-invalid={!!errors[`exclusion-${index}`]}
+            <div className={local.exclusion}><label className={styles.field}><span className="sr-only">เงื่อนไขข้อที่ {index + 1}</span><textarea value={text} maxLength={2000} aria-label={`เงื่อนไขข้อที่ ${index + 1}`} aria-invalid={!!errors[`exclusion-${index}`]}
               aria-describedby={errors[`exclusion-${index}`] ? `quote-error-exclusion-${index}` : undefined}
               onChange={event => setExclusions(rows => rows.map((value, at) => at === index ? event.target.value : value))} />{message(`exclusion-${index}`)}</label>
               <button type="button" className={local.remove} aria-label={`ลบเงื่อนไขข้อที่ ${index + 1}`} onClick={() => {

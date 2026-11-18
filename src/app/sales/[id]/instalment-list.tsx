@@ -5,6 +5,7 @@ import { findTask, taskHref } from "@/lib/sales/tasks";
 import type { SummaryData } from "./summary-sections";
 import shared from "../sales.module.css";
 import styles from "./workspace-section.module.css";
+import { noticeClass } from "@/components/notice";
 
 export function InstalmentList({ data }: { data: SummaryData }) {
   const { sale, agreement, tasks } = data;
@@ -41,6 +42,6 @@ export function InstalmentList({ data }: { data: SummaryData }) {
         </div>{!next && !isPaid && <p className={styles.note}>ยังไม่มีงานที่บัญชีนี้ทำต่อได้ · ตรวจรายการเงินรอยืนยันด้านบนหรือรอผู้มีสิทธิ์ดำเนินการ</p>}</div>
       </li>;
     })}</ol>
-    {sale.status === "contracted" && agreement.is_settled && <p className={shared.notice}>ชำระครบทุกงวดตามสัญญาแล้ว</p>}
+    {sale.status === "contracted" && agreement.is_settled && <p className={noticeClass}>ชำระครบทุกงวดตามสัญญาแล้ว</p>}
   </section>;
 }

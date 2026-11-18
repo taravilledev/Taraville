@@ -25,15 +25,15 @@ export function OpeningFields({ units, leadId, requestId }: { units: Unit[]; lea
     if (unit) dialog.current?.showModal();
   }, [unit]);
   return <div className={styles.unitBrowser}>
-    <div className={styles.grid}>
+    <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
       <label className={styles.field}>ค้นหาแปลงหรือแบบบ้าน<input type="search" placeholder="เลขแปลง หรือชื่อแบบบ้าน" value={query} onChange={event => setQuery(event.target.value)} /></label>
       <SearchPicker label="โครงการ" placeholder="ทุกโครงการ" options={developments} selectedId={developmentId} onChange={setDevelopmentId} />
     </div>
     <div className={styles.header}><h2>เลือกแปลงเพื่อเปิดโครงการ</h2><p role="status">{matches.length} จาก {units.length} แปลงว่าง</p></div>
     {!matches.length ? <div className={styles.unitEmpty}><strong>ไม่พบแปลงที่ตรงกับเงื่อนไข</strong><p>ลองเปลี่ยนคำค้นหรือล้างตัวกรองโครงการ</p></div> : <>
       <table className={styles.unitTable}>
-        <caption className={styles.srOnly}>แปลงว่างที่เปิดใช้งาน เลือกดูรายละเอียดก่อนเปิดโครงการ</caption>
-        <thead><tr><th scope="col">แปลง</th><th scope="col">โครงการ</th><th scope="col">แบบบ้าน</th><th scope="col">เนื้อที่ดิน<br />(ตร.ว.)</th><th scope="col">ราคาทะเบียน</th><th scope="col"><span className={styles.srOnly}>ดูรายละเอียด</span></th></tr></thead>
+        <caption className="sr-only">แปลงว่างที่เปิดใช้งาน เลือกดูรายละเอียดก่อนเปิดโครงการ</caption>
+        <thead><tr><th scope="col">แปลง</th><th scope="col">โครงการ</th><th scope="col">แบบบ้าน</th><th scope="col">เนื้อที่ดิน<br />(ตร.ว.)</th><th scope="col">ราคาทะเบียน</th><th scope="col"><span className="sr-only">ดูรายละเอียด</span></th></tr></thead>
         <tbody>{matches.map(item => <tr key={item.id} onClick={event => {
           event.currentTarget.querySelector("button")?.focus(); setUnit(item);
         }}>

@@ -19,6 +19,7 @@ import { DocumentsSection, MoneySection, OverviewSection } from "./summary-secti
 import { TaskView } from "./tasks/task-view";
 import { usesFocusedTaskHeader } from "./tasks/task-header";
 import styles from "../sales.module.css";
+import { noticeClass } from "@/components/notice";
 
 export const metadata = { title: "ข้อมูลงานและรายการขาย · Taraville Group", robots: { index: false, follow: false } };
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -58,14 +59,14 @@ async function CaseDetail({ params, searchParams }: Props) {
   const isShowingNextStep = task && step?.task === task.name && step.row === task.row;
   const navigation = !task && tabs.length > 1 ? <nav className={`${styles.tabs} ${isBkp ? styles.caseTabs : ""}`} aria-label="หมวดข้อมูลงาน">{tabs.map(item => <Link key={item} href={`/sales/${sale.id}?tab=${item}`} prefetch={false}
     aria-current={item === tab ? "page" : undefined}>{!isBkp && item === "documents" ? "เอกสาร" : !isBkp && item === "money" ? "รับเงิน" : tabLabels[item]}{item === "money" && pending > 0 ? ` (${pending})` : ""}</Link>)}</nav> : null;
-  return <AppShell staff={staff} wide><div className={styles.page}>
+  return <AppShell staff={staff} wide><div className="grid gap-6">
     {!isFocusedTask && <CaseHeader sale={sale} summary={!isBkp ? summary : null} step={isShowingNextStep ? null : step}
       showProgress={!isBkp || !!task}
       navigation={isBkp ? navigation : undefined}
       workflow={sale.brand === "BAAN_KUNAPAP" && finance && agreement && progress ?
         <BkpProgress sale={sale} finance={finance} agreement={agreement} progress={progress} step={step} tasks={tasks} activeTask={task} compact={(!task && tab === "documents") || isFocusedTask || isDesignBillingTask} /> : undefined} />}
     {!isDesignBillingTask && !isFocusedTask && task?.name !== "accept-quotation" && (task || (!isBkp && tab !== "overview")) && houseBrief}
-    {one(query.notice) === "task" && <p className={styles.notice} role="status">งานที่เปิดไม่ได้แล้ว เพราะสถานะหรือสิทธิ์เปลี่ยน กรุณาเลือกจากหน้านี้ใหม่</p>}
+    {one(query.notice) === "task" && <p className={noticeClass} role="status">งานที่เปิดไม่ได้แล้ว เพราะสถานะหรือสิทธิ์เปลี่ยน กรุณาเลือกจากหน้านี้ใหม่</p>}
     {task ? <TaskView task={task} context={task.name === "design" ? houseBrief : undefined}
       data={{ sale, finance, agreement, staffId: staff.id, reservation, refunds, owners, contractTemplate, work }} /> : <>
       {!isBkp && navigation}

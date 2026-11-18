@@ -8,12 +8,13 @@ import type { SummaryData } from "./summary-sections";
 import shared from "../sales.module.css";
 import styles from "./workspace-section.module.css";
 import local from "./finance-collection.module.css";
+import { panelClass } from "@/components/panel";
 
 export function PendingPayments({ data, payments }: { data: SummaryData; payments: FinancialDetail["pending"] }) {
   const { sale, finance } = data;
   if (!finance || !payments.length) return null;
   const can = sale.permissions;
-  if (sale.brand !== "BAAN_KUNAPAP") return <section className={shared.panel} id="pending"><h2>เงินเข้ารอยืนยัน ({payments.length})</h2>
+  if (sale.brand !== "BAAN_KUNAPAP") return <section className={panelClass} id="pending"><h2>เงินเข้ารอยืนยัน ({payments.length})</h2>
     {payments.map(payment => <div key={payment.id} className={shared.capability}>
       <p><strong>{paymentKinds[payment.kind]} · {formatMoney(payment.amount_cents)} บาท</strong></p>
       <p>{paymentMethods[payment.method]} · {formatDate(payment.paid_date)} · {payment.payer_name}</p><p>{payment.description}</p>

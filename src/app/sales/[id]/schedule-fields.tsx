@@ -5,8 +5,8 @@ import styles from "../sales.module.css";
 
 export function ScheduleFields() {
   const [rows, setRows] = useState([0, 1, 2, 3, 4, 5].map(index => ({ id: `initial-${index}`, label: index ? `งวดงาน ${index}` : "เงินมัดจำวันเซ็นสัญญา", percent: index ? "18" : "10", progress: index ? String(index * 20) : "" })));
-  return <div className={styles.page}>
-    {rows.map((row, index) => <div key={row.id} className={styles.grid}>
+  return <div className="grid gap-6">
+    {rows.map((row, index) => <div key={row.id} className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
       <label className={styles.field}>ชื่องวด {index + 1}<input name="label" defaultValue={row.label} required maxLength={300} /></label>
       <label className={styles.field}>สัดส่วน (%)<input name="percent" inputMode="decimal" defaultValue={row.percent} required /></label>
       <label className={styles.field}>ความคืบหน้างาน (%)<input name="progress" inputMode="numeric" defaultValue={row.progress} readOnly={index === 0} required={index > 0} /></label>

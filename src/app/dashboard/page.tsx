@@ -10,6 +10,9 @@ import { ExecutiveDashboard } from "../sales/executive-dashboard";
 import { DashboardOverview } from "./overview";
 import { groupDashboardProjects, projectOwnershipLabels, type ProjectOwnership } from "./project-ownership";
 import styles from "../sales/sales.module.css";
+import { noticeClass } from "@/components/notice";
+import { panelClass } from "@/components/panel";
+import { tagClass } from "@/components/tag";
 
 export const metadata = { title: "แดชบอร์ด · Taraville Group", robots: { index: false, follow: false } };
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -52,16 +55,16 @@ async function Workspace({ searchParams }: Props) {
     const rawPage = Number(one(raw.page));
     const page = Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1;
     const baseWork = status === "active" && !query ? dashboard : overviewWork;
-    return <AppShell staff={staff} wide><div className={styles.page}>
+    return <AppShell staff={staff} wide><div className="grid gap-6">
       <div className={styles.header}><div><h1>แดชบอร์ด</h1><p>ติดตามงานและโครงการของบ้านคุณภาพและธาราวิลล์</p></div>
-        <div className={styles.links}><Link className={styles.primary} href="/summary" prefetch={false}>สรุปการเงินบ้านคุณภาพ</Link>{settings}</div>
+        <div className="flex flex-wrap items-center gap-3"><Link className={styles.primary} href="/summary" prefetch={false}>สรุปการเงินบ้านคุณภาพ</Link>{settings}</div>
       </div>
       <nav className={styles.tabs} aria-label="เลือกแบรนด์สำหรับแดชบอร์ด">
         {brands.map(({ value, label }) => <Link key={value} href={value ? `/dashboard?brand=${value}` : "/dashboard"}
           aria-current={value === brand ? "page" : undefined} prefetch={false}>{label}</Link>)}
       </nav>
       {overview && baseWork ? <DashboardOverview data={overview} groups={dashboardFollowUps(baseWork, overview, brand)} brand={brand} />
-        : <p className={styles.notice} role="status">โหลดภาพรวมผู้บริหารไม่ได้ ตารางโครงการด้านล่างยังใช้งานได้</p>}
+        : <p className={noticeClass} role="status">โหลดภาพรวมผู้บริหารไม่ได้ ตารางโครงการด้านล่างยังใช้งานได้</p>}
       <ExecutiveDashboard rows={dashboard} filterForm={filterForm} compact={!!overview && !!baseWork} filters={{ status, brand, query, page, attention }} />
     </div></AppShell>;
   }
@@ -76,22 +79,22 @@ async function Workspace({ searchParams }: Props) {
     if (query) params.set("q", query);
     return params.size ? `/dashboard?${params}#dashboard-projects` : "/dashboard#dashboard-projects";
   }
-  return <AppShell staff={staff} wide><div className={styles.page}>
+  return <AppShell staff={staff} wide><div className="grid gap-6">
     <div className={styles.header}><div><h1>แดชบอร์ด</h1><p>บ้านคุณภาพ · ธาราวิลล์</p></div>
-      <div className={styles.links}>
+      <div className="flex flex-wrap items-center gap-3">
         {executive && <Link className={styles.link} href="/summary" prefetch={false}>สรุปการเงินบ้านคุณภาพ</Link>}{settings}
       </div>
     </div>
-    {executive && <p className={styles.notice} role="status">โหลดแดชบอร์ดผู้บริหารไม่ได้ รายการงานด้านล่างยังใช้งานได้</p>}
-    <section className={styles.panel} id="queue" aria-labelledby="queue-title"><h2 id="queue-title">งานรอทำ</h2>
-      {!queue ? <p className={styles.notice} role="status">โหลดงานรอทำไม่ได้ ลองรีเฟรชหน้านี้ รายการทั้งหมดด้านล่างยังใช้ได้</p>
+    {executive && <p className={noticeClass} role="status">โหลดแดชบอร์ดผู้บริหารไม่ได้ รายการงานด้านล่างยังใช้งานได้</p>}
+    <section className={panelClass} id="queue" aria-labelledby="queue-title"><h2 id="queue-title">งานรอทำ</h2>
+      {!queue ? <p className={noticeClass} role="status">โหลดงานรอทำไม่ได้ ลองรีเฟรชหน้านี้ รายการทั้งหมดด้านล่างยังใช้ได้</p>
         : !queue.length ? <p className={styles.muted}>ไม่มีงานที่รอคุณดำเนินการ</p>
         : <ul className={styles.list}>{queue.map(item => <li key={`${item.case_id}:${item.kind}`} className={styles.case}>
           <div><Link href={`/sales/${item.case_id}?tab=money#${item.kind === "acceptance" ? "schedule" : item.kind === "payment_pending" ? "pending" : "refunds"}`} prefetch={false}>{item.code}{item.customer_name ? ` · ${item.customer_name}` : ""}</Link>
             <p className={styles.muted}>{workQueueKinds[item.kind]} {item.count} รายการ · รอตั้งแต่ {new Date(item.since).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })}</p></div>
-          <span className={styles.tag}>{brandLabels[item.brand]}</span></li>)}</ul>}
+          <span className={tagClass}>{brandLabels[item.brand]}</span></li>)}</ul>}
     </section>
-    <section className={styles.page} id="dashboard-projects" aria-labelledby="dashboard-projects-title">
+    <section className="grid gap-6" id="dashboard-projects" aria-labelledby="dashboard-projects-title">
       <h2 id="dashboard-projects-title">โครงการ</h2>
       {!executive && <nav className={styles.tabs} aria-label="ผู้รับผิดชอบโครงการ">
         {(Object.keys(projectOwnershipLabels) as ProjectOwnership[]).map(item =>
@@ -107,11 +110,11 @@ async function Workspace({ searchParams }: Props) {
             {!executive && (sale.responsible_id === staff.id ? " · ฉันดูแล" : " · คนอื่นดูแล")}
             {sale.detail && sale.detail !== sale.code ? ` · ${sale.detail}` : ""} · {sale.can_finance ? "ดูข้อมูลการเงินได้" : "ดูข้อมูลงาน"}
           </p></div>
-        <span className={styles.tag}>{caseStatusLabels[sale.status]}</span>
+        <span className={tagClass}>{caseStatusLabels[sale.status]}</span>
       </li>)}</ul> : ownership !== "all"
         ? <p className={styles.muted}>{ownership === "mine" ? "ไม่พบโครงการที่คุณดูแลในรายการนี้" : "ไม่พบโครงการของคนอื่นที่คุณมีสิทธิ์ดูในรายการนี้"}</p>
-        : filtered ? <section className={styles.panel}><h3>ไม่พบรายการตามตัวกรอง</h3><p>ลองเปลี่ยนคำค้นหรือเลือกสถานะทั้งหมด</p></section>
-        : <section className={styles.panel}><h3>ยังไม่มีรายการที่คุณดูได้</h3><p>เริ่มเปิดงานจาก Lead หรือให้ผู้บริหารตรวจสอบสิทธิ์ของคุณ</p><Link href="/leads" prefetch={false}>ไปที่รายการ Lead</Link></section>}
+        : filtered ? <section className={panelClass}><h3>ไม่พบรายการตามตัวกรอง</h3><p>ลองเปลี่ยนคำค้นหรือเลือกสถานะทั้งหมด</p></section>
+        : <section className={panelClass}><h3>ยังไม่มีรายการที่คุณดูได้</h3><p>เริ่มเปิดงานจาก Lead หรือให้ผู้บริหารตรวจสอบสิทธิ์ของคุณ</p><Link href="/leads" prefetch={false}>ไปที่รายการ Lead</Link></section>}
     </section>
   </div></AppShell>;
 }

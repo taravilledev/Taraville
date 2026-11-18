@@ -41,7 +41,7 @@ export function SettingsShell({ staff, workspace, section, title, description, b
     <div className={styles.content}>
       <header className={styles.header}>
         <Link className={sales.muted} href={returnLink.href} prefetch={false}>← {returnLink.label}</Link>
-        <div className={styles.titleRow}><div><h1>{title}</h1>{description && <p>{description}</p>}</div>{actions && <div className={sales.links}>{actions}</div>}</div>
+        <div className={styles.titleRow}><div><h1>{title}</h1>{description && <p>{description}</p>}</div>{actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}</div>
       </header>
       {children}
     </div>

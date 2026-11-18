@@ -9,6 +9,7 @@ import { setCapability } from "../../actions";
 import { SettingsLinks, SettingsShell, type SettingsPageProps } from "../settings-shell";
 import sales from "../../sales.module.css";
 import styles from "../settings.module.css";
+import { panelClass } from "@/components/panel";
 
 const base = "/sales/settings/permissions";
 const groups = {
@@ -33,7 +34,7 @@ async function Permissions({ searchParams }: SettingsPageProps) {
   if (!user) return <SettingsShell {...shell} title="จัดสิทธิ์งานและการเงิน" description="เลือกพนักงานเพื่อดูหรือแก้ไขสิทธิ์">
     {people.length ? <SettingsLinks items={people.map(person => ({
       href: base + "?staff=" + person.id, title: person.full_name, description: roleLabel(person.role),
-    }))} /> : <p className={sales.panel}>ยังไม่มีพนักงานที่เปิดใช้งาน</p>}
+    }))} /> : <p className={panelClass}>ยังไม่มีพนักงานที่เปิดใช้งาน</p>}
   </SettingsShell>;
 
   return <SettingsShell {...shell} title={user.full_name} description={roleLabel(user.role)} back={{ href: base, label: "จัดสิทธิ์งานและการเงิน" }}>
@@ -42,7 +43,7 @@ async function Permissions({ searchParams }: SettingsPageProps) {
       <p><strong>เฉพาะของตน</strong> ยึดผู้รับผิดชอบโครงการสำหรับการดู แก้ไข และตรวจรับงาน ส่วนการเปิดโครงการและสิทธิ์ด้านสัญญาหรือการเงินยึดเจ้าของ Lead ปัจจุบัน</p>
       <p>ผู้ขอคืนเงินอนุมัติคำขอของตนเองไม่ได้</p>
     </aside>
-    {Object.entries(groups).map(([title, prefixes]) => <section key={title} className={`${sales.panel} ${styles.group}`}>
+    {Object.entries(groups).map(([title, prefixes]) => <section key={title} className={`${panelClass} ${styles.group}`}>
       <h2>{title}</h2>
       {(Object.keys(capabilityLabels) as Capability[]).filter(action => prefixes.includes(action.split(".")[0])).map(action => {
         const override = user.capabilities.find(item => item.action === action);

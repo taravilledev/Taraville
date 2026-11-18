@@ -10,6 +10,7 @@ import { saveIssuer } from "../../money-actions";
 import { SettingsLinks, SettingsShell, type SettingsPageProps } from "../settings-shell";
 import styles from "../../sales.module.css";
 import settings from "../settings.module.css";
+import { panelClass } from "@/components/panel";
 
 const base = "/sales/settings/issuers";
 
@@ -33,14 +34,14 @@ async function Issuers({ searchParams }: SettingsPageProps) {
   const issuer = issuerSchema.array().parse(result.data).find(item => item.brand === brand);
   return <SettingsShell {...shell} title={brandLabels[brand]} description="ข้อมูลผู้ออกเอกสารสำหรับเอกสารที่ออกใหม่"
     back={{ href: base, label: "บริษัทผู้ออกเอกสาร" }}>
-    <section className={`${styles.panel} ${settings.editor}`}>
-      <ActionForm action={saveIssuer.bind(null, { brand, version: issuer?.version ?? 0, requestId: randomUUID() })} label="บันทึกบริษัทผู้ออกเอกสาร" secondaryAction={{ label: "ยกเลิก", href: base }}><div className={styles.grid}>
+    <section className={`${panelClass} ${settings.editor}`}>
+      <ActionForm action={saveIssuer.bind(null, { brand, version: issuer?.version ?? 0, requestId: randomUUID() })} label="บันทึกบริษัทผู้ออกเอกสาร" secondaryAction={{ label: "ยกเลิก", href: base }}><div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
           <label className={styles.field}>ชื่อนิติบุคคล / ผู้ออกเอกสาร<input name="legal_name" maxLength={300} required defaultValue={issuer?.legal_name} /></label>
           <label className={styles.field}>เลขประจำตัวผู้เสียภาษี<input name="tax_id" maxLength={40} defaultValue={issuer?.tax_id} /></label>
-          <label className={`${styles.field} ${styles.full}`}>ที่อยู่<textarea name="address" required maxLength={3000} defaultValue={issuer?.address} /></label>
+          <label className={`${styles.field} col-span-full`}>ที่อยู่<textarea name="address" required maxLength={3000} defaultValue={issuer?.address} /></label>
           <label className={styles.field}>ข้อมูลติดต่อ<input name="contact" maxLength={500} defaultValue={issuer?.contact} /></label>
           <label className={styles.check}><input type="checkbox" name="is_synthetic" defaultChecked={issuer?.is_synthetic ?? true} />ข้อมูลทดสอบ (แสดงข้อความบนเอกสาร)</label>
-          <label className={`${styles.field} ${styles.full}`}>ข้อความสัญญามาตรฐาน<textarea name="contract_text" maxLength={100000} defaultValue={issuer?.contract_text} /><small className={styles.muted}>เว้นว่างได้ระหว่างเตรียมระบบ ต้องมีฉบับที่บริษัทอนุมัติก่อนออกสัญญาจริง</small></label>
+          <label className={`${styles.field} col-span-full`}>ข้อความสัญญามาตรฐาน<textarea name="contract_text" maxLength={100000} defaultValue={issuer?.contract_text} /><small className={styles.muted}>เว้นว่างได้ระหว่างเตรียมระบบ ต้องมีฉบับที่บริษัทอนุมัติก่อนออกสัญญาจริง</small></label>
           {brand === "BAAN_KUNAPAP" && <label className={styles.check}><input type="checkbox" name="contract_text_approved" />ยืนยันว่าบริษัทอนุมัติข้อความฉบับที่บันทึกนี้ให้ใช้กับธุรกรรมจริง{issuer?.contract_text_approved ? " · ข้อความที่บันทึกอยู่ได้รับอนุมัติแล้ว" : ""}</label>}
         </div></ActionForm>
     </section>
