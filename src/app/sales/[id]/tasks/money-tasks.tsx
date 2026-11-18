@@ -5,6 +5,7 @@ import { EvidenceUpload } from "../../evidence-upload";
 import { PaymentPaper } from "./payment-paper";
 import { AcceptanceForm } from "../acceptance-form";
 import styles from "../../sales.module.css";
+import { checkRowClass } from "@/components/check-row";
 import { idOf, type TaskData } from "./task-data";
 import { noticeClass } from "@/components/notice";
 
@@ -37,7 +38,7 @@ export function PrepareInstalmentTask({ sale, finance, agreement, row }: TaskDat
 export function WithdrawPaymentTask({ sale, finance, row }: TaskData) {
   return <ActionForm action={withdrawPayment.bind(null, idOf(sale, row ?? "", finance?.version ?? 0))} label="ถอนรายการรับเงิน">
     <label className={styles.field}>เหตุผล<textarea name="reason" maxLength={1000} required /></label>
-    <label className={styles.check}><input type="checkbox" name="confirmed" required />ยืนยันถอนรายการนี้จากคิวรอตรวจ</label>
+    <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ยืนยันถอนรายการนี้จากคิวรอตรวจ</label>
   </ActionForm>;
 }
 
@@ -59,14 +60,14 @@ export function FixReceiptTask({ sale, finance, row }: TaskData) {
           <textarea name="description" maxLength={1000} required={doc.state === "cancelled"} />
           {doc.state === "issued" && <small>เว้นว่างเพื่อยกเลิกใบเสร็จอย่างเดียว</small>}
         </label>}
-        <label className={styles.check}><input type="checkbox" name="confirmed" required />ยืนยันการแก้ไขเอกสารฉบับนี้</label>
+        <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ยืนยันการแก้ไขเอกสารฉบับนี้</label>
       </ActionForm></section>}
     {canAmount && <section><h3>ยอดรับจริงที่บันทึกผิด</h3>
       <ActionForm action={correctPayment.bind(null, idOf(sale, doc.id))} label="ยืนยันยอดรับจริงที่ถูกต้อง">
         <label className={styles.field}>ยอดที่รับจริง (บาท)<input name="amount" inputMode="decimal" required /></label>
         <label className={styles.field}>เหตุผล<textarea name="reason" maxLength={1000} required /></label>
         <EvidenceUpload caseId={sale.id} category="payment" />
-        <label className={styles.check}><input type="checkbox" name="confirmed" required />ตรวจสอบหลักฐานยอดรับจริงแล้ว รายการนี้เป็นการแก้บันทึก</label>
+        <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ตรวจสอบหลักฐานยอดรับจริงแล้ว รายการนี้เป็นการแก้บันทึก</label>
       </ActionForm></section>}
   </>;
 }

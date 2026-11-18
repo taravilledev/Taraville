@@ -9,6 +9,7 @@ import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { saveIssuer } from "../../money-actions";
 import { SettingsLinks, SettingsShell, type SettingsPageProps } from "../settings-shell";
 import styles from "../../sales.module.css";
+import { checkRowClass } from "@/components/check-row";
 import settings from "../settings.module.css";
 import { panelClass } from "@/components/panel";
 
@@ -40,9 +41,9 @@ async function Issuers({ searchParams }: SettingsPageProps) {
           <label className={styles.field}>เลขประจำตัวผู้เสียภาษี<input name="tax_id" maxLength={40} defaultValue={issuer?.tax_id} /></label>
           <label className={`${styles.field} col-span-full`}>ที่อยู่<textarea name="address" required maxLength={3000} defaultValue={issuer?.address} /></label>
           <label className={styles.field}>ข้อมูลติดต่อ<input name="contact" maxLength={500} defaultValue={issuer?.contact} /></label>
-          <label className={styles.check}><input type="checkbox" name="is_synthetic" defaultChecked={issuer?.is_synthetic ?? true} />ข้อมูลทดสอบ (แสดงข้อความบนเอกสาร)</label>
+          <label className={checkRowClass}><input type="checkbox" name="is_synthetic" defaultChecked={issuer?.is_synthetic ?? true} />ข้อมูลทดสอบ (แสดงข้อความบนเอกสาร)</label>
           <label className={`${styles.field} col-span-full`}>ข้อความสัญญามาตรฐาน<textarea name="contract_text" maxLength={100000} defaultValue={issuer?.contract_text} /><small className="text-sm text-muted-foreground">เว้นว่างได้ระหว่างเตรียมระบบ ต้องมีฉบับที่บริษัทอนุมัติก่อนออกสัญญาจริง</small></label>
-          {brand === "BAAN_KUNAPAP" && <label className={styles.check}><input type="checkbox" name="contract_text_approved" />ยืนยันว่าบริษัทอนุมัติข้อความฉบับที่บันทึกนี้ให้ใช้กับธุรกรรมจริง{issuer?.contract_text_approved ? " · ข้อความที่บันทึกอยู่ได้รับอนุมัติแล้ว" : ""}</label>}
+          {brand === "BAAN_KUNAPAP" && <label className={checkRowClass}><input type="checkbox" name="contract_text_approved" />ยืนยันว่าบริษัทอนุมัติข้อความฉบับที่บันทึกนี้ให้ใช้กับธุรกรรมจริง{issuer?.contract_text_approved ? " · ข้อความที่บันทึกอยู่ได้รับอนุมัติแล้ว" : ""}</label>}
         </div></ActionForm>
     </section>
   </SettingsShell>;

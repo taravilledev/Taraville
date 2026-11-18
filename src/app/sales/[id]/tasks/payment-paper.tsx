@@ -8,7 +8,7 @@ import { paymentMethods } from "@/lib/sales/financial-models";
 import { formatDate } from "@/lib/sales/date";
 import { EvidenceUpload } from "../../evidence-upload";
 import { ReceiptPaper } from "../../documents/[id]/receipt-paper";
-import shared from "../../sales.module.css";
+import { checkRowClass } from "@/components/check-row";
 import styles from "./payment-paper.module.css";
 
 type Action = (state: ActionState, data: FormData) => Promise<ActionState>;
@@ -95,7 +95,7 @@ export function PaymentPaper({ mode, brand, action, caseId, customerName, custom
         {mode === "receipt" && <><input type="hidden" name="method" value={method} /><input type="hidden" name="payer_name" value={payerName} />
           <input type="hidden" name="description" value={description} /></>}
         {amountEditable && <input type="hidden" name="amount" value={amount} />}{kindOptions && <input type="hidden" name="kind" value={kind} />}
-        {mode === "invoice" && <label className={shared.check}><input type="checkbox" name="confirmed" required />ตรวจงวด ยอดเงิน และวันครบกำหนดแล้ว</label>}
+        {mode === "invoice" && <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ตรวจงวด ยอดเงิน และวันครบกำหนดแล้ว</label>}
       </> : <article className={styles.paper} aria-label={mode === "invoice" ? "แก้ไขใบแจ้งชำระบนเอกสาร" : "เตรียมใบเสร็จบนเอกสาร"}>
         <Letterhead mode={mode} brand={brand} /><dl className={styles.facts}><div><dt>ลูกค้า</dt><dd>{customerName}</dd></div>
           {customerAddress && <div><dt>ที่อยู่</dt><dd>{customerAddress}</dd></div>}</dl>

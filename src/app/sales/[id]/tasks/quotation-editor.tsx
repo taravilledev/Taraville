@@ -6,6 +6,7 @@ import type { AgreementDetail } from "@/lib/sales/agreement-models";
 import type { SalesCase } from "@/lib/sales/models";
 import { formatMoney, parseMoney } from "@/lib/sales/money";
 import styles from "../../sales.module.css";
+import { checkRowClass } from "@/components/check-row";
 import local from "./quotation-editor.module.css";
 import { quotationPaperSchema } from "@/lib/sales/agreement-inputs";
 import { TaskHeader } from "./task-header";
@@ -157,7 +158,7 @@ export function QuotationEditor({ sale, agreement, designArea, action }: {
           <p className="text-sm text-muted-foreground">{previous?.total_cents && previous.price_set !== false && !previous.design_fee_separate
             ? "กรอกราคาก่อสร้างสำหรับฉบับใหม่ ค่าออกแบบเรียกเก็บแยก"
             : "ค่าออกแบบเรียกเก็บแยกจากราคานี้"}</p>
-          <label className={styles.check}><input type="checkbox" checked={priceUnset} onChange={event => setPriceUnset(event.target.checked)} />ยังไม่ระบุราคา · ฉบับประมาณราคา</label>
+          <label className={checkRowClass}><input type="checkbox" checked={priceUnset} onChange={event => setPriceUnset(event.target.checked)} />ยังไม่ระบุราคา · ฉบับประมาณราคา</label>
           {!priceUnset && <label className={`${styles.field} ${local.price}`}>ราคาก่อสร้าง (บาท)<input name="quotation_price" inputMode="decimal" value={price} maxLength={20}
             aria-invalid={!!errors.price} aria-describedby={errors.price ? "quote-error-price" : undefined} onChange={event => setPrice(event.target.value)} />{message("price")}</label>}
           {priceUnset && <p className="text-sm text-muted-foreground">ต้องเพิ่มราคาในฉบับถัดไปก่อนบันทึกลูกค้ายอมรับและเตรียมสัญญา</p>}

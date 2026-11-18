@@ -7,7 +7,7 @@ import type { AgreementDetail } from "@/lib/sales/agreement-models";
 import { ContractAddendumContent } from "../../documents/[id]/photo-contract-content";
 import { EvidenceUpload } from "../../evidence-upload";
 import { ContractClauses } from "./contract-party-fields";
-import shared from "../../sales.module.css";
+import { checkRowClass } from "@/components/check-row";
 import styles from "./contract-paper.module.css";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -41,7 +41,7 @@ export function ContractAddendumForm({ contract, caseId, action }: {
       <ActionForm action={action} label="บันทึกเอกสารแนบท้ายที่ลงนามแล้ว">
         <input type="hidden" name="addendum_input" value={JSON.stringify(input)} />
         <EvidenceUpload caseId={caseId} category="agreement" />
-        <label className={shared.check}><input type="checkbox" name="confirmed" required />เอกสารตรงกับตัวอย่างและลงนามเรียบร้อยแล้ว</label>
+        <label className={checkRowClass}><input type="checkbox" name="confirmed" required />เอกสารตรงกับตัวอย่างและลงนามเรียบร้อยแล้ว</label>
       </ActionForm>
     </> : <form className={styles.pages} onSubmit={event => {
       event.preventDefault();

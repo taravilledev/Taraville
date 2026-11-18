@@ -5,7 +5,7 @@ import { PaymentPaperPreview } from "./payment-paper";
 import { paymentKinds } from "@/lib/sales/financial-models";
 import type { TaskData } from "./task-data";
 import { idOf } from "./task-data";
-import styles from "../../sales.module.css";
+import { checkRowClass } from "@/components/check-row";
 import { panelClass } from "@/components/panel";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -21,7 +21,7 @@ export function ConfirmPaymentTask({ sale, finance, row }: TaskData) {
       {payment.proof_path ? <p><Link href={`/sales/${sale.id}/evidence?path=${encodeURIComponent(payment.proof_path)}`} target="_blank" prefetch={false}>เปิดหลักฐานการรับเงิน</Link></p> : <p>รายการเงินสด · ไม่มีไฟล์หลักฐานแนบ</p>}
       <ActionForm action={confirmPayment.bind(null, idOf(sale, payment.id, finance.version))} label="ยืนยันรับเงินจริงและออกใบเสร็จ">
         <p className="text-sm text-muted-foreground">เมื่อยืนยันแล้วจึงนับยอดรับจริงและออกเลขใบเสร็จ ไม่สามารถแก้ยอดบนเอกสารตัวอย่างนี้</p>
-        <label className={styles.check}><input type="checkbox" name="funds_confirmed" required />ตรวจสอบยอด วันที่ วิธีรับเงิน และได้รับเงินจริงแล้ว</label>
+        <label className={checkRowClass}><input type="checkbox" name="funds_confirmed" required />ตรวจสอบยอด วันที่ วิธีรับเงิน และได้รับเงินจริงแล้ว</label>
       </ActionForm>
       {sale.permissions["financial.prepare"] && <p><Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/${sale.id}?task=withdraw-payment&row=${payment.id}`} prefetch={false}>ข้อมูลผิด · ถอนรายการแล้วบันทึกใหม่</Link></p>}
     </section>

@@ -2,6 +2,7 @@ import { ActionForm } from "@/app/walkin/action-form";
 import { recordAcceptance } from "../agreement-actions";
 import { EvidenceUpload } from "../evidence-upload";
 import styles from "../sales.module.css";
+import { checkRowClass } from "@/components/check-row";
 
 export function AcceptanceForm({ caseId, identity, requiresDate = false }: {
   caseId: string; identity: { id: string; version: number; requestId: string };
@@ -13,7 +14,7 @@ export function AcceptanceForm({ caseId, identity, requiresDate = false }: {
       <small>ใช้วันที่ตรวจรับจริงตามหลักฐาน ระบบจะกำหนดชำระภายใน 30 วันปฏิทินหลังวันที่ระบุ</small></label>}
     <EvidenceUpload caseId={caseId} category="acceptance" />
     <label className={styles.field}>ผลการตรวจรับ<textarea name="note" required maxLength={3000} /></label>
-    <label className={styles.check}><input type="checkbox" name="inspected" required />ตรวจงานตามงวดแล้ว</label>
-    <label className={styles.check}><input type="checkbox" name="customer_accepted" required />ลูกค้ายอมรับงานตามหลักฐานแล้ว</label>
+    <label className={checkRowClass}><input type="checkbox" name="inspected" required />ตรวจงานตามงวดแล้ว</label>
+    <label className={checkRowClass}><input type="checkbox" name="customer_accepted" required />ลูกค้ายอมรับงานตามหลักฐานแล้ว</label>
   </ActionForm>;
 }

@@ -6,6 +6,7 @@ import type { SalesCase } from "@/lib/sales/models";
 import type { Task } from "@/lib/sales/tasks";
 import { saveHouseBrief } from "../house-brief-actions";
 import styles from "../sales.module.css";
+import { factsClass } from "@/components/facts";
 import { HouseBriefEditor } from "./house-brief-editor";
 import { panelClass } from "@/components/panel";
 
@@ -26,7 +27,7 @@ export function HouseBriefPanel({ sale, task, tab }: { sale: SalesCase; task?: T
   const canEdit = sale.permissions["financial.prepare"] && sale.status !== "cancelled";
   const filledFields = fields.filter(({ key }) => brief[key]);
   const summary = filledFields.length > 0
-    ? <dl className={`${styles.facts} ${styles.houseBriefFacts}`}>{filledFields.map(({ key, label }) =>
+    ? <dl className={`${factsClass} ${styles.houseBriefFacts}`}>{filledFields.map(({ key, label }) =>
       <div key={key} className={key === "layout" ? "col-span-full" : undefined}><dt>{label}</dt><dd>{brief[key]}</dd></div>)}</dl>
     : <p className="text-sm text-muted-foreground">ยังไม่ได้ระบุความต้องการบ้าน</p>;
 

@@ -5,6 +5,7 @@ import type { NextStep } from "@/lib/sales/case-progress";
 import { taskHref } from "@/lib/sales/tasks";
 import { formatMoney } from "@/lib/sales/money";
 import styles from "../sales.module.css";
+import { pageHeaderClass } from "@/components/page-header";
 import { tagClass } from "@/components/tag";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -21,7 +22,7 @@ export function CaseHeader({ sale, summary, step, workflow, navigation, showProg
   const current = flow.indexOf(sale.status);
   const money = (value: string | null) => value === null ? "—" : `${formatMoney(value)} บาท`;
   return <>
-    <div className={styles.header}>
+    <div className={pageHeaderClass}>
       <div><p className="text-sm text-muted-foreground">{brandLabels[sale.brand]}{sale.unit_label ? ` · ${sale.unit_label}` : ""}</p><h1>{sale.code} · {sale.customer_name}</h1></div>
       <div className="flex flex-wrap items-center gap-3"><span className={tagClass}>{caseStatusLabels[sale.status]}</span><Link className={buttonVariants({ variant: "outline", size: "auto" })} href="/dashboard" prefetch={false}>กลับแดชบอร์ด</Link></div>
     </div>

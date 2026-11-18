@@ -10,6 +10,7 @@ import { ExecutiveDashboard } from "../sales/executive-dashboard";
 import { DashboardOverview } from "./overview";
 import { groupDashboardProjects, projectOwnershipLabels, type ProjectOwnership } from "./project-ownership";
 import styles from "../sales/sales.module.css";
+import { pageHeaderClass } from "@/components/page-header";
 import { noticeClass } from "@/components/notice";
 import { panelClass } from "@/components/panel";
 import { tagClass } from "@/components/tag";
@@ -57,7 +58,7 @@ async function Workspace({ searchParams }: Props) {
     const page = Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1;
     const baseWork = status === "active" && !query ? dashboard : overviewWork;
     return <AppShell staff={staff} wide><div className="grid gap-6">
-      <div className={styles.header}><div><h1>แดชบอร์ด</h1><p>ติดตามงานและโครงการของบ้านคุณภาพและธาราวิลล์</p></div>
+      <div className={pageHeaderClass}><div><h1>แดชบอร์ด</h1><p>ติดตามงานและโครงการของบ้านคุณภาพและธาราวิลล์</p></div>
         <div className="flex flex-wrap items-center gap-3"><Link className={buttonVariants({ size: "auto" })} href="/summary" prefetch={false}>สรุปการเงินบ้านคุณภาพ</Link>{settings}</div>
       </div>
       <nav className={styles.tabs} aria-label="เลือกแบรนด์สำหรับแดชบอร์ด">
@@ -81,7 +82,7 @@ async function Workspace({ searchParams }: Props) {
     return params.size ? `/dashboard?${params}#dashboard-projects` : "/dashboard#dashboard-projects";
   }
   return <AppShell staff={staff} wide><div className="grid gap-6">
-    <div className={styles.header}><div><h1>แดชบอร์ด</h1><p>บ้านคุณภาพ · ธาราวิลล์</p></div>
+    <div className={pageHeaderClass}><div><h1>แดชบอร์ด</h1><p>บ้านคุณภาพ · ธาราวิลล์</p></div>
       <div className="flex flex-wrap items-center gap-3">
         {executive && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href="/summary" prefetch={false}>สรุปการเงินบ้านคุณภาพ</Link>}{settings}
       </div>

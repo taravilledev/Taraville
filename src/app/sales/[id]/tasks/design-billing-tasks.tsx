@@ -3,6 +3,7 @@ import { formatMoney } from "@/lib/sales/money";
 import { cancelDesignInvoice, issueDesignInvoice, prepareDesignPayment } from "../../design-billing-actions";
 import { PaymentPaper } from "./payment-paper";
 import styles from "../../sales.module.css";
+import { checkRowClass } from "@/components/check-row";
 import { idOf, type TaskData } from "./task-data";
 
 const labels = ["ส่งมอบแบบแปลน", "ส่งมอบ 3D", "ส่งมอบครบ"];
@@ -31,6 +32,6 @@ export function CancelDesignInvoiceTask({ sale, finance, row }: TaskData) {
     <p>{bill.label} · {formatMoney(bill.amount_cents)} บาท</p>
     <p className="text-sm text-muted-foreground">บิลเดิมยังอยู่ในประวัติ การยกเลิกบิลนี้ไม่ลบรายการรับเงินจริง และไม่ได้ปลดล็อกแพ็กเกจที่เคยรับเงินแล้ว</p>
     <label className={styles.field}>เหตุผลที่ยกเลิก<textarea name="reason" maxLength={1000} required /></label>
-    <label className={styles.check}><input type="checkbox" name="confirmed" required />ยืนยันยกเลิกใบแจ้งชำระฉบับนี้</label>
+    <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ยืนยันยกเลิกใบแจ้งชำระฉบับนี้</label>
   </ActionForm>;
 }

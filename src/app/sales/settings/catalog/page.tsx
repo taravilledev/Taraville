@@ -12,6 +12,7 @@ import { catalogPage, matchesQuery, unitStatus } from "./catalog-list";
 import { setUnitActivity } from "./unit-activity";
 import { UnitForm } from "./unit-form";
 import sales from "../../sales.module.css";
+import { checkRowClass } from "@/components/check-row";
 import styles from "../settings.module.css";
 import { panelClass } from "@/components/panel";
 import { buttonVariants } from "@/components/ui/button";
@@ -142,6 +143,6 @@ function DevelopmentForm({ development, backHref }: { development?: Development;
       <label className={sales.field}>ชื่อโครงการ<input name="name" required maxLength={200} defaultValue={development?.name} /></label>
       <label className={`${sales.field} col-span-full`}>ที่ตั้งโครงการ<textarea name="address" maxLength={2000} defaultValue={development?.address} /></label>
     </div>
-    <label className={sales.check}><input type="checkbox" name="is_active" defaultChecked={development?.is_active ?? true} />เปิดใช้งาน</label>
+    <label className={checkRowClass}><input type="checkbox" name="is_active" defaultChecked={development?.is_active ?? true} />เปิดใช้งาน</label>
   </ActionForm>;
 }

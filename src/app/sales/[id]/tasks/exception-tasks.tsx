@@ -5,6 +5,7 @@ import { changeReservedUnit, saveAdjustment, saveReservation } from "../../adjus
 import { decideRefund, payRefund, requestRefund } from "../../refund-actions";
 import { EvidenceUpload } from "../../evidence-upload";
 import styles from "../../sales.module.css";
+import { checkRowClass } from "@/components/check-row";
 import { idOf, type TaskData } from "./task-data";
 import { noticeClass } from "@/components/notice";
 
@@ -13,7 +14,7 @@ function AgreementFields({ caseId }: { caseId: string }) {
     <label className={styles.field}>เหตุผล<textarea name="reason" required maxLength={1000} /></label>
     <label className={styles.field}>รายละเอียดข้อตกลงที่ลงนาม<textarea name="agreement" required maxLength={100000} /></label>
     <EvidenceUpload caseId={caseId} category="agreement" />
-    <label className={styles.check}><input type="checkbox" name="confirmed" required />ตรวจสอบยอดและหลักฐานข้อตกลงที่ลงนามแล้ว</label>
+    <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ตรวจสอบยอดและหลักฐานข้อตกลงที่ลงนามแล้ว</label>
   </>;
 }
 const Effect = ({ children }: { children: string }) => <p className={noticeClass} role="note">{children}</p>;
@@ -29,7 +30,7 @@ export function ChangeUnitTask({ sale, reservation }: TaskData) {
       : <label className={styles.field}>ราคาสุทธิที่ตกลงใหม่ (บาท)<input name="price" inputMode="decimal" required /></label>}
     <label className={styles.field}>เหตุผล<textarea name="reason" maxLength={1000} required /></label>
     <EvidenceUpload caseId={sale.id} category="agreement" />
-    <label className={styles.check}><input type="checkbox" name="confirmed" required />ตรวจสอบข้อตกลงกับลูกค้าแล้ว</label>
+    <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ตรวจสอบข้อตกลงกับลูกค้าแล้ว</label>
   </ActionForm>;
 }
 
@@ -42,7 +43,7 @@ export function AmendTask({ sale, agreement }: TaskData) {
       <label className={styles.field}>ยอดเต็ม (บาท)<input name={`gross_${row.id}`} inputMode="decimal" required defaultValue={formatMoney(row.gross_cents).replaceAll(",", "")} /></label>
       <label className={styles.field}>เครดิตที่ใช้ (บาท)<input name={`credit_${row.id}`} inputMode="decimal" required defaultValue={formatMoney(row.credit_cents).replaceAll(",", "")} /></label>
     </fieldset>)}
-    <label className={styles.check}><input type="checkbox" name="work_changed" />ขอบเขตงานเปลี่ยน ต้องตรวจรับงานใหม่และยกเลิกใบแจ้งชำระงวดงานเดิม</label>
+    <label className={checkRowClass}><input type="checkbox" name="work_changed" />ขอบเขตงานเปลี่ยน ต้องตรวจรับงานใหม่และยกเลิกใบแจ้งชำระงวดงานเดิม</label>
     <AgreementFields caseId={sale.id} />
   </ActionForm>;
 }
@@ -59,7 +60,7 @@ export function ReleaseTask({ sale }: TaskData) {
   return <ActionForm action={saveReservation.bind(null, "release", idOf(sale))} label="ปล่อยแปลง">
     <Effect>แปลงจะเปิดให้ลูกค้ารายอื่นจองได้ทันที</Effect>
     <label className={styles.field}>เหตุผล<textarea name="reason" required maxLength={1000} /></label>
-    <label className={styles.check}><input type="checkbox" name="confirmed" required />ยืนยันเปิดแปลงให้ลูกค้ารายอื่นจองได้</label>
+    <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ยืนยันเปิดแปลงให้ลูกค้ารายอื่นจองได้</label>
   </ActionForm>;
 }
 
@@ -95,6 +96,6 @@ export function PayRefundTask({ sale, refunds, row }: TaskData) {
     <p>{formatMoney(refund.amount_cents)} บาท · อนุมัติแล้ว</p>
     <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1"><label className={styles.field}>วันที่จ่ายเงินจริง<input type="date" name="paid_date" required /></label>
       <label className={styles.field}>วิธีจ่าย<select name="method"><option value="transfer">โอนเงิน</option><option value="cash">เงินสด</option><option value="cheque">เช็คที่เรียกเก็บแล้ว</option></select></label><EvidenceUpload caseId={sale.id} category="refund" /></div>
-    <label className={styles.check}><input type="checkbox" name="funds_confirmed" required />ตรวจสอบว่าจ่ายเงินจริงตามยอดอนุมัติและมีหลักฐานแล้ว</label>
+    <label className={checkRowClass}><input type="checkbox" name="funds_confirmed" required />ตรวจสอบว่าจ่ายเงินจริงตามยอดอนุมัติและมีหลักฐานแล้ว</label>
   </ActionForm>;
 }

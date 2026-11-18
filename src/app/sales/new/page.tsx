@@ -7,7 +7,7 @@ import { leadWork } from "@/lib/sales/lead-work";
 import { AppShell } from "@/app/walkin/app-shell";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { NewCaseForm } from "./new-case-form";
-import styles from "../sales.module.css";
+import { pageHeaderClass } from "@/components/page-header";
 import { panelClass } from "@/components/panel";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -31,7 +31,7 @@ async function NewCase({ searchParams }: Props) {
     : !work.canCreate ? "Lead นี้เปิดโครงการไม่ได้ในขณะนี้ (Lead ปิดอยู่ หรือไม่สามารถเริ่มดำเนินโครงการใหม่ได้)"
     : query.project && !selectedProject ? "ไม่พบโครงการที่เปิดจาก Lead นี้ได้ กรุณาเลือกโครงการจากหน้า Lead อีกครั้ง" : null;
   return <AppShell staff={staff}><div className="grid gap-6">
-    <div className={styles.header}><h1>เปิดโครงการ</h1><Link className={buttonVariants({ variant: "outline", size: "auto" })} href={lead ? `/leads/${lead.id}` : "/leads"} prefetch={false}>กลับหน้า Lead</Link></div>
+    <div className={pageHeaderClass}><h1>เปิดโครงการ</h1><Link className={buttonVariants({ variant: "outline", size: "auto" })} href={lead ? `/leads/${lead.id}` : "/leads"} prefetch={false}>กลับหน้า Lead</Link></div>
     <section className={panelClass}>
       {reason || !lead ? <p role="alert">{reason}</p>
         : <NewCaseForm workspace={workspace} lead={lead} projects={projects} projectId={selectedProject?.id ?? ""} requestId={randomUUID()} />}

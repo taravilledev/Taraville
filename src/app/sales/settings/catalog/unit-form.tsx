@@ -4,6 +4,7 @@ import { formatMoney } from "@/lib/sales/money";
 import { ActionForm } from "@/app/walkin/action-form";
 import { saveUnit } from "../../actions";
 import styles from "../../sales.module.css";
+import { checkRowClass } from "@/components/check-row";
 
 export function UnitForm({ developmentId, unit, requestId, backHref }: { developmentId: string; unit?: z.infer<typeof unitSchema>; requestId: string; backHref: string }) {
   const detail = (key: string) => typeof unit?.details[key] === "string" ? unit.details[key] as string : "";
@@ -17,7 +18,7 @@ export function UnitForm({ developmentId, unit, requestId, backHref }: { develop
       <label className={styles.field}>สถานะก่อสร้าง<input name="build_status" maxLength={100} placeholder="เช่น พร้อมเข้าอยู่, ก่อสร้าง 70%" defaultValue={detail("build_status")} /></label>
       <label className={styles.field}>ราคาทะเบียน (บาท)<input name="list_price" inputMode="decimal" defaultValue={unit?.list_price_cents != null ? formatMoney(unit.list_price_cents).replaceAll(",", "") : ""} /></label>
     </div>
-    <label className={styles.check}><input type="checkbox" name="is_active" defaultChecked={unit?.is_active ?? true} />เปิดใช้งาน</label>
+    <label className={checkRowClass}><input type="checkbox" name="is_active" defaultChecked={unit?.is_active ?? true} />เปิดใช้งาน</label>
     <p className="text-sm text-muted-foreground">การแก้ราคาทะเบียนไม่เปลี่ยนราคาหรือเอกสารของรายการขายที่เปิดไว้แล้ว</p>
   </ActionForm>;
 }

@@ -6,6 +6,8 @@ import { formatMoney } from "@/lib/sales/money";
 import { createCase } from "../actions";
 import { SearchPicker } from "./search-picker";
 import styles from "../sales.module.css";
+import { factsClass } from "@/components/facts";
+import { pageHeaderClass } from "@/components/page-header";
 import dialogStyles from "@/app/walkin/walkin.module.css";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -31,7 +33,7 @@ export function OpeningFields({ units, leadId, requestId }: { units: Unit[]; lea
       <label className={styles.field}>ค้นหาแปลงหรือแบบบ้าน<input type="search" placeholder="เลขแปลง หรือชื่อแบบบ้าน" value={query} onChange={event => setQuery(event.target.value)} /></label>
       <SearchPicker label="โครงการ" placeholder="ทุกโครงการ" options={developments} selectedId={developmentId} onChange={setDevelopmentId} />
     </div>
-    <div className={styles.header}><h2>เลือกแปลงเพื่อเปิดโครงการ</h2><p role="status">{matches.length} จาก {units.length} แปลงว่าง</p></div>
+    <div className={cn(pageHeaderClass, "items-center gap-2 [&_p]:m-0")}><h2>เลือกแปลงเพื่อเปิดโครงการ</h2><p role="status">{matches.length} จาก {units.length} แปลงว่าง</p></div>
     {!matches.length ? <div className={styles.unitEmpty}><strong>ไม่พบแปลงที่ตรงกับเงื่อนไข</strong><p>ลองเปลี่ยนคำค้นหรือล้างตัวกรองโครงการ</p></div> : <>
       <table className={styles.unitTable}>
         <caption className="sr-only">แปลงว่างที่เปิดใช้งาน เลือกดูรายละเอียดก่อนเปิดโครงการ</caption>
@@ -60,11 +62,11 @@ export function OpeningFields({ units, leadId, requestId }: { units: Unit[]; lea
         </div>
         <div className={dialogStyles.dialogBody}>
           <dl className={styles.unitModalPrice}><dt>ราคาทะเบียน</dt><dd>{price(unit)}</dd></dl>
-          <dl className={`${styles.facts} ${styles.unitPrimaryFacts}`}>
+          <dl className={`${factsClass} ${styles.unitPrimaryFacts}`}>
             {[["model", "แบบบ้าน"], ["land_area", "เนื้อที่ดิน (ตร.ว.)"], ["usable_area", "พื้นที่ใช้สอย (ตร.ม.)"], ["build_status", "สถานะก่อสร้าง"]].map(([key, label]) =>
               <div key={key}><dt>{label}</dt><dd>{detail(unit, key)}</dd></div>)}
           </dl>
-          <dl className={`${styles.facts} ${styles.unitSecondaryFacts}`}>
+          <dl className={`${factsClass} ${styles.unitSecondaryFacts}`}>
             <div><dt>ที่ตั้งโครงการ</dt><dd>{unit.address || "ยังไม่ระบุ"}</dd></div>
             <div><dt>ฟังก์ชันภายใน</dt><dd>{detail(unit, "layout")}</dd></div>
           </dl>

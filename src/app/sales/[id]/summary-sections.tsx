@@ -12,6 +12,7 @@ import { BkpMoneySection } from "./bkp-money-section";
 import { PendingPayments } from "./pending-payments";
 export { PendingPayments } from "./pending-payments";
 import styles from "../sales.module.css";
+import { factsClass } from "@/components/facts";
 import workspace from "./workspace-section.module.css";
 import { panelClass } from "@/components/panel";
 import { noticeClass } from "@/components/notice";
@@ -48,7 +49,7 @@ export function OverviewSection({ data, houseBrief }: { data: SummaryData; house
     ...exceptions.filter(task => task.name === "close"),
   ];
   return <>
-    <section className={panelClass}><h2>{sale.brand === "BAAN_KUNAPAP" && sale.can_finance ? "ข้อมูลลูกค้าและโครงการ" : "ข้อมูลงาน"}</h2><dl className={styles.facts}>
+    <section className={panelClass}><h2>{sale.brand === "BAAN_KUNAPAP" && sale.can_finance ? "ข้อมูลลูกค้าและโครงการ" : "ข้อมูลงาน"}</h2><dl className={factsClass}>
       <div><dt>ผู้รับผิดชอบงาน/รายการขาย</dt><dd>{sale.responsible_name}</dd></div><div><dt>เจ้าของ Lead ปัจจุบัน</dt><dd>{sale.lead_owner_name}</dd></div>
       {sale.can_finance && <>
         {sale.brand === "TARAVILLE" && <>
@@ -130,7 +131,7 @@ export function MoneySection({ data }: { data: SummaryData }) {
         <TaskLink data={data} name="fix-receipt" row={doc.id} /></li>)}</ul>
     </details>
     {closeout && <section className={panelClass}><h2>ยอดปิดงานปัจจุบัน</h2>
-      <dl className={styles.facts}>
+      <dl className={factsClass}>
         <div><dt>ยอดตามข้อตกลงปิดงาน</dt><dd>{formatMoney(closeout.retained_cents)} บาท</dd></div>
         <div><dt>รับสุทธิหลังหักยอดคืนแล้ว</dt><dd>{formatMoney(closeout.received_cents)} บาท</dd></div>
         <div><dt>ยังต้องรับ</dt><dd>{formatMoney(closeout.remaining_cents)} บาท</dd></div>

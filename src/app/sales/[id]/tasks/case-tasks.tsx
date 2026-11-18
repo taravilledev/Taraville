@@ -3,6 +3,7 @@ import { assignCase } from "../../actions";
 import { saveReservation } from "../../adjustment-actions";
 import { CaseForm } from "../case-form";
 import styles from "../../sales.module.css";
+import { checkRowClass } from "@/components/check-row";
 import { idOf, type TaskData } from "./task-data";
 
 export function EditCaseTask({ sale }: TaskData) {
@@ -12,7 +13,7 @@ export function EditCaseTask({ sale }: TaskData) {
 export function ReserveTask({ sale }: TaskData) {
   return <ActionForm action={saveReservation.bind(null, "confirm", idOf(sale))} label="ยืนยันจองแปลง">
     <p className="text-sm text-muted-foreground">ร่างยังไม่กันแปลง ยืนยันแล้วแปลงจะไม่ถูกขายซ้ำ</p>
-    <label className={styles.check}><input type="checkbox" name="confirmed" required />ยืนยันกันแปลงนี้ไว้ให้ลูกค้า</label>
+    <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ยืนยันกันแปลงนี้ไว้ให้ลูกค้า</label>
   </ActionForm>;
 }
 

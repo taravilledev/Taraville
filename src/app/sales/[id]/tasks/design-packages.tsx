@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { designAreaPattern, designPackages, designTierForArea, sumDesignInstalments } from "@/lib/sales/design-fees";
 import { formatMoney, parseMoney } from "@/lib/sales/money";
 import styles from "../../sales.module.css";
+import { checkRowClass } from "@/components/check-row";
+import { cn } from "@/lib/utils";
 
 const milestones = ["ส่งมอบแบบแปลน", "ส่งมอบ 3D", "ส่งมอบครบ"];
 const number = new Intl.NumberFormat("th-TH");
@@ -77,7 +79,7 @@ export function DesignPackages({ initialArea, plan }: {
           {item.id !== "under150" && <small className="text-sm text-muted-foreground">รวมรายการคำนวณวิศวกร</small>}
         </div>;
       })}</div>
-      {!areaTier && <label className={styles.check}><input type="radio" name="design_package" value="custom" checked={tier === "custom"} required onChange={() => setChoice("custom")} />กำหนดแพ็กเกจเฉพาะงาน</label>}
+      {!areaTier && <label className={cn(checkRowClass, "mt-2")}><input type="radio" name="design_package" value="custom" checked={tier === "custom"} required onChange={() => setChoice("custom")} />กำหนดแพ็กเกจเฉพาะงาน</label>}
     </fieldset>
     <label className={styles.field}>พื้นที่ใช้สอยจริง (ตร.ม.)
       <input name="usable_area" inputMode="decimal" pattern={designAreaPattern} required value={area} disabled={!tier && !area}

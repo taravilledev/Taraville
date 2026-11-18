@@ -12,6 +12,7 @@ import { ContractWizard } from "./contract-wizard";
 import { AgreementContent } from "../../documents/[id]/agreement-content";
 import Link from "next/link";
 import styles from "../../sales.module.css";
+import { checkRowClass } from "@/components/check-row";
 import { idOf, type TaskData } from "./task-data";
 import { DesignPackages } from "./design-packages";
 import { formatMoney } from "@/lib/sales/money";
@@ -73,7 +74,7 @@ export function LockContractTask({ sale, agreement, row, contractTemplate }: Tas
     {!canLock && <p><Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/${sale.id}?task=edit-contract&row=${draft.id}`} prefetch={false}>กลับไปแก้ร่าง</Link></p>}
     {canLock && <ActionForm action={lockContract.bind(null, { ...idOf(sale), documentId: draft.id, documentVersion: draft.version })} label="ล็อกและออกเลขสัญญา"
       secondaryAction={{ label: "กลับไปแก้ร่าง", href: `/sales/${sale.id}?task=edit-contract&row=${draft.id}` }}>
-      <label className={styles.check}><input type="checkbox" name="confirmed" required />ตรวจข้อมูลและพร้อมพิมพ์ให้ลงนาม</label>
+      <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ตรวจข้อมูลและพร้อมพิมพ์ให้ลงนาม</label>
     </ActionForm>}
   </>;
 }
@@ -84,7 +85,7 @@ export function UnlockContractTask({ sale, agreement, row }: TaskData) {
   return <ActionForm action={unlockContract.bind(null, { ...idOf(sale), documentId: doc.id, documentVersion: doc.version })} label="ปลดล็อกและสร้างร่างใหม่">
     <p>เลขที่ {doc.number} จะเก็บเป็นฉบับยกเลิก การล็อกร่างใหม่จะออกเลขใหม่</p>
     <label className={styles.field}>เหตุผลที่แก้ร่าง<textarea name="reason" required maxLength={3000} /></label>
-    <label className={styles.check}><input type="checkbox" name="confirmed" required />ฉบับนี้ยังไม่ได้ลงนาม และยืนยันกลับไปแก้ร่าง</label>
+    <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ฉบับนี้ยังไม่ได้ลงนาม และยืนยันกลับไปแก้ร่าง</label>
   </ActionForm>;
 }
 
@@ -132,7 +133,7 @@ export function SignPropertyContractTask({ sale, finance }: TaskData) {
     </select></label>
     <label className={styles.field}>จำนวนงวดดาวน์ (0 หากไม่มี)<input name="down_count" type="number" min={0} max={98} step={1} required /></label>
     <EvidenceUpload caseId={sale.id} category="agreement" />
-    <label className={styles.check}><input type="checkbox" name="confirmed" required />ตรวจสอบสัญญาที่ลงนามและยอดเงินจองแล้ว</label>
+    <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ตรวจสอบสัญญาที่ลงนามและยอดเงินจองแล้ว</label>
   </ActionForm>;
 }
 
