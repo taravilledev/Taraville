@@ -5,7 +5,6 @@ import { ActionForm, type ActionState } from "@/app/walkin/action-form";
 import type { AgreementDetail } from "@/lib/sales/agreement-models";
 import type { SalesCase } from "@/lib/sales/models";
 import { formatMoney, parseMoney } from "@/lib/sales/money";
-import styles from "../../sales.module.css";
 import { checkRowClass } from "@/components/check-row";
 import local from "./quotation-editor.module.css";
 import { quotationPaperSchema } from "@/lib/sales/agreement-inputs";
@@ -141,7 +140,7 @@ export function QuotationEditor({ sale, agreement, designArea, action }: {
         <fieldset className={`${local.section} ${local.house}`}><legend>ข้อมูลบ้าน</legend>
           <div className={local.houseFields}>{houseFields.map(({ key, label }) => {
             const current = brief[key];
-            return <div key={key} className={styles.field}><label htmlFor={`quote-${key}`}>{label}</label>
+            return <div key={key} className={local.field}><label htmlFor={`quote-${key}`}>{label}</label>
               <input id={`quote-${key}`} name={key} value={house[key]} maxLength={key === "model" ? 200 : key === "usable_area" ? 13 : 3}
                 inputMode={key === "model" ? undefined : key === "usable_area" ? "decimal" : "numeric"}
                 aria-invalid={!!errors[key]} aria-describedby={errors[key] ? `quote-error-${key}` : undefined}
@@ -159,17 +158,17 @@ export function QuotationEditor({ sale, agreement, designArea, action }: {
             ? "กรอกราคาก่อสร้างสำหรับฉบับใหม่ ค่าออกแบบเรียกเก็บแยก"
             : "ค่าออกแบบเรียกเก็บแยกจากราคานี้"}</p>
           <label className={checkRowClass}><input type="checkbox" checked={priceUnset} onChange={event => setPriceUnset(event.target.checked)} />ยังไม่ระบุราคา · ฉบับประมาณราคา</label>
-          {!priceUnset && <label className={`${styles.field} ${local.price}`}>ราคาก่อสร้าง (บาท)<input name="quotation_price" inputMode="decimal" value={price} maxLength={20}
+          {!priceUnset && <label className={`${local.field} ${local.price}`}>ราคาก่อสร้าง (บาท)<input name="quotation_price" inputMode="decimal" value={price} maxLength={20}
             aria-invalid={!!errors.price} aria-describedby={errors.price ? "quote-error-price" : undefined} onChange={event => setPrice(event.target.value)} />{message("price")}</label>}
           {priceUnset && <p className="text-sm text-muted-foreground">ต้องเพิ่มราคาในฉบับถัดไปก่อนบันทึกลูกค้ายอมรับและเตรียมสัญญา</p>}
         </fieldset>
         <fieldset className={local.section}><legend>รายละเอียดวัสดุและขอบเขตงาน</legend>
           <div className={local.tableHead} aria-hidden="true"><span>รายการ</span><span>ประมาณราคา / รายละเอียด</span><span>หมายเหตุ</span><span /></div>
           <div className={local.rows}>{specs.map((row, index) => <div key={index} className={local.row}>
-            <label className={styles.field}><span>รายการที่ {index + 1}</span><textarea value={row.item} maxLength={200} aria-label={`รายการที่ ${index + 1}`} aria-invalid={!!errors[`spec-${index}`]}
+            <label className={local.field}><span>รายการที่ {index + 1}</span><textarea value={row.item} maxLength={200} aria-label={`รายการที่ ${index + 1}`} aria-invalid={!!errors[`spec-${index}`]}
               aria-describedby={errors[`spec-${index}`] ? `quote-error-spec-${index}` : undefined} onChange={event => updateSpec(index, "item", event.target.value)} />{message(`spec-${index}`)}</label>
-            <label className={styles.field}><span>รายละเอียดที่ {index + 1}</span><textarea value={row.detail} maxLength={3000} aria-label={`รายละเอียดที่ ${index + 1}`} onChange={event => updateSpec(index, "detail", event.target.value)} /></label>
-            <label className={styles.field}><span>หมายเหตุที่ {index + 1}</span><textarea value={row.note} maxLength={1000} aria-label={`หมายเหตุที่ ${index + 1}`} onChange={event => updateSpec(index, "note", event.target.value)} /></label>
+            <label className={local.field}><span>รายละเอียดที่ {index + 1}</span><textarea value={row.detail} maxLength={3000} aria-label={`รายละเอียดที่ ${index + 1}`} onChange={event => updateSpec(index, "detail", event.target.value)} /></label>
+            <label className={local.field}><span>หมายเหตุที่ {index + 1}</span><textarea value={row.note} maxLength={1000} aria-label={`หมายเหตุที่ ${index + 1}`} onChange={event => updateSpec(index, "note", event.target.value)} /></label>
             <button type="button" className={local.remove} aria-label={`ลบรายการที่ ${index + 1}`} onClick={() => {
               setSpecs(rows => rows.filter((_, at) => at !== index)); setErrors({}); addSpecButton.current?.focus();
             }}>ลบ</button>
@@ -179,7 +178,7 @@ export function QuotationEditor({ sale, agreement, designArea, action }: {
         <fieldset className={local.section}><legend>เงื่อนไขเพิ่มเติม</legend>
           <p className={local.note}>ตรวจข้อความและขอบเขตงานให้ตรงกับข้อตกลงของโครงการนี้</p>
           <ol className={local.conditions}>{exclusions.map((text, index) => <li key={index}>
-            <div className={local.exclusion}><label className={styles.field}><span className="sr-only">เงื่อนไขข้อที่ {index + 1}</span><textarea value={text} maxLength={2000} aria-label={`เงื่อนไขข้อที่ ${index + 1}`} aria-invalid={!!errors[`exclusion-${index}`]}
+            <div className={local.exclusion}><label className={local.field}><span className="sr-only">เงื่อนไขข้อที่ {index + 1}</span><textarea value={text} maxLength={2000} aria-label={`เงื่อนไขข้อที่ ${index + 1}`} aria-invalid={!!errors[`exclusion-${index}`]}
               aria-describedby={errors[`exclusion-${index}`] ? `quote-error-exclusion-${index}` : undefined}
               onChange={event => setExclusions(rows => rows.map((value, at) => at === index ? event.target.value : value))} />{message(`exclusion-${index}`)}</label>
               <button type="button" className={local.remove} aria-label={`ลบเงื่อนไขข้อที่ ${index + 1}`} onClick={() => {
@@ -187,12 +186,12 @@ export function QuotationEditor({ sale, agreement, designArea, action }: {
               }}>ลบ</button></div>
           </li>)}</ol>
           <button ref={addExclusionButton} type="button" className={buttonVariants({ variant: "outline", size: "auto" })} disabled={exclusions.length >= 50} onClick={() => setExclusions(rows => [...rows, ""])}>+ เพิ่มเงื่อนไข</button>
-          <label className={styles.field}>รายละเอียดขอบเขตงานเพิ่มเติม<textarea value={description} maxLength={10000} onChange={event => setDescription(event.target.value)} /></label>
-          <label className={styles.field}>หมายเหตุท้ายใบเสนอราคา<textarea value={paper.footnote} maxLength={3000} onChange={event => setPaper({ ...paper, footnote: event.target.value })} /></label>
+          <label className={local.field}>รายละเอียดขอบเขตงานเพิ่มเติม<textarea value={description} maxLength={10000} onChange={event => setDescription(event.target.value)} /></label>
+          <label className={local.field}>หมายเหตุท้ายใบเสนอราคา<textarea value={paper.footnote} maxLength={3000} onChange={event => setPaper({ ...paper, footnote: event.target.value })} /></label>
         </fieldset>
         <div className={local.signatures}>
-          <label className={styles.field}>ผู้จัดการ<input value={paper.manager} maxLength={200} placeholder="เว้นว่างหากยังไม่ยืนยันชื่อ" onChange={event => setPaper({ ...paper, manager: event.target.value })} /></label>
-          <label className={styles.field}>ผู้เสนอราคา<input value={paper.salesperson} maxLength={200} onChange={event => setPaper({ ...paper, salesperson: event.target.value })} /></label>
+          <label className={local.field}>ผู้จัดการ<input value={paper.manager} maxLength={200} placeholder="เว้นว่างหากยังไม่ยืนยันชื่อ" onChange={event => setPaper({ ...paper, manager: event.target.value })} /></label>
+          <label className={local.field}>ผู้เสนอราคา<input value={paper.salesperson} maxLength={200} onChange={event => setPaper({ ...paper, salesperson: event.target.value })} /></label>
         </div>
       </article>
       <div className={local.footer}><p>ตรวจตัวอย่างก่อนออกใบเสนอราคาฉบับใหม่</p><button className={buttonVariants({ size: "auto" })} type="submit">ดูตัวอย่างใบเสนอราคา</button></div>

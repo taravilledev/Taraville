@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { ContractAddendumForm } from "./contract-addendum-form";
 import { addContractAddendum } from "../../agreement-actions";
 import { contractPaperMissing } from "@/lib/sales/contract-paper";
@@ -11,7 +12,6 @@ import { QuotationEditor } from "./quotation-editor";
 import { ContractWizard } from "./contract-wizard";
 import { AgreementContent } from "../../documents/[id]/agreement-content";
 import Link from "next/link";
-import styles from "../../sales.module.css";
 import { checkRowClass } from "@/components/check-row";
 import { idOf, type TaskData } from "./task-data";
 import { DesignPackages } from "./design-packages";
@@ -19,6 +19,10 @@ import { formatMoney } from "@/lib/sales/money";
 import acceptance from "./quotation-acceptance.module.css";
 import { noticeClass } from "@/components/notice";
 import { buttonVariants } from "@/components/ui/button";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Textarea } from "@/components/ui/textarea";
 
 export function DesignTask({ sale, finance }: TaskData) {
   const plan = finance?.design_plan;
@@ -80,11 +84,12 @@ export function LockContractTask({ sale, agreement, row, contractTemplate }: Tas
 }
 
 export function UnlockContractTask({ sale, agreement, row }: TaskData) {
+  const id = useId();
   const doc = agreement?.documents.find(item => item.id === row && item.state === "awaiting_signature");
   if (!doc) return null;
   return <ActionForm action={unlockContract.bind(null, { ...idOf(sale), documentId: doc.id, documentVersion: doc.version })} label="ปลดล็อกและสร้างร่างใหม่">
     <p>เลขที่ {doc.number} จะเก็บเป็นฉบับยกเลิก การล็อกร่างใหม่จะออกเลขใหม่</p>
-    <label className={styles.field}>เหตุผลที่แก้ร่าง<textarea name="reason" required maxLength={3000} /></label>
+    <Field><FieldLabel htmlFor={`${id}-reason`}>เหตุผลที่แก้ร่าง</FieldLabel><Textarea id={`${id}-reason`} name="reason" required maxLength={3000} /></Field>
     <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ฉบับนี้ยังไม่ได้ลงนาม และยืนยันกลับไปแก้ร่าง</label>
   </ActionForm>;
 }
@@ -109,29 +114,31 @@ export function SignContractTask({ sale, agreement, row }: TaskData) {
 }
 
 export function BookingSummaryTask({ sale }: TaskData) {
+  const id = useId();
   return <ActionForm action={saveBookingSummary.bind(null, idOf(sale))} label="บันทึกสรุปการจอง">
     <p>บันทึกเอกสารแต่ละฉบับจากข้อมูลการขายล่าสุด การบันทึกเอกสารไม่กันแปลง</p>
     <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
-      <label className={styles.field}>ยอดจอง (บาท)<input name="booking" inputMode="decimal" /></label>
-      <label className={styles.field}>ยอดวันทำสัญญา (บาท)<input name="contract" inputMode="decimal" /></label>
-      <label className={styles.field}>ยอดดาวน์รวม (บาท)<input name="down" inputMode="decimal" /></label>
-      <label className={styles.field}>ยอดยื่นกู้ (บาท)<input name="mortgage" inputMode="decimal" /></label>
-      <label className={styles.field}>วันนัดจอง<input name="booking_date" type="date" /></label>
-      <label className={styles.field}>วันนัดทำสัญญา<input name="contract_date" type="date" /></label>
-      <label className={styles.field}>วันนัดดาวน์งวดแรก<input name="down_date" type="date" /></label>
-      <label className={styles.field}>เงื่อนไข<textarea name="conditions" maxLength={5000} /></label>
-      <label className={styles.field}>ของแถม<textarea name="freebies" maxLength={5000} /></label>
+      <Field><FieldLabel htmlFor={`${id}-booking`}>ยอดจอง (บาท)</FieldLabel><Input id={`${id}-booking`} name="booking" inputMode="decimal" /></Field>
+      <Field><FieldLabel htmlFor={`${id}-contract`}>ยอดวันทำสัญญา (บาท)</FieldLabel><Input id={`${id}-contract`} name="contract" inputMode="decimal" /></Field>
+      <Field><FieldLabel htmlFor={`${id}-down`}>ยอดดาวน์รวม (บาท)</FieldLabel><Input id={`${id}-down`} name="down" inputMode="decimal" /></Field>
+      <Field><FieldLabel htmlFor={`${id}-mortgage`}>ยอดยื่นกู้ (บาท)</FieldLabel><Input id={`${id}-mortgage`} name="mortgage" inputMode="decimal" /></Field>
+      <Field><FieldLabel htmlFor={`${id}-booking_date`}>วันนัดจอง</FieldLabel><Input id={`${id}-booking_date`} name="booking_date" type="date" /></Field>
+      <Field><FieldLabel htmlFor={`${id}-contract_date`}>วันนัดทำสัญญา</FieldLabel><Input id={`${id}-contract_date`} name="contract_date" type="date" /></Field>
+      <Field><FieldLabel htmlFor={`${id}-down_date`}>วันนัดดาวน์งวดแรก</FieldLabel><Input id={`${id}-down_date`} name="down_date" type="date" /></Field>
+      <Field><FieldLabel htmlFor={`${id}-conditions`}>เงื่อนไข</FieldLabel><Textarea id={`${id}-conditions`} name="conditions" maxLength={5000} /></Field>
+      <Field><FieldLabel htmlFor={`${id}-freebies`}>ของแถม</FieldLabel><Textarea id={`${id}-freebies`} name="freebies" maxLength={5000} /></Field>
     </div>
   </ActionForm>;
 }
 
 export function SignPropertyContractTask({ sale, finance }: TaskData) {
+  const id = useId();
   const summaries = finance?.documents.filter(doc => doc.kind === "summary") ?? [];
   return <ActionForm action={signPropertyContract.bind(null, idOf(sale))} label="บันทึกสัญญาขาย">
-    <label className={styles.field}>สรุปการจองที่ตกลง<select name="summary_id" required defaultValue="">
+    <Field><FieldLabel htmlFor={`${id}-summary_id`}>สรุปการจองที่ตกลง</FieldLabel><NativeSelect id={`${id}-summary_id`} name="summary_id" required defaultValue="">
       <option value="" disabled>เลือกเอกสาร</option>{summaries.map(doc => <option key={doc.id} value={doc.id}>{doc.number}</option>)}
-    </select></label>
-    <label className={styles.field}>จำนวนงวดดาวน์ (0 หากไม่มี)<input name="down_count" type="number" min={0} max={98} step={1} required /></label>
+    </NativeSelect></Field>
+    <Field><FieldLabel htmlFor={`${id}-down_count`}>จำนวนงวดดาวน์ (0 หากไม่มี)</FieldLabel><Input id={`${id}-down_count`} name="down_count" type="number" min={0} max={98} step={1} required /></Field>
     <EvidenceUpload caseId={sale.id} category="agreement" />
     <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ตรวจสอบสัญญาที่ลงนามและยอดเงินจองแล้ว</label>
   </ActionForm>;

@@ -1,13 +1,16 @@
+import { useId } from "react";
 import { ActionForm } from "@/app/walkin/action-form";
 import { issueInvoice } from "../../agreement-actions";
 import { correctPayment, correctReceipt, preparePayment, withdrawPayment } from "../../money-actions";
 import { EvidenceUpload } from "../../evidence-upload";
 import { PaymentPaper } from "./payment-paper";
 import { AcceptanceForm } from "../acceptance-form";
-import styles from "../../sales.module.css";
 import { checkRowClass } from "@/components/check-row";
 import { idOf, type TaskData } from "./task-data";
 import { noticeClass } from "@/components/notice";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export function PreparePaymentTask({ sale, finance }: TaskData) {
   const kindOptions = [
@@ -36,14 +39,16 @@ export function PrepareInstalmentTask({ sale, finance, agreement, row }: TaskDat
 }
 
 export function WithdrawPaymentTask({ sale, finance, row }: TaskData) {
+  const id = useId();
   return <ActionForm action={withdrawPayment.bind(null, idOf(sale, row ?? "", finance?.version ?? 0))} label="ถอนรายการรับเงิน">
-    <label className={styles.field}>เหตุผล<textarea name="reason" maxLength={1000} required /></label>
+    <Field><FieldLabel htmlFor={`${id}-reason`}>เหตุผล</FieldLabel><Textarea id={`${id}-reason`} name="reason" maxLength={1000} required /></Field>
     <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ยืนยันถอนรายการนี้จากคิวรอตรวจ</label>
   </ActionForm>;
 }
 
 /** One question: what is wrong with this receipt. Each answer is its own form, both visible. */
 export function FixReceiptTask({ sale, finance, row }: TaskData) {
+  const id = useId();
   const doc = finance?.documents.find(candidate => candidate.id === row);
   if (!doc) return null;
   const can = sale.permissions;
@@ -55,17 +60,18 @@ export function FixReceiptTask({ sale, finance, row }: TaskData) {
     {canReplace && <section><h3>เอกสารผิด: ยกเลิกหรือออกทดแทน</h3>
       <ActionForm action={correctReceipt.bind(null, idOf(sale, doc.id))} label="บันทึกการแก้ไขใบเสร็จ">
         <p>ยอดรับเงินจริงและยอดจัดสรรจะคงเดิม</p>
-        <label className={styles.field}>เหตุผล<textarea name="reason" maxLength={1000} required /></label>
-        {can["receipt.issue"] && <label className={styles.field}>รายละเอียดในใบเสร็จทดแทน
-          <textarea name="description" maxLength={1000} required={doc.state === "cancelled"} />
-          {doc.state === "issued" && <small>เว้นว่างเพื่อยกเลิกใบเสร็จอย่างเดียว</small>}
-        </label>}
+        <Field><FieldLabel htmlFor={`${id}-reason`}>เหตุผล</FieldLabel><Textarea id={`${id}-reason`} name="reason" maxLength={1000} required /></Field>
+        {can["receipt.issue"] && <Field>
+          <FieldLabel htmlFor={`${id}-description`}>รายละเอียดในใบเสร็จทดแทน</FieldLabel>
+          <Textarea id={`${id}-description`} aria-describedby={doc.state === "issued" ? `${id}-description-hint` : undefined} name="description" maxLength={1000} required={doc.state === "cancelled"} />
+          {doc.state === "issued" && <FieldDescription id={`${id}-description-hint`}>เว้นว่างเพื่อยกเลิกใบเสร็จอย่างเดียว</FieldDescription>}
+        </Field>}
         <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ยืนยันการแก้ไขเอกสารฉบับนี้</label>
       </ActionForm></section>}
     {canAmount && <section><h3>ยอดรับจริงที่บันทึกผิด</h3>
       <ActionForm action={correctPayment.bind(null, idOf(sale, doc.id))} label="ยืนยันยอดรับจริงที่ถูกต้อง">
-        <label className={styles.field}>ยอดที่รับจริง (บาท)<input name="amount" inputMode="decimal" required /></label>
-        <label className={styles.field}>เหตุผล<textarea name="reason" maxLength={1000} required /></label>
+        <Field><FieldLabel htmlFor={`${id}-amount`}>ยอดที่รับจริง (บาท)</FieldLabel><Input id={`${id}-amount`} name="amount" inputMode="decimal" required /></Field>
+        <Field><FieldLabel htmlFor={`${id}-reason`}>เหตุผล</FieldLabel><Textarea id={`${id}-reason`} name="reason" maxLength={1000} required /></Field>
         <EvidenceUpload caseId={sale.id} category="payment" />
         <label className={checkRowClass}><input type="checkbox" name="confirmed" required />ตรวจสอบหลักฐานยอดรับจริงแล้ว รายการนี้เป็นการแก้บันทึก</label>
       </ActionForm></section>}

@@ -1,17 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { documentGroups, type LibraryDocument } from "@/lib/sales/document-library";
 import { formatMoney } from "@/lib/sales/money";
 import { formatDate } from "@/lib/sales/date";
 import styles from "./document-library.module.css";
-import shared from "../sales.module.css";
 import workspace from "./workspace-section.module.css";
 import { buttonVariants } from "@/components/ui/button";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 
 type Action = { label: string; href: string; documentId?: string };
 export function DocumentLibrary({ documents, actions }: { documents: LibraryDocument[]; actions: Action[] }) {
+  const id = useId();
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState("");
   const [selected, setSelected] = useState<LibraryDocument | null>(null);
@@ -33,9 +36,9 @@ export function DocumentLibrary({ documents, actions }: { documents: LibraryDocu
     <div className={workspace.header}><div><h2 id="document-library-title">เอกสารทั้งหมด</h2><p>ค้นหาและเปิดอ่านฉบับที่ใช้อยู่ พร้อมประวัติฉบับก่อนและฉบับยกเลิก</p></div>
       <div className={styles.actions}>{actions.filter(action => !action.documentId).map(action => <Link className={buttonVariants({ variant: "outline", size: "auto" })} key={action.href} href={action.href} prefetch={false}>{action.label}</Link>)}</div></div>
     <div className={styles.filters}>
-      <label className={shared.field}>ค้นหาเอกสาร<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="เลขที่ ประเภท หรือสถานะเอกสาร" /></label>
-      <label className={shared.field}>ประเภทเอกสาร<select value={group} onChange={event => setGroup(event.target.value)}><option value="">ทุกประเภท</option>
-        {Object.entries(documentGroups).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+      <Field><FieldLabel htmlFor={`${id}-query`}>ค้นหาเอกสาร</FieldLabel><Input id={`${id}-query`} type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="เลขที่ ประเภท หรือสถานะเอกสาร" /></Field>
+      <Field><FieldLabel htmlFor={`${id}-group`}>ประเภทเอกสาร</FieldLabel><NativeSelect id={`${id}-group`} value={group} onChange={event => setGroup(event.target.value)}><option value="">ทุกประเภท</option>
+        {Object.entries(documentGroups).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</NativeSelect></Field>
     </div>
     <p role="status">พบ {matches.length} จาก {documents.length} เอกสาร</p>
     {!matches.length && <div className={styles.empty}>{documents.length ? "ไม่พบเอกสารที่ตรงกับเงื่อนไข ลองเปลี่ยนคำค้นหาหรือประเภท" : "ยังไม่มีเอกสารในโครงการนี้"}</div>}

@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { randomUUID } from "node:crypto";
 import { ActionForm } from "@/app/walkin/action-form";
 import type { CaseTab } from "@/lib/sales/case-progress";
@@ -9,6 +10,10 @@ import styles from "../sales.module.css";
 import { factsClass } from "@/components/facts";
 import { HouseBriefEditor } from "./house-brief-editor";
 import { panelClass } from "@/components/panel";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Textarea } from "@/components/ui/textarea";
 
 const fieldGroups = ([
   { label: "ตัวบ้าน", keys: ["model", "usable_area", "stories", "roof"] },
@@ -22,6 +27,7 @@ const fieldGroups = ([
 const fields = fieldGroups.flatMap(group => group.fields);
 
 export function HouseBriefPanel({ sale, task, tab }: { sale: SalesCase; task?: Task; tab: CaseTab }) {
+  const id = useId();
   if (sale.brand !== "BAAN_KUNAPAP" || !sale.can_finance) return null;
   const brief = sale.house_brief ?? {};
   const canEdit = sale.permissions["financial.prepare"] && sale.status !== "cancelled";
@@ -40,14 +46,15 @@ export function HouseBriefPanel({ sale, task, tab }: { sale: SalesCase; task?: T
         {fieldGroups.map(({ label, fields }) => <fieldset key={label} className={styles.houseBriefGroup}>
           <legend>{label}</legend>
           <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">{fields.map(field =>
-            <label key={field.key} className={`${styles.field} ${field.key === "layout" ? "col-span-full" : ""}`}>{field.label}
-            {field.key === "payment_method" ? <select name={field.key} defaultValue={brief[field.key] ?? ""}>
-              <option value="">ยังไม่ระบุ</option><option>เงินสด</option><option>สินเชื่อธนาคาร</option>
-            </select> : field.key === "layout" ? <textarea name={field.key} defaultValue={brief[field.key] ?? ""} maxLength={1000} />
-              : <input name={field.key} defaultValue={brief[field.key] ?? ""}
-              inputMode={"mode" in field ? field.mode : undefined}
-              maxLength={"mode" in field && field.mode === "numeric" ? 3 : 200} />}
-            </label>)}</div>
+            <Field key={field.key} className={field.key === "layout" ? "col-span-full" : undefined}>
+              <FieldLabel htmlFor={`${id}-${field.key}`}>{field.label}</FieldLabel>
+              {field.key === "payment_method" ? <NativeSelect id={`${id}-${field.key}`} name={field.key} defaultValue={brief[field.key] ?? ""}>
+                <option value="">ยังไม่ระบุ</option><option>เงินสด</option><option>สินเชื่อธนาคาร</option>
+              </NativeSelect> : field.key === "layout" ? <Textarea id={`${id}-${field.key}`} className="min-h-[100px]" name={field.key} defaultValue={brief[field.key] ?? ""} maxLength={1000} />
+                : <Input id={`${id}-${field.key}`} name={field.key} defaultValue={brief[field.key] ?? ""}
+                inputMode={"mode" in field ? field.mode : undefined}
+                maxLength={"mode" in field && field.mode === "numeric" ? 3 : 200} />}
+            </Field>)}</div>
         </fieldset>)}
       </ActionForm>
     </HouseBriefEditor> : <><h2 id="house-brief">ความต้องการบ้าน</h2>{summary}</>}

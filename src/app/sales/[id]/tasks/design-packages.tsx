@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { designAreaPattern, designPackages, designTierForArea, sumDesignInstalments } from "@/lib/sales/design-fees";
 import { formatMoney, parseMoney } from "@/lib/sales/money";
 import styles from "../../sales.module.css";
 import { checkRowClass } from "@/components/check-row";
 import { cn } from "@/lib/utils";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const milestones = ["ส่งมอบแบบแปลน", "ส่งมอบ 3D", "ส่งมอบครบ"];
 const number = new Intl.NumberFormat("th-TH");
@@ -14,6 +17,7 @@ export function DesignPackages({ initialArea, plan }: {
   initialArea: string;
   plan: { tier: string; instalments: string[]; note: string } | null | undefined;
 }) {
+  const id = useId();
   const [area, setArea] = useState(initialArea);
   const [choice, setChoice] = useState(plan?.tier ?? "");
   const [override, setOverride] = useState(() => {
@@ -45,13 +49,16 @@ export function DesignPackages({ initialArea, plan }: {
     firstAmount.current?.setCustomValidity(error);
   }, [error, tier, override]);
 
-  function amountInput(index: number) {
-    return <input ref={index === 0 ? firstAmount : undefined} name={`instalment_${index + 1}`}
-      aria-label={`${milestones[index]} (บาท)`} aria-invalid={error ? true : undefined}
-      inputMode="decimal" required value={amounts[index]} onChange={event => {
+  function amountInput(index: number, fieldId?: string) {
+    const props = {
+      ref: index === 0 ? firstAmount : undefined, name: `instalment_${index + 1}`,
+      "aria-label": `${milestones[index]} (บาท)`, "aria-invalid": error ? true : undefined,
+      inputMode: "decimal" as const, required: true, value: amounts[index], onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setDraft({ tier, amounts: amounts.map((amount, position) => position === index ? value : amount) });
-      }} />;
+      },
+    };
+    return fieldId ? <Input id={fieldId} {...props} /> : <input {...props} />;
   }
 
   return <div className={styles.designPackages}>
@@ -81,18 +88,17 @@ export function DesignPackages({ initialArea, plan }: {
       })}</div>
       {!areaTier && <label className={cn(checkRowClass, "mt-2")}><input type="radio" name="design_package" value="custom" checked={tier === "custom"} required onChange={() => setChoice("custom")} />กำหนดแพ็กเกจเฉพาะงาน</label>}
     </fieldset>
-    <label className={styles.field}>พื้นที่ใช้สอยจริง (ตร.ม.)
-      <input name="usable_area" inputMode="decimal" pattern={designAreaPattern} required value={area} disabled={!tier && !area}
-        onChange={event => setArea(event.target.value)} placeholder="เช่น 175.5" />
-      <small className="text-sm text-muted-foreground">ต้องกรอกพื้นที่ใช้สอยจริงก่อนบันทึกและไปขั้นต่อไป ระบบจะเปลี่ยนแพ็กเกจเมื่อพื้นที่อยู่คนละช่วง</small>
-    </label>
+    <Field><FieldLabel htmlFor={`${id}-usable_area`}>พื้นที่ใช้สอยจริง (ตร.ม.)</FieldLabel><Input id={`${id}-usable_area`} aria-describedby={`${id}-usable_area-hint`} name="usable_area" inputMode="decimal" pattern={designAreaPattern} required value={area} disabled={!tier && !area}
+        onChange={event => setArea(event.target.value)} placeholder="เช่น 175.5" /><FieldDescription id={`${id}-usable_area-hint`}>ต้องกรอกพื้นที่ใช้สอยจริงก่อนบันทึกและไปขั้นต่อไป ระบบจะเปลี่ยนแพ็กเกจเมื่อพื้นที่อยู่คนละช่วง</FieldDescription></Field>
     {areaTier && <p className="text-sm text-muted-foreground" role="status">{selected ? `พื้นที่ ${area} ตร.ม. อยู่ในช่วง ${selected.range}` : `พื้นที่ ${area} ตร.ม. ใช้ข้อตกลงค่าออกแบบเฉพาะงาน`}</p>}
     <p className="text-sm text-muted-foreground">สิ่งที่ได้รับทุกแพ็กเกจมาตรฐาน ได้แก่ แบบแปลน, 3D, แบบขออนุญาตก่อสร้าง และ BOQ สำหรับยื่นธนาคาร</p>
     <input type="hidden" name="tier" value={tier} />
     {(tier === "custom" || (override && selected)) && <input type="hidden" name="custom" value="on" />}
     {tier === "custom" && <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
-      {milestones.map((milestone, index) => <label className={styles.field} key={milestone}>{milestone} (บาท){amountInput(index)}</label>)}
+      {milestones.map((milestone, index) => <Field key={milestone}>
+        <FieldLabel htmlFor={`${id}-instalment-${index + 1}`}>{milestone} (บาท)</FieldLabel>{amountInput(index, `${id}-instalment-${index + 1}`)}
+      </Field>)}
     </div>}
-    <label className={styles.field}>หมายเหตุ<textarea name="note" maxLength={3000} defaultValue={plan?.note} /></label>
+    <Field><FieldLabel htmlFor={`${id}-note`}>หมายเหตุ</FieldLabel><Textarea id={`${id}-note`} className="min-h-[100px]" name="note" maxLength={3000} defaultValue={plan?.note} /></Field>
   </div>;
 }
