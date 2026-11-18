@@ -11,6 +11,7 @@ import {
   summaryStages, updateSummarySelection, type SummaryReport,
 } from "./summary-model";
 import styles from "./summary.module.css";
+import { buttonVariants } from "@/components/ui/button";
 
 export function ReportOutputDialog({ report, title, today }: { report: SummaryReport; title: string; today: string }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -53,14 +54,14 @@ export function ReportOutputDialog({ report, title, today }: { report: SummaryRe
   }
 
   return <>
-    <button type="button" className={salesStyles.link} aria-haspopup="dialog" aria-controls="summary-output"
+    <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} aria-haspopup="dialog" aria-controls="summary-output"
       disabled={!report.rows.length} onClick={() => open("csv")}>ส่งออก CSV</button>
-    <button type="button" className={salesStyles.link} aria-haspopup="dialog" aria-controls="summary-output"
+    <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} aria-haspopup="dialog" aria-controls="summary-output"
       disabled={!report.rows.length} onClick={() => open("print")}>พิมพ์ / PDF</button>
     <dialog ref={dialog} id="summary-output" className={`${walkinStyles.dialog} ${styles.selectionDialog}`} aria-labelledby="summary-output-title">
       <div className={walkinStyles.dialogBar}>
         <h2 id="summary-output-title">{mode === "print" ? "เลือกโครงการสำหรับพิมพ์ / PDF" : "เลือกโครงการสำหรับส่งออก CSV"}</h2>
-        <button type="button" className={salesStyles.link} onClick={() => dialog.current?.close()}>ปิด</button>
+        <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} onClick={() => dialog.current?.close()}>ปิด</button>
       </div>
       <div className={`${walkinStyles.dialogBody} ${styles.selectionBody}`}>
         <p className={styles.selectionCount} aria-live="polite">เลือก {count.toLocaleString("th-TH")} จาก {report.rows.length.toLocaleString("th-TH")} โครงการ</p>
@@ -93,7 +94,7 @@ export function ReportOutputDialog({ report, title, today }: { report: SummaryRe
           <div className={styles.selectionTools}>
             <p aria-live="polite">พบ {visible.length.toLocaleString("th-TH")} โครงการ
               {hiddenSelectedCount > 0 && ` · เลือกไว้นอกผลที่แสดง ${hiddenSelectedCount.toLocaleString("th-TH")} โครงการ`}</p>
-            {count > 0 && <button type="button" className={salesStyles.link} onClick={() => setSelected(new Set())}>ล้างที่เลือกทั้งหมด</button>}
+            {count > 0 && <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} onClick={() => setSelected(new Set())}>ล้างที่เลือกทั้งหมด</button>}
           </div>
           <label className={styles.selectionOption}>
             <input type="checkbox" checked={isAllSelected} disabled={!visible.length}
@@ -118,7 +119,7 @@ export function ReportOutputDialog({ report, title, today }: { report: SummaryRe
         </fieldset>
       </div>
       <div className={styles.selectionActions}>
-        <button type="button" className={salesStyles.primary} disabled={!count} onClick={exportSelection}>
+        <button type="button" className={buttonVariants({ size: "auto" })} disabled={!count} onClick={exportSelection}>
           {mode === "print" ? "พิมพ์โครงการที่เลือก" : "ดาวน์โหลด CSV"}
         </button>
       </div>

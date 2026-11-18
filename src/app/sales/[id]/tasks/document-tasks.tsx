@@ -17,6 +17,7 @@ import { DesignPackages } from "./design-packages";
 import { formatMoney } from "@/lib/sales/money";
 import acceptance from "./quotation-acceptance.module.css";
 import { noticeClass } from "@/components/notice";
+import { buttonVariants } from "@/components/ui/button";
 
 export function DesignTask({ sale, finance }: TaskData) {
   const plan = finance?.design_plan;
@@ -37,7 +38,7 @@ export function AcceptQuotationTask({ sale, agreement, row }: TaskData) {
     <div className={acceptance.content}>
       <div className={acceptance.quote}><div><h3>{document.number ?? "ใบเสนอราคา"} · ฉบับที่ {document.revision}</h3>
         <p>{document.payload.paper?.customer_name ?? document.customer_snapshot?.full_name ?? sale.customer_name} · ยอดเสนอ {formatMoney(document.payload.total_cents ?? "0")} บาท</p></div>
-        <Link className={styles.link} href={`/sales/documents/${document.id}`} prefetch={false} target="_blank" rel="noopener noreferrer">ดูใบเสนอราคาฉบับนี้ (แท็บใหม่)</Link></div>
+        <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/documents/${document.id}`} prefetch={false} target="_blank" rel="noopener noreferrer">ดูใบเสนอราคาฉบับนี้ (แท็บใหม่)</Link></div>
       <div><p className={acceptance.help}>แนบภาพแชต LINE หรือเอกสารที่ยืนยันว่าลูกค้ายอมรับใบเสนอราคาฉบับนี้ ก่อนดำเนินการสัญญา</p>
         <EvidenceUpload caseId={sale.id} category="agreement" className={acceptance.evidence} /></div>
       <label className={acceptance.confirmation}><input type="checkbox" name="confirmed" required />ยืนยันว่าลูกค้ายอมรับใบเสนอราคาฉบับที่ {document.revision} ตามหลักฐานที่แนบแล้ว</label>
@@ -69,7 +70,7 @@ export function LockContractTask({ sale, agreement, row, contractTemplate }: Tas
     {!canLock && <p className={noticeClass} role="status">{needsApproval
       ? "รอตรวจข้อความบริษัท หรือบันทึกร่างอีกครั้งเพื่อใช้ข้อความที่อนุมัติล่าสุด"
       : missing.length ? `กรอกข้อมูลก่อนออกเลข: ${missing.join(" · ")}` : "กลับไปบันทึกร่างบนแม่แบบใหม่และตรวจข้อความบริษัทก่อนออกเลข"}</p>}
-    {!canLock && <p><Link className={styles.link} href={`/sales/${sale.id}?task=edit-contract&row=${draft.id}`} prefetch={false}>กลับไปแก้ร่าง</Link></p>}
+    {!canLock && <p><Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/${sale.id}?task=edit-contract&row=${draft.id}`} prefetch={false}>กลับไปแก้ร่าง</Link></p>}
     {canLock && <ActionForm action={lockContract.bind(null, { ...idOf(sale), documentId: draft.id, documentVersion: draft.version })} label="ล็อกและออกเลขสัญญา"
       secondaryAction={{ label: "กลับไปแก้ร่าง", href: `/sales/${sale.id}?task=edit-contract&row=${draft.id}` }}>
       <label className={styles.check}><input type="checkbox" name="confirmed" required />ตรวจข้อมูลและพร้อมพิมพ์ให้ลงนาม</label>
@@ -97,7 +98,7 @@ export function SignContractTask({ sale, agreement, row }: TaskData) {
         <p>{document.payload.customer?.full_name ?? document.customer_snapshot?.full_name ?? sale.customer_name}</p>
         <p>มูลค่าสัญญา {document.payload.total_cents == null ? "ยังไม่ระบุ" : `${formatMoney(document.payload.total_cents)} บาท`}
           {scheduleCount != null ? ` · ${scheduleCount} งวด` : ""} · รอลงนาม</p></div>
-        <Link className={styles.link} href={`/sales/documents/${document.id}`} prefetch={false} target="_blank" rel="noopener noreferrer">เปิดสัญญาฉบับนี้ (แท็บใหม่)</Link>
+        <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/documents/${document.id}`} prefetch={false} target="_blank" rel="noopener noreferrer">เปิดสัญญาฉบับนี้ (แท็บใหม่)</Link>
       </div>
       <div><p className={acceptance.help}>เปิดตรวจเลขสัญญาและตารางงวดให้ตรงฉบับ แล้วแนบเอกสารที่ลงนามเรียบร้อยแล้ว</p>
         <EvidenceUpload caseId={sale.id} category="agreement" className={acceptance.evidence} title="สัญญาและตารางงวดที่ลงนามแล้ว" /></div>

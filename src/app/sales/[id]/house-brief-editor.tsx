@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import styles from "../sales.module.css";
+import { buttonVariants } from "@/components/ui/button";
 
 export function HouseBriefEditor({ label, summary, children }: {
   label: string;
@@ -19,7 +20,7 @@ export function HouseBriefEditor({ label, summary, children }: {
   return <>
     <div className={styles.houseBriefHeader}>
       <h2 id="house-brief">ความต้องการบ้าน</h2>
-      <button ref={toggle} type="button" className={styles.link} aria-expanded={isEditing}
+      <button ref={toggle} type="button" className={buttonVariants({ variant: "outline", size: "auto" })} aria-expanded={isEditing}
         aria-controls="house-brief-content" onClick={() => {
           if (content.current?.querySelector("fieldset:disabled")) return;
           if (isEditing) toggle.current?.focus();

@@ -5,6 +5,7 @@ import { createCase } from "../actions";
 import styles from "../sales.module.css";
 import { OpeningFields } from "./opening-fields";
 import { noticeClass } from "@/components/notice";
+import { buttonVariants } from "@/components/ui/button";
 
 type Lead = SalesBootstrap["leads"][number];
 
@@ -17,7 +18,7 @@ export function NewCaseForm({ workspace, lead, projects, projectId, requestId }:
   if (lead.brand === "TARAVILLE" && !units.length) return <div className={noticeClass}>
     <h2>ยังไม่มีบ้าน/แปลงว่างให้เปิดโครงการ</h2>
     <p>ต้องมีบ้าน/แปลงว่างก่อน จึงจะเปิดร่างโครงการได้</p>
-    {workspace.can_catalog ? <Link className={styles.link} href="/sales/settings/catalog" prefetch={false}>จัดการหมู่บ้านและบ้าน/แปลง</Link>
+    {workspace.can_catalog ? <Link className={buttonVariants({ variant: "outline", size: "auto" })} href="/sales/settings/catalog" prefetch={false}>จัดการหมู่บ้านและบ้าน/แปลง</Link>
       : <p>ติดต่อผู้มีสิทธิ์จัดการหมู่บ้านและบ้าน/แปลงเพื่อเพิ่มหรือปล่อยแปลง</p>}
   </div>;
   if (lead.brand === "TARAVILLE") return <OpeningFields leadId={lead.id} requestId={requestId}

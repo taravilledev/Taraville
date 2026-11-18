@@ -7,10 +7,10 @@ import type { SummaryData } from "./summary-sections";
 import { WorkspaceHeading } from "./workspace-heading";
 import { PendingPayments } from "./pending-payments";
 import { FinanceCollection } from "./finance-collection";
-import shared from "../sales.module.css";
 import styles from "./workspace-section.module.css";
 import local from "./finance-collection.module.css";
 import { noticeClass } from "@/components/notice";
+import { buttonVariants } from "@/components/ui/button";
 
 const refundStates = { pending: "รออนุมัติ", approved: "อนุมัติ รอจ่าย", rejected: "ไม่อนุมัติ", withdrawn: "ถอนคำขอ", paid: "จ่ายคืนแล้ว" };
 
@@ -45,14 +45,14 @@ export function BkpMoneySection({ data }: { data: SummaryData }) {
     <FinanceCollection rows={rows} caseId={sale.id} isClosed={isClosed} />
     {sale.status === "contracted" && agreement.is_settled && <p className={noticeClass}>ชำระครบทุกงวดตามสัญญาแล้ว</p>}
     <div className={styles.card} id="prepare"><div><h3>เงินเข้าอื่นของโครงการ</h3><p className={styles.note}>หากรับเงินตามรายการ ให้ใช้ปุ่มของรายการนั้นเพื่อผูกยอดให้ถูกต้อง</p></div>
-      {prepare ? <div className={styles.actions}><Link className={shared.link} href={taskHref(sale.id, prepare.name)} prefetch={false}>บันทึกเงินเข้าอื่น</Link></div>
+      {prepare ? <div className={styles.actions}><Link className={buttonVariants({ variant: "outline", size: "auto" })} href={taskHref(sale.id, prepare.name)} prefetch={false}>บันทึกเงินเข้าอื่น</Link></div>
         : <p className={styles.note}>ยังไม่มีงานบันทึกเงินเข้าอื่นที่บัญชีนี้ทำได้</p>}</div>
     <details className={styles.history} id="receipts" open={corrections.length > 0 || undefined}><summary>ประวัติใบเสร็จรับเงิน ({receipts.length}){corrections.length > 0 ? ` · แก้ไขเอกสารได้ ${corrections.length} รายการ` : ""}</summary>
       {!receipts.length && <p className={styles.note}>ยังไม่มีใบเสร็จ</p>}
       <ul>{receipts.map(doc => { const correct = findTask(tasks, "fix-receipt", doc.id); return <li key={doc.id}>
         <div><Link href={`/sales/documents/${doc.id}`} prefetch={false}>{doc.number ?? "ใบเสร็จ"}</Link>
           <p>{formatDate(doc.document_date)} · {doc.amount_cents ? `${formatMoney(doc.amount_cents)} บาท` : "ยังไม่ระบุยอด"} · {doc.state === "cancelled" ? "ยกเลิกแล้ว" : "ออกใบเสร็จแล้ว"}</p></div>
-        {correct && <Link className={shared.link} href={taskHref(sale.id, correct.name, correct.row)} prefetch={false}>แก้ไขใบเสร็จ</Link>}
+        {correct && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={taskHref(sale.id, correct.name, correct.row)} prefetch={false}>แก้ไขใบเสร็จ</Link>}
       </li>; })}</ul>
     </details>
     {closeout && <div className={styles.card}><h3>ยอดปิดงานปัจจุบัน</h3><dl className={styles.facts}>
@@ -60,7 +60,7 @@ export function BkpMoneySection({ data }: { data: SummaryData }) {
       <div><dt>รับสุทธิหลังหักยอดคืนแล้ว</dt><dd>{formatMoney(closeout.received_cents)} บาท</dd></div>
       <div><dt>ยังต้องรับ</dt><dd>{formatMoney(closeout.remaining_cents)} บาท</dd></div>
       <div><dt>ยังต้องคืน</dt><dd>{formatMoney(closeout.refund_due_cents)} บาท</dd></div>
-    </dl><Link className={shared.link} href={`/sales/documents/${closeout.document_id}`} prefetch={false}>เปิดข้อตกลงปิดงาน</Link></div>}
+    </dl><Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/documents/${closeout.document_id}`} prefetch={false}>เปิดข้อตกลงปิดงาน</Link></div>}
     <details className={styles.history} id="refunds" open={activeRefunds.length > 0 || undefined}>
       <summary>คืนเงินจริง ({refunds.length}){activeRefunds.length > 0 ? ` · รอดำเนินการ ${activeRefunds.length} รายการ` : ""}</summary>
       {!refunds.length && <p className={styles.note}>ยังไม่มีคำขอคืนเงิน</p>}
@@ -69,12 +69,12 @@ export function BkpMoneySection({ data }: { data: SummaryData }) {
         return <li key={refund.id}><div><strong>{formatMoney(refund.amount_cents)} บาท · {refundStates[refund.state]}</strong>
           <p>{refund.requested_by_name} · {refund.reason}{refund.decision_note ? ` · ผลพิจารณา: ${refund.decision_note}` : ""}</p></div>
           <div className={styles.actions}>
-            {decide && <Link className={shared.primary} href={taskHref(sale.id, decide.name, decide.row)} prefetch={false}>พิจารณาคืนเงิน</Link>}
-            {pay && <Link className={shared.primary} href={taskHref(sale.id, pay.name, pay.row)} prefetch={false}>บันทึกจ่ายคืน</Link>}
-            {refund.document_id && <Link className={shared.link} href={`/sales/documents/${refund.document_id}`} prefetch={false}>เปิดเอกสารจ่ายคืน</Link>}
+            {decide && <Link className={buttonVariants({ size: "auto" })} href={taskHref(sale.id, decide.name, decide.row)} prefetch={false}>พิจารณาคืนเงิน</Link>}
+            {pay && <Link className={buttonVariants({ size: "auto" })} href={taskHref(sale.id, pay.name, pay.row)} prefetch={false}>บันทึกจ่ายคืน</Link>}
+            {refund.document_id && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/documents/${refund.document_id}`} prefetch={false}>เปิดเอกสารจ่ายคืน</Link>}
           </div></li>;
       })}</ul>
-      {requestRefund && <Link className={shared.link} href={taskHref(sale.id, requestRefund.name)} prefetch={false}>ขอคืนเงิน</Link>}
+      {requestRefund && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={taskHref(sale.id, requestRefund.name)} prefetch={false}>ขอคืนเงิน</Link>}
     </details>
   </section>;
 }

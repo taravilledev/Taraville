@@ -9,6 +9,7 @@ import { EvidenceUpload } from "../../evidence-upload";
 import { ContractClauses } from "./contract-party-fields";
 import shared from "../../sales.module.css";
 import styles from "./contract-paper.module.css";
+import { buttonVariants } from "@/components/ui/button";
 
 type Contract = AgreementDetail["documents"][number];
 export function ContractAddendumForm({ contract, caseId, action }: {
@@ -34,8 +35,8 @@ export function ContractAddendumForm({ contract, caseId, action }: {
       <h3 tabIndex={-1} ref={reviewHeading}>ตรวจตัวอย่างก่อนพิมพ์และนำไปลงนาม</h3>
       <div className={styles.printAddendum}><ContractAddendumContent payload={payload} /></div>
       <div className={styles.toolbar}>
-        <button type="button" className={shared.link} onClick={() => setReview(false)}>กลับไปแก้ข้อความ</button>
-        <button type="button" className={shared.link} onClick={() => window.print()}>พิมพ์ตัวอย่างสำหรับลงนาม</button>
+        <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} onClick={() => setReview(false)}>กลับไปแก้ข้อความ</button>
+        <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} onClick={() => window.print()}>พิมพ์ตัวอย่างสำหรับลงนาม</button>
       </div>
       <ActionForm action={action} label="บันทึกเอกสารแนบท้ายที่ลงนามแล้ว">
         <input type="hidden" name="addendum_input" value={JSON.stringify(input)} />
@@ -54,7 +55,7 @@ export function ContractAddendumForm({ contract, caseId, action }: {
         <label>เงื่อนไข<textarea maxLength={10000} value={conditions} onChange={event => setConditions(event.target.value)} /></label>
         <label>หมายเหตุ<textarea maxLength={10000} value={notes} onChange={event => setNotes(event.target.value)} /></label>
       </article>
-      <div className={styles.footer}><p>ยังไม่ออกเลขและไม่เปลี่ยนยอดสัญญา</p><button className={shared.primary}>ดูตัวอย่างเอกสารแนบท้าย</button></div>
+      <div className={styles.footer}><p>ยังไม่ออกเลขและไม่เปลี่ยนยอดสัญญา</p><button className={buttonVariants({ size: "auto" })}>ดูตัวอย่างเอกสารแนบท้าย</button></div>
     </form>}
   </div>;
 }

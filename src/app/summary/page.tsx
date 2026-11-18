@@ -15,6 +15,7 @@ import { ReportOutputDialog } from "./report-output-dialog";
 import { collectionFilters, summaryPageRange, summaryQuery, summaryReport, summaryStages, type SummaryReport } from "./summary-model";
 import styles from "./summary.module.css";
 import { noticeClass } from "@/components/notice";
+import { buttonVariants } from "@/components/ui/button";
 
 export const metadata = { title: "สรุปโครงการและการเงิน · บ้านคุณภาพ", robots: { index: false, follow: false } };
 
@@ -52,7 +53,7 @@ async function Summary({ searchParams }: Props) {
 
   if (isPrint) return <main className={styles.printReport}>
     <div className={styles.printControls}>
-      <Link className={salesStyles.link} href={returnParams.size ? `/summary?${returnParams}#projects` : "/summary"} prefetch={false}>
+      <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={returnParams.size ? `/summary?${returnParams}#projects` : "/summary"} prefetch={false}>
         {query.isPeriodView ? "กลับรายงาน" : "กลับหน้าสรุป"}</Link>
       {report && <PrintButton />}
     </div>
@@ -66,8 +67,8 @@ async function Summary({ searchParams }: Props) {
       <header className={salesStyles.header}>
         <div><h1>{title}</h1><p>บ้านคุณภาพ</p></div>
         <div className={styles.actions}>
-          {!query.isPeriodView && <Link className={salesStyles.link} href="/dashboard" prefetch={false}>แดชบอร์ด</Link>}
-          <Link className={salesStyles.link} href={switchUrl} prefetch={false}>
+          {!query.isPeriodView && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href="/dashboard" prefetch={false}>แดชบอร์ด</Link>}
+          <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={switchUrl} prefetch={false}>
             {query.isPeriodView ? "กลับหน้าสรุป" : "รายงานตามช่วงวันที่"}
           </Link>
           {report && <ReportOutputDialog key={query.params.toString()} report={report} title={title} today={today} />}
@@ -108,9 +109,9 @@ function SummaryFilters({ query, report }: { query: Query; report: Report | null
       <label className={salesStyles.field}>รับและคืนเงินตั้งแต่<input type="date" name="from" defaultValue={query.from ?? ""} /></label>
       <label className={salesStyles.field}>ถึงวันที่<input type="date" name="to" defaultValue={query.to ?? ""} /></label>
     </>}
-    <button type="submit" className={salesStyles.primary}>{query.isPeriodView ? "แสดงรายงาน" : "กรอง"}</button>
+    <button type="submit" className={buttonVariants({ size: "auto" })}>{query.isPeriodView ? "แสดงรายงาน" : "กรอง"}</button>
     {(query.params.size > (query.isPeriodView ? 1 : 0) || !query.isPeriodValid) &&
-      <Link className={salesStyles.link} href={query.isPeriodView ? "/summary?view=period" : "/summary"} prefetch={false}>ล้างตัวกรอง</Link>}
+      <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={query.isPeriodView ? "/summary?view=period" : "/summary"} prefetch={false}>ล้างตัวกรอง</Link>}
   </form>;
 }
 
@@ -158,11 +159,11 @@ function SummaryPager({ range, query, count }: { range: ReturnType<typeof summar
   return <div className={styles.pager}>
     <p>แสดง {range.start + 1}–{range.end} จาก {count.toLocaleString("th-TH")} โครงการ</p>
     {range.totalPages > 1 && <nav className={styles.actions} aria-label="เปลี่ยนหน้าโครงการ">
-      {range.page > 1 && <Link className={salesStyles.link} href={href(range.page - 1)} prefetch={false}>ก่อนหน้า</Link>}
+      {range.page > 1 && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={href(range.page - 1)} prefetch={false}>ก่อนหน้า</Link>}
       {pageWindow(range.page, range.totalPages).map((number, index) => number === null ? <span key={`gap-${index}`} aria-hidden>…</span>
-        : <Link key={number} className={salesStyles.link} href={href(number)} prefetch={false}
+        : <Link key={number} className={buttonVariants({ variant: "outline", size: "auto" })} href={href(number)} prefetch={false}
           aria-label={`หน้า ${number}`} aria-current={number === range.page ? "page" : undefined}>{number}</Link>)}
-      {range.page < range.totalPages && <Link className={salesStyles.link} href={href(range.page + 1)} prefetch={false}>ถัดไป</Link>}
+      {range.page < range.totalPages && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={href(range.page + 1)} prefetch={false}>ถัดไป</Link>}
     </nav>}
   </div>;
 }

@@ -6,6 +6,7 @@ import type { SummaryData } from "./summary-sections";
 import shared from "../sales.module.css";
 import styles from "./quotation-section.module.css";
 import { WorkspaceHeading } from "./workspace-heading";
+import { buttonVariants } from "@/components/ui/button";
 
 type Document = AgreementDetail["documents"][number];
 const hasPrice = (doc: Document) => doc.payload.price_set !== false && BigInt(doc.payload.total_cents ?? "0") > BigInt(0);
@@ -30,7 +31,7 @@ export function QuotationSection({ data }: { data: SummaryData }) {
         ? "ฉบับล่าสุดยังไม่ระบุราคา เลือกฉบับก่อนที่มีราคาในประวัติเพื่อบันทึกลูกค้ายอมรับ หรือจัดทำฉบับใหม่พร้อมราคา"
         : "ฉบับล่าสุดยังไม่ระบุราคา ต้องจัดทำฉบับใหม่พร้อมราคาก่อนบันทึกลูกค้ายอมรับ"
         : "ตรวจใบเสนอราคาและข้อตกลงกับลูกค้า แล้วบันทึกเมื่อลูกค้ายอมรับพร้อมหลักฐาน";
-  const open = (doc: Document) => <Link className={shared.link} href={`/sales/documents/${doc.id}`} prefetch={false}>ดูใบเสนอราคา · ฉบับที่ {doc.revision}</Link>;
+  const open = (doc: Document) => <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/documents/${doc.id}`} prefetch={false}>ดูใบเสนอราคา · ฉบับที่ {doc.revision}</Link>;
   return <section className={styles.section} aria-labelledby="quotations-title">
     <WorkspaceHeading caseId={sale.id} title="ใบเสนอราคา" titleId="quotations-title"
       description={`${documents.length} ฉบับ · ${accepted.length ? `ลูกค้ายอมรับแล้ว ${accepted.length} ฉบับ` : "ยังไม่มีฉบับที่ลูกค้ายอมรับ"}`} />
@@ -45,16 +46,16 @@ export function QuotationSection({ data }: { data: SummaryData }) {
       </dl>
       <div className={styles.next}><p>{hint}</p>
         <div className={styles.actions}>{open(latest)}
-          {accept && <Link className={accepted.length ? shared.link : shared.primary} href={taskHref(sale.id, accept.name, accept.row)} prefetch={false}>บันทึกลูกค้ายอมรับฉบับที่ {latest.revision}</Link>}
-          {issue && <Link className={!accepted.length && !accept ? shared.primary : shared.link} href={taskHref(sale.id, issue.name)} prefetch={false}>
+          {accept && <Link className={accepted.length ? buttonVariants({ variant: "outline", size: "auto" }) : buttonVariants({ size: "auto" })} href={taskHref(sale.id, accept.name, accept.row)} prefetch={false}>บันทึกลูกค้ายอมรับฉบับที่ {latest.revision}</Link>}
+          {issue && <Link className={!accepted.length && !accept ? buttonVariants({ size: "auto" }) : buttonVariants({ variant: "outline", size: "auto" })} href={taskHref(sale.id, issue.name)} prefetch={false}>
             {!hasPrice(latest) ? "จัดทำฉบับใหม่พร้อมราคา" : "จัดทำฉบับใหม่"}</Link>}
-          {accepted.length > 0 && <Link className={shared.primary} href={`/sales/${sale.id}?tab=contract`} prefetch={false}>ไปสัญญา →</Link>}
+          {accepted.length > 0 && <Link className={buttonVariants({ size: "auto" })} href={`/sales/${sale.id}?tab=contract`} prefetch={false}>ไปสัญญา →</Link>}
         </div>
         {issue && <p className={shared.muted}>ฉบับใหม่เริ่มจากข้อมูลฉบับล่าสุด โดยเก็บฉบับเดิมไว้</p>}
         {!issue && !accept && !accepted.length && !historyActions && <p className={shared.muted}>ขณะนี้บัญชีนี้ไม่มีงานแก้ไขหรือยอมรับที่ทำได้ตามสิทธิ์และสถานะโครงการ</p>}
       </div>
     </article> : <div className={styles.latest}><h3>ยังไม่มีใบเสนอราคา</h3><p>{hint}</p>
-      {issue ? <Link className={shared.primary} href={taskHref(sale.id, issue.name)} prefetch={false}>จัดทำใบเสนอราคา</Link>
+      {issue ? <Link className={buttonVariants({ size: "auto" })} href={taskHref(sale.id, issue.name)} prefetch={false}>จัดทำใบเสนอราคา</Link>
         : <p className={shared.muted}>รอผู้มีสิทธิ์จัดทำใบเสนอราคา</p>}</div>}
     {acceptedOlder.map(doc => <article key={doc.id} className={styles.accepted}>
       <div><h3>ฉบับที่ลูกค้ายอมรับ · ฉบับที่ {doc.revision}</h3><p>{doc.number ?? "ใบเสนอราคา"} · {amount(doc)}</p>
@@ -66,7 +67,7 @@ export function QuotationSection({ data }: { data: SummaryData }) {
         const task = findTask(tasks, "accept-quotation", doc.id);
         return <li key={doc.id}><div><h3>ฉบับที่ {doc.revision} · {doc.number ?? "ใบเสนอราคา"}</h3>
           <p>{amount(doc)} · {status(doc)}</p></div>
-          <div className={styles.actions}>{open(doc)}{task && <Link className={shared.link} href={taskHref(sale.id, task.name, task.row)} prefetch={false}>บันทึกลูกค้ายอมรับฉบับที่ {doc.revision}</Link>}</div>
+          <div className={styles.actions}>{open(doc)}{task && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={taskHref(sale.id, task.name, task.row)} prefetch={false}>บันทึกลูกค้ายอมรับฉบับที่ {doc.revision}</Link>}</div>
         </li>;
       })}</ul>
     </details>}

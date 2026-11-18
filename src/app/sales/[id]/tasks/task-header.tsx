@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import type { SalesCase } from "@/lib/sales/models";
 import type { CaseTab } from "@/lib/sales/case-progress";
 import type { TaskName } from "@/lib/sales/tasks";
-import shared from "../../sales.module.css";
 import styles from "./task-header.module.css";
+import { buttonVariants } from "@/components/ui/button";
 
 export const focusedDocumentTasks: readonly TaskName[] = ["contract-addendum", "issue-quotation", "prepare-contract", "edit-contract",
   "lock-contract", "unlock-contract", "sign-contract", "acceptance", "issue-invoice", "prepare-instalment", "prepare-payment",
@@ -20,7 +20,7 @@ export function TaskHeader({ sale, title, backTab, backLabel, phase, status }: {
 }) {
   return <header className={styles.header}>
     <nav className={styles.navigation} aria-label="การนำทางงาน">
-      <Link className={shared.link} href={`/sales/${sale.id}?tab=${backTab}`} prefetch={false}><span aria-hidden="true">←</span> {backLabel}</Link>
+      <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/${sale.id}?tab=${backTab}`} prefetch={false}><span aria-hidden="true">←</span> {backLabel}</Link>
       <Link className={styles.overview} href={`/sales/${sale.id}?tab=overview`} prefetch={false}>ภาพรวมโครงการ</Link>
     </nav>
     <div className={styles.heading}>{phase && <p className={styles.phase}>{phase}</p>}

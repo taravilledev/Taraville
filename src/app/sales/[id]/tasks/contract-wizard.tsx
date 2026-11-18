@@ -11,9 +11,9 @@ import { contractInputSchema } from "@/lib/sales/agreement-inputs";
 import type { SalesCase } from "@/lib/sales/models";
 import { formatMoney, installmentAmounts } from "@/lib/sales/money";
 import { AgreementContent } from "../../documents/[id]/agreement-content";
-import styles from "../../sales.module.css";
 import paper from "./contract-paper.module.css";
 import { TaskHeader } from "./task-header";
+import { buttonVariants } from "@/components/ui/button";
 
 type Row = { id: string; label: string; percent: string; progress: string; work_description: string };
 type Customer = { full_name: string; phone: string; site_address: string };
@@ -162,7 +162,7 @@ export function ContractWizard({ sale, agreement, draftId, action, creditCents: 
         <p>{hasSeparateDesignFee ? "ค่าออกแบบเรียกเก็บแยกในแท็บการเงิน" : `เครดิตค่าออกแบบที่รับแล้ว ${formatMoney(creditCents)} บาท`}</p>
         {quotation?.payload.house && <p>{quotation.payload.house.model} · {quotation.payload.house.usable_area} ตร.ม.</p>}
         <p className={paper.hint}>สเปกและข้อยกเว้นใช้ตามใบเสนอราคาฉบับนี้ เปลี่ยนราคาผ่านใบเสนอราคาฉบับใหม่เท่านั้น</p>
-        <p><Link className={styles.link} href={`/sales/${sale.id}?task=issue-quotation`} prefetch={false}>จัดทำใบเสนอราคาฉบับใหม่</Link></p>
+        <p><Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/${sale.id}?task=issue-quotation`} prefetch={false}>จัดทำใบเสนอราคาฉบับใหม่</Link></p>
         {details.payment_due_days === 30 && <p className={paper.notice}>งวดงานที่ต้องตรวจรับ: ชำระภายใน 30 วันปฏิทินหลังวันที่ตรวจรับงานจริงที่ระบุ · มัดจำและค่าออกแบบคงตามเงื่อนไขรายการ</p>}
         <h4>ข้อสัญญามาตรฐาน</h4><p className={paper.text}>{standardText || "[ข้อความสัญญาข้อ 3–14 — รอบริษัทส่งและตรวจข้อความต้นฉบับ]"}</p>
       </article>
@@ -187,9 +187,9 @@ export function ContractWizard({ sale, agreement, draftId, action, creditCents: 
             <label className={paper.full}>รายละเอียดงานงวด {index + 1}<textarea maxLength={3000} value={row.work_description} onChange={event => changeRow(row.id, "work_description", event.target.value)} /></label>
           </div>
           {amounts[index] && <p>ยอดงวด {formatMoney(amounts[index].gross)} · เครดิต {formatMoney(amounts[index].credit)} · ชำระเพิ่ม {formatMoney(amounts[index].net)} บาท</p>}
-          {index > 0 && <button type="button" className={styles.link} onClick={() => { setRows(current => current.filter(item => item.id !== row.id)); setError(""); }}>นำงวด {index + 1} ออก</button>}
+          {index > 0 && <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} onClick={() => { setRows(current => current.filter(item => item.id !== row.id)); setError(""); }}>นำงวด {index + 1} ออก</button>}
         </fieldset>)}
-        <button type="button" className={styles.link} disabled={rows.length >= 100} onClick={() => setRows(current => [...current, { id: crypto.randomUUID(), label: "งวดงานเพิ่มเติม", percent: "", progress: "", work_description: "" }])}>เพิ่มงวดงาน</button>
+        <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} disabled={rows.length >= 100} onClick={() => setRows(current => [...current, { id: crypto.randomUUID(), label: "งวดงานเพิ่มเติม", percent: "", progress: "", work_description: "" }])}>เพิ่มงวดงาน</button>
         <p className={paper.hint}>เศษสตางค์อยู่ในงวดสุดท้าย เครดิตที่รับจริงหักจากงวดท้ายย้อนขึ้น และตรวจอีกครั้งเมื่อล็อกและลงนาม</p>
       </article>
       {showAnnex ? <article className={paper.sheet} aria-label="แก้ไขสัญญา หน้า 4"><p className={paper.pageNumber}>หน้า 4</p><h3>บันทึกข้อตกลงแนบท้ายสัญญา · เงื่อนไขและหมายเหตุ</h3>
@@ -198,7 +198,7 @@ export function ContractWizard({ sale, agreement, draftId, action, creditCents: 
         <p className={paper.hint}>แสดงหน้านี้ในตัวอย่างเมื่อกรอกเงื่อนไขหรือหมายเหตุ</p>
       </article> : <button type="button" className={paper.textButton} onClick={() => setShowAnnex(true)}>เพิ่มเงื่อนไขหรือหมายเหตุแนบท้าย</button>}
       {missing.length > 0 && <p className={paper.notice}>บันทึกร่างได้ · ก่อนล็อกให้กรอก: {missing.join(" · ")}</p>}
-      <div className={paper.footer}><p>ตรวจตัวอย่างก่อนบันทึกร่าง · ยังไม่ออกเลขสัญญา</p><button type="submit" className={styles.primary}>ดูตัวอย่างสัญญา</button></div>
+      <div className={paper.footer}><p>ตรวจตัวอย่างก่อนบันทึกร่าง · ยังไม่ออกเลขสัญญา</p><button type="submit" className={buttonVariants({ size: "auto" })}>ดูตัวอย่างสัญญา</button></div>
     </form>}
   </div>;
 }

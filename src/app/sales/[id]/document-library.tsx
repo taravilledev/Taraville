@@ -8,6 +8,7 @@ import { formatDate } from "@/lib/sales/date";
 import styles from "./document-library.module.css";
 import shared from "../sales.module.css";
 import workspace from "./workspace-section.module.css";
+import { buttonVariants } from "@/components/ui/button";
 
 type Action = { label: string; href: string; documentId?: string };
 export function DocumentLibrary({ documents, actions }: { documents: LibraryDocument[]; actions: Action[] }) {
@@ -26,11 +27,11 @@ export function DocumentLibrary({ documents, actions }: { documents: LibraryDocu
       {actions.some(action => action.documentId === doc.id) && <div className={styles.actions}>{actions.filter(action => action.documentId === doc.id).map(action =>
         <Link key={action.href} href={action.href} prefetch={false}>{action.label}</Link>)}</div>}
     </div>
-    <button type="button" className={shared.link} aria-haspopup="dialog" aria-label={`เปิดอ่าน ${doc.title} ${doc.number ?? "ร่าง"} ฉบับ ${doc.revision ?? ""}`} onClick={() => setSelected(doc)}>เปิดอ่าน</button>
+    <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} aria-haspopup="dialog" aria-label={`เปิดอ่าน ${doc.title} ${doc.number ?? "ร่าง"} ฉบับ ${doc.revision ?? ""}`} onClick={() => setSelected(doc)}>เปิดอ่าน</button>
   </li>)}</ul>;
   return <section className={styles.library} id="contract" aria-labelledby="document-library-title">
     <div className={workspace.header}><div><h2 id="document-library-title">เอกสารทั้งหมด</h2><p>ค้นหาและเปิดอ่านฉบับที่ใช้อยู่ พร้อมประวัติฉบับก่อนและฉบับยกเลิก</p></div>
-      <div className={styles.actions}>{actions.filter(action => !action.documentId).map(action => <Link className={shared.link} key={action.href} href={action.href} prefetch={false}>{action.label}</Link>)}</div></div>
+      <div className={styles.actions}>{actions.filter(action => !action.documentId).map(action => <Link className={buttonVariants({ variant: "outline", size: "auto" })} key={action.href} href={action.href} prefetch={false}>{action.label}</Link>)}</div></div>
     <div className={styles.filters}>
       <label className={shared.field}>ค้นหาเอกสาร<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="เลขที่ ประเภท หรือสถานะเอกสาร" /></label>
       <label className={shared.field}>ประเภทเอกสาร<select value={group} onChange={event => setGroup(event.target.value)}><option value="">ทุกประเภท</option>
@@ -50,7 +51,7 @@ export function DocumentLibrary({ documents, actions }: { documents: LibraryDocu
     })}
     <dialog ref={dialog} className={styles.dialog} aria-labelledby="document-preview-title" onClose={() => setSelected(null)}>
       {selected && <><header className={styles.previewHeader}><div><h2 id="document-preview-title">{selected.title} · {selected.number ?? "ยังไม่ออกเลข"}</h2><p>{selected.status}</p></div>
-        <button type="button" className={shared.link} onClick={() => dialog.current?.close()}>ปิดเอกสาร</button></header>
+        <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} onClick={() => dialog.current?.close()}>ปิดเอกสาร</button></header>
         <p className={styles.previewHint}>พิมพ์หรือบันทึก PDF ได้จากปุ่มในเอกสาร · <a href={`/sales/documents/${selected.id}`} target="_blank" rel="noopener noreferrer">เปิดหน้าเต็มในแท็บใหม่</a></p>
         <iframe key={selected.id} title={`เนื้อหา ${selected.title} ${selected.number ?? "ร่าง"}`} src={`/sales/documents/${selected.id}?preview=1`} className={styles.frame} />
       </>}

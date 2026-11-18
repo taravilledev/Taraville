@@ -6,6 +6,7 @@ import { taskHref } from "@/lib/sales/tasks";
 import { formatMoney } from "@/lib/sales/money";
 import styles from "../sales.module.css";
 import { tagClass } from "@/components/tag";
+import { buttonVariants } from "@/components/ui/button";
 
 const stages = {
   TARAVILLE: ["draft", "reserved", "contracted", "completed"],
@@ -22,7 +23,7 @@ export function CaseHeader({ sale, summary, step, workflow, navigation, showProg
   return <>
     <div className={styles.header}>
       <div><p className={styles.muted}>{brandLabels[sale.brand]}{sale.unit_label ? ` · ${sale.unit_label}` : ""}</p><h1>{sale.code} · {sale.customer_name}</h1></div>
-      <div className="flex flex-wrap items-center gap-3"><span className={tagClass}>{caseStatusLabels[sale.status]}</span><Link className={styles.link} href="/dashboard" prefetch={false}>กลับแดชบอร์ด</Link></div>
+      <div className="flex flex-wrap items-center gap-3"><span className={tagClass}>{caseStatusLabels[sale.status]}</span><Link className={buttonVariants({ variant: "outline", size: "auto" })} href="/dashboard" prefetch={false}>กลับแดชบอร์ด</Link></div>
     </div>
     {navigation}
     {showProgress && !workflow && current >= 0 && <ol className={styles.steps} aria-label="สถานะงาน">{flow.map((status, index) =>
@@ -42,7 +43,7 @@ function NextStepCard({ sale, step }: { sale: SalesCase; step: NextStep | null }
     <p className={styles.muted}>{step.kind === "done" ? "สถานะ" : "ขั้นต่อไป"}</p>
     <h2 id="next-step">{step.title}</h2>
     {step.hint && <p className={styles.muted}>{step.hint}</p>}
-    {step.kind !== "done" && step.allowed && <Link className={styles.primary} prefetch={false}
+    {step.kind !== "done" && step.allowed && <Link className={buttonVariants({ size: "auto" })} prefetch={false}
       href={step.task ? taskHref(sale.id, step.task, step.row) : `/sales/${sale.id}?tab=${step.tab}${step.anchor ? `#${step.anchor}` : ""}`}>{step.kind === "reserve" ? "ยืนยันจองแปลง" : "ไปทำขั้นนี้"}</Link>}
     {!step.allowed && <p className={styles.muted}>รอผู้มีสิทธิ์ดำเนินการขั้นนี้ บัญชีของคุณไม่มีสิทธิ์</p>}
   </section>;

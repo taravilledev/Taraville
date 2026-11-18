@@ -15,6 +15,7 @@ import styles from "../sales.module.css";
 import workspace from "./workspace-section.module.css";
 import { panelClass } from "@/components/panel";
 import { noticeClass } from "@/components/notice";
+import { buttonVariants } from "@/components/ui/button";
 
 export type Closeout = { document_id: string; retained_cents: string; received_cents: string; remaining_cents: string; refund_due_cents: string } | null;
 export type SummaryData = {
@@ -35,7 +36,7 @@ const managementActions: Partial<Record<TaskName, { title: string; description: 
 /** A link to a task, shown only when the registry says the reader may open it. */
 function TaskLink({ data, name, row, children }: { data: SummaryData; name: TaskName; row?: string; children?: ReactNode }) {
   if (!findTask(data.tasks, name, row)) return null;
-  return <Link className={styles.link} href={taskHref(data.sale.id, name, row)} prefetch={false}>{children ?? taskLabels[name]}</Link>;
+  return <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={taskHref(data.sale.id, name, row)} prefetch={false}>{children ?? taskLabels[name]}</Link>;
 }
 
 export function OverviewSection({ data, houseBrief }: { data: SummaryData; houseBrief: ReactNode }) {
@@ -72,7 +73,7 @@ export function OverviewSection({ data, houseBrief }: { data: SummaryData; house
       <ul className={`${styles.list} ${styles.managementList}`}>{managementTasks.map(task => {
         const action = managementActions[task.name];
         return <li key={task.name} data-close={task.name === "close"}>
-          <Link className={`${styles.link} ${styles.managementLink}`} href={taskHref(sale.id, task.name)} prefetch={false}>
+          <Link className={`${buttonVariants({ variant: "outline", size: "auto" })} ${styles.managementLink}`} href={taskHref(sale.id, task.name)} prefetch={false}>
             <span><strong>{action?.title ?? task.label}</strong>
               {action && <span className={styles.muted}>{action.description}</span>}
             </span>

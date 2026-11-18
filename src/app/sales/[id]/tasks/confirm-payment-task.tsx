@@ -7,6 +7,7 @@ import type { TaskData } from "./task-data";
 import { idOf } from "./task-data";
 import styles from "../../sales.module.css";
 import { panelClass } from "@/components/panel";
+import { buttonVariants } from "@/components/ui/button";
 
 export function ConfirmPaymentTask({ sale, finance, row }: TaskData) {
   const payment = finance?.pending.find(item => item.id === row);
@@ -22,7 +23,7 @@ export function ConfirmPaymentTask({ sale, finance, row }: TaskData) {
         <p className={styles.muted}>เมื่อยืนยันแล้วจึงนับยอดรับจริงและออกเลขใบเสร็จ ไม่สามารถแก้ยอดบนเอกสารตัวอย่างนี้</p>
         <label className={styles.check}><input type="checkbox" name="funds_confirmed" required />ตรวจสอบยอด วันที่ วิธีรับเงิน และได้รับเงินจริงแล้ว</label>
       </ActionForm>
-      {sale.permissions["financial.prepare"] && <p><Link className={styles.link} href={`/sales/${sale.id}?task=withdraw-payment&row=${payment.id}`} prefetch={false}>ข้อมูลผิด · ถอนรายการแล้วบันทึกใหม่</Link></p>}
+      {sale.permissions["financial.prepare"] && <p><Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/${sale.id}?task=withdraw-payment&row=${payment.id}`} prefetch={false}>ข้อมูลผิด · ถอนรายการแล้วบันทึกใหม่</Link></p>}
     </section>
   </div>;
 }

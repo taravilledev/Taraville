@@ -4,9 +4,9 @@ import type { SalesCase } from "@/lib/sales/models";
 import { designPackages } from "@/lib/sales/design-fees";
 import { formatMoney } from "@/lib/sales/money";
 import { findTask, taskHref, type Task } from "@/lib/sales/tasks";
-import shared from "../sales.module.css";
 import { WorkspaceHeading } from "./workspace-heading";
 import workspace from "./workspace-section.module.css";
+import { buttonVariants } from "@/components/ui/button";
 
 export function DesignBillingPanel({ sale, finance, tasks }: { sale: SalesCase; finance: FinancialDetail; tasks: Task[] }) {
   if (sale.brand !== "BAAN_KUNAPAP") return null;
@@ -23,11 +23,11 @@ export function DesignBillingPanel({ sale, finance, tasks }: { sale: SalesCase; 
         <div><dt>ค่าออกแบบรวม</dt><dd className={workspace.amount}>{formatMoney(plan.total_cents)} บาท</dd></div>
         <div><dt>งวดค่าออกแบบ</dt><dd>{plan.instalments.length} งวด</dd></div>
       </dl> : <p>เลือกแพ็กเกจและกรอกพื้นที่ใช้สอยจริงก่อนเริ่มเรียกเก็บค่าออกแบบ</p>}
-      <div className={workspace.actions}>{canEdit && <Link className={plan ? shared.link : shared.primary} href={taskHref(sale.id, "design")} prefetch={false}>{plan ? "แก้แพ็กเกจและพื้นที่" : "เลือกแพ็กเกจค่าออกแบบ"}</Link>}</div>
+      <div className={workspace.actions}>{canEdit && <Link className={plan ? buttonVariants({ variant: "outline", size: "auto" }) : buttonVariants({ size: "auto" })} href={taskHref(sale.id, "design")} prefetch={false}>{plan ? "แก้แพ็กเกจและพื้นที่" : "เลือกแพ็กเกจค่าออกแบบ"}</Link>}</div>
       {!canEdit && <p className={workspace.note}>{plan ? "แก้แพ็กเกจไม่ได้ตามสถานะปัจจุบัน ตรวจบิลและประวัติเงินที่หน้าการเงิน" : "รอผู้มีสิทธิ์กำหนดค่าออกแบบ"}</p>}
       {plan?.note && <p className={workspace.note}>{plan.note}</p>}
       <div className={workspace.next} id="pending"><p>ออกบิล รับเงิน และดูใบเสร็จค่าออกแบบได้ที่หน้าการเงิน{pendingCount ? ` · มีเงินค่าแบบรอยืนยัน ${pendingCount} รายการ` : ""}</p>
-        <div className={workspace.actions}><Link className={plan ? shared.primary : shared.link} href={`/sales/${sale.id}?tab=money#${pendingCount ? "pending" : "design-fees"}`} prefetch={false}>ไปการเงิน{pendingCount ? " · ตรวจเงินรอยืนยัน" : " · ค่าออกแบบ"}</Link></div>
+        <div className={workspace.actions}><Link className={plan ? buttonVariants({ size: "auto" }) : buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/${sale.id}?tab=money#${pendingCount ? "pending" : "design-fees"}`} prefetch={false}>ไปการเงิน{pendingCount ? " · ตรวจเงินรอยืนยัน" : " · ค่าออกแบบ"}</Link></div>
       </div>
     </div>
   </section>;

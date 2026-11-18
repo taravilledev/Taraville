@@ -10,6 +10,7 @@ import { formatMoney } from "@/lib/sales/money";
 import { bkpFlowStages, bkpWorkflow } from "@/lib/sales/bkp-workflow";
 import styles from "./bkp-progress.module.css";
 import shared from "../sales.module.css";
+import { buttonVariants } from "@/components/ui/button";
 
 type Props = { sale: SalesCase; finance: FinancialDetail; agreement: AgreementDetail; progress: ProjectProgress;
   step: NextStep | null; tasks: Task[]; activeTask?: Task; compact?: boolean };
@@ -49,7 +50,7 @@ export function BkpProgress({ sale, finance, agreement, progress, step, tasks, a
       <div><p className={shared.muted}>{isCurrentTask ? "กำลังทำรายการนี้" : step.kind === "done" ? "สถานะล่าสุด" : "งานที่ต้องทำตอนนี้"}</p>
         <h3>{step.title}</h3>{step.hint && <p>{step.hint}</p>}
         {!step.allowed && <p className={shared.muted}>รอผู้มีสิทธิ์ดำเนินการ บัญชีของคุณไม่มีสิทธิ์ทำรายการนี้</p>}</div>
-      {step.kind !== "done" && step.allowed && !isCurrentTask && <Link className={shared.primary} href={href} prefetch={false}>
+      {step.kind !== "done" && step.allowed && !isCurrentTask && <Link className={buttonVariants({ size: "auto" })} href={href} prefetch={false}>
         {step.task ? taskLabels[step.task] : step.title}</Link>}
     </div>}
     <div className={styles.body}>
@@ -64,7 +65,7 @@ export function BkpProgress({ sale, finance, agreement, progress, step, tasks, a
       </details>}
     </div>
     <div className={styles.shortcuts}>
-      <Link className={shared.link} href={`/sales/${sale.id}?tab=money`} prefetch={false}>การเงิน · ค่าแบบ งวด และใบเสร็จ</Link>
+      <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/${sale.id}?tab=money`} prefetch={false}>การเงิน · ค่าแบบ งวด และใบเสร็จ</Link>
     </div>
   </section>;
 }

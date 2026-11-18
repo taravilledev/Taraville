@@ -3,9 +3,9 @@ import { formatMoney } from "@/lib/sales/money";
 import { formatDate } from "@/lib/sales/date";
 import { findTask, taskHref } from "@/lib/sales/tasks";
 import type { SummaryData } from "./summary-sections";
-import shared from "../sales.module.css";
 import styles from "./workspace-section.module.css";
 import { noticeClass } from "@/components/notice";
+import { buttonVariants } from "@/components/ui/button";
 
 export function InstalmentList({ data }: { data: SummaryData }) {
   const { sale, agreement, tasks } = data;
@@ -13,7 +13,7 @@ export function InstalmentList({ data }: { data: SummaryData }) {
   const rows = agreement.instalments.filter(row => row.is_active).sort((a, b) => a.position - b.position);
   return <section className={styles.section} id="schedule" aria-labelledby="schedule-title">
     <div><h3 id="schedule-title">งวดชำระตามสัญญา</h3><p className={styles.note}>{rows.length ? `${rows.length} งวด · ตรวจรับงาน ออกบิล และบันทึกเงินแยกตามงวด` : "ตารางงวดจะแสดงหลังลงนามสัญญา"}</p></div>
-    {!rows.length && <div className={styles.actions}><Link className={shared.link} href={`/sales/${sale.id}?tab=contract`} prefetch={false}>ไปสัญญา</Link></div>}
+    {!rows.length && <div className={styles.actions}><Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/${sale.id}?tab=contract`} prefetch={false}>ไปสัญญา</Link></div>}
     <ol className={styles.rows}>{rows.map(row => {
       const isPaid = !!row.invoice_id && row.balance?.is_active === true && row.balance.outstanding_cents === "0";
       const isCreditOnly = row.net_cents === "0";
@@ -37,8 +37,8 @@ export function InstalmentList({ data }: { data: SummaryData }) {
           {row.due_date && <div><dt>ครบกำหนดชำระ</dt><dd>{formatDate(row.due_date)}</dd></div>}
         </dl>}
         <div className={styles.next}><div className={styles.actions}>
-          {next && <Link className={shared.primary} href={taskHref(sale.id, next.name, next.row)} prefetch={false}>{nextLabel}</Link>}
-          {row.invoice_document_id && <Link className={shared.link} href={`/sales/documents/${row.invoice_document_id}`} prefetch={false}>ดูใบแจ้งชำระ / เครดิต</Link>}
+          {next && <Link className={buttonVariants({ size: "auto" })} href={taskHref(sale.id, next.name, next.row)} prefetch={false}>{nextLabel}</Link>}
+          {row.invoice_document_id && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/documents/${row.invoice_document_id}`} prefetch={false}>ดูใบแจ้งชำระ / เครดิต</Link>}
         </div>{!next && !isPaid && <p className={styles.note}>ยังไม่มีงานที่บัญชีนี้ทำต่อได้ · ตรวจรายการเงินรอยืนยันด้านบนหรือรอผู้มีสิทธิ์ดำเนินการ</p>}</div>
       </li>;
     })}</ol>

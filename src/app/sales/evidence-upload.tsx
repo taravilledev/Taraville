@@ -6,6 +6,7 @@ import { supabaseConfig } from "@/lib/supabase/config";
 import styles from "./sales.module.css";
 import local from "./evidence-upload.module.css";
 import { noticeClass } from "@/components/notice";
+import { buttonVariants } from "@/components/ui/button";
 
 const extensions: Record<string, string> = { "application/pdf": "pdf", "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 export function EvidenceUpload({ caseId, category = "payment", className, title = "หลักฐานการยอมรับ" }: {
@@ -28,7 +29,7 @@ export function EvidenceUpload({ caseId, category = "payment", className, title 
   }
   const picker = <label>{isGrouped ? "1. เลือกไฟล์หลักฐาน" : "หลักฐาน (PDF / รูปภาพ ไม่เกิน 10 MB)"}<input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" disabled={isPending}
       onChange={event => { setFile(event.target.files?.[0] ?? null); setPath(""); setError(""); }} /></label>;
-  const uploadButton = <button type="button" className={isGrouped ? local.upload : styles.link} onClick={upload} disabled={isPending || !file || !!path}>
+  const uploadButton = <button type="button" className={isGrouped ? local.upload : buttonVariants({ variant: "outline", size: "auto" })} onClick={upload} disabled={isPending || !file || !!path}>
     {isPending ? "กำลังอัปโหลด…" : path ? "อัปโหลดสำเร็จแล้ว" : isGrouped ? "2. อัปโหลดไฟล์ที่เลือก" : "อัปโหลดหลักฐาน"}</button>;
   return <div className={`${styles.field} ${className ?? ""}`}>
     <input type="hidden" name="proof_path" value={path} />

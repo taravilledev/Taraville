@@ -13,6 +13,7 @@ import styles from "../sales/sales.module.css";
 import { noticeClass } from "@/components/notice";
 import { panelClass } from "@/components/panel";
 import { tagClass } from "@/components/tag";
+import { buttonVariants } from "@/components/ui/button";
 
 export const metadata = { title: "แดชบอร์ด · Taraville Group", robots: { index: false, follow: false } };
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -41,11 +42,11 @@ async function Workspace({ searchParams }: Props) {
       <label className={styles.field}>สถานะ<select name="status" defaultValue={status}>
         {Object.entries(statusOptions).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
       {ownership !== "all" && <input type="hidden" name="ownership" value={ownership} />}
-      <button className={styles.primary} type="submit">ค้นหา</button>
-      {filtered && <Link className={styles.link} href={ownership === "all" ? "/dashboard" : `/dashboard?ownership=${ownership}`} prefetch={false}>ล้างตัวกรอง</Link>}
+      <button className={buttonVariants({ size: "auto" })} type="submit">ค้นหา</button>
+      {filtered && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={ownership === "all" ? "/dashboard" : `/dashboard?ownership=${ownership}`} prefetch={false}>ล้างตัวกรอง</Link>}
     </form>;
   const settings = (workspace.can_catalog || workspace.can_admin || workspace.developments.length > 0) &&
-    <Link className={styles.link} href="/sales/settings" prefetch={false}>ตั้งค่า</Link>;
+    <Link className={buttonVariants({ variant: "outline", size: "auto" })} href="/sales/settings" prefetch={false}>ตั้งค่า</Link>;
   const [dashboard, overview, overviewWork] = await Promise.all([
     executive ? executiveWork(supabase, { status, brand, query }) : null,
     executive ? dashboardOverview(supabase, brand) : null,
@@ -57,7 +58,7 @@ async function Workspace({ searchParams }: Props) {
     const baseWork = status === "active" && !query ? dashboard : overviewWork;
     return <AppShell staff={staff} wide><div className="grid gap-6">
       <div className={styles.header}><div><h1>แดชบอร์ด</h1><p>ติดตามงานและโครงการของบ้านคุณภาพและธาราวิลล์</p></div>
-        <div className="flex flex-wrap items-center gap-3"><Link className={styles.primary} href="/summary" prefetch={false}>สรุปการเงินบ้านคุณภาพ</Link>{settings}</div>
+        <div className="flex flex-wrap items-center gap-3"><Link className={buttonVariants({ size: "auto" })} href="/summary" prefetch={false}>สรุปการเงินบ้านคุณภาพ</Link>{settings}</div>
       </div>
       <nav className={styles.tabs} aria-label="เลือกแบรนด์สำหรับแดชบอร์ด">
         {brands.map(({ value, label }) => <Link key={value} href={value ? `/dashboard?brand=${value}` : "/dashboard"}
@@ -82,7 +83,7 @@ async function Workspace({ searchParams }: Props) {
   return <AppShell staff={staff} wide><div className="grid gap-6">
     <div className={styles.header}><div><h1>แดชบอร์ด</h1><p>บ้านคุณภาพ · ธาราวิลล์</p></div>
       <div className="flex flex-wrap items-center gap-3">
-        {executive && <Link className={styles.link} href="/summary" prefetch={false}>สรุปการเงินบ้านคุณภาพ</Link>}{settings}
+        {executive && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href="/summary" prefetch={false}>สรุปการเงินบ้านคุณภาพ</Link>}{settings}
       </div>
     </div>
     {executive && <p className={noticeClass} role="status">โหลดแดชบอร์ดผู้บริหารไม่ได้ รายการงานด้านล่างยังใช้งานได้</p>}

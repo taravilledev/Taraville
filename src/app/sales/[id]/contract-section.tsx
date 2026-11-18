@@ -5,9 +5,9 @@ import { findTask, taskHref, type TaskName } from "@/lib/sales/tasks";
 import type { AgreementDetail } from "@/lib/sales/agreement-models";
 import type { SummaryData } from "./summary-sections";
 import { WorkspaceHeading } from "./workspace-heading";
-import shared from "../sales.module.css";
 import styles from "./workspace-section.module.css";
 import { noticeClass } from "@/components/notice";
+import { buttonVariants } from "@/components/ui/button";
 
 type Document = AgreementDetail["documents"][number];
 const money = (value?: string) => value == null ? "ยังไม่ระบุ" : `${formatMoney(value)} บาท`;
@@ -31,9 +31,9 @@ export function ContractSection({ data }: { data: SummaryData }) {
   const historyActions = history.reduce((count, doc) => count + documentTasks(doc).length, 0);
   const action = (name: TaskName, label: string, row?: string, primary = false) => {
     const task = findTask(tasks, name, row);
-    return task ? <Link key={`${name}:${row ?? ""}`} className={primary ? shared.primary : shared.link} href={taskHref(sale.id, name, row)} prefetch={false}>{label}</Link> : null;
+    return task ? <Link key={`${name}:${row ?? ""}`} className={primary ? buttonVariants({ size: "auto" }) : buttonVariants({ variant: "outline", size: "auto" })} href={taskHref(sale.id, name, row)} prefetch={false}>{label}</Link> : null;
   };
-  const open = (doc: Document, label = "ดูสัญญาฉบับนี้") => <Link className={shared.link} href={`/sales/documents/${doc.id}`} prefetch={false}>{label}</Link>;
+  const open = (doc: Document, label = "ดูสัญญาฉบับนี้") => <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/documents/${doc.id}`} prefetch={false}>{label}</Link>;
   const actionLabels: Partial<Record<TaskName, string>> = { "edit-contract": "แก้ไข / ตรวจร่าง", "lock-contract": "ตรวจความพร้อมก่อนออกเลข", "unlock-contract": "กลับไปแก้ร่าง",
     "sign-contract": "บันทึกลงนามสัญญา", "contract-addendum": "เพิ่มเอกสารแนบท้าย" };
   const hint = sale.status === "cancelled" ? "ตรวจเอกสารอ้างอิงและยอดตามข้อตกลงปิดงานในหน้าการเงิน"
@@ -61,7 +61,7 @@ export function ContractSection({ data }: { data: SummaryData }) {
         <div className={styles.actions}>
           {contract.state === "draft" && action("edit-contract", "แก้ไข / ตรวจร่าง", contract.id, true)}
           {contract.state === "awaiting_signature" && action("sign-contract", "บันทึกลงนามสัญญา", contract.id, true)}
-          {contract.state === "signed" && <Link className={shared.primary} href={`/sales/${sale.id}?tab=money#schedule`} prefetch={false}>{sale.status === "cancelled" ? "ดูยอดและประวัติรับเงิน" : "ไปการเงิน · งวดสัญญา"}</Link>}
+          {contract.state === "signed" && <Link className={buttonVariants({ size: "auto" })} href={`/sales/${sale.id}?tab=money#schedule`} prefetch={false}>{sale.status === "cancelled" ? "ดูยอดและประวัติรับเงิน" : "ไปการเงิน · งวดสัญญา"}</Link>}
           {open(contract)}
           {contract.state === "draft" && action("lock-contract", "ตรวจความพร้อมก่อนออกเลข", contract.id)}
           {contract.state === "awaiting_signature" && action("unlock-contract", "กลับไปแก้ร่าง", contract.id)}
@@ -81,7 +81,7 @@ export function ContractSection({ data }: { data: SummaryData }) {
           <strong>{doc.number ?? "ใบเสนอราคา"} · ฉบับที่ {doc.revision}</strong><p>มูลค่าตามใบเสนอราคา {money(doc.payload.total_cents)}</p>
         </div>{open(doc, "ดูใบเสนอราคา")}</li>)}</ul></>}
       <div className={styles.actions}>{action("prepare-contract", "จัดทำร่างสัญญา", undefined, true)}
-        <Link className={shared.link} href={`/sales/${sale.id}?tab=quotation`} prefetch={false}>ดูใบเสนอราคา</Link></div>
+        <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/${sale.id}?tab=quotation`} prefetch={false}>ดูใบเสนอราคา</Link></div>
       {accepted.length > 0 && sale.status !== "cancelled" && !findTask(tasks, "prepare-contract", undefined)
         && <p className={styles.note}>รอผู้มีสิทธิ์จัดทำร่างสัญญา</p>}
     </div>}

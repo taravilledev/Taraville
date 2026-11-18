@@ -7,6 +7,8 @@ import { createCase } from "../actions";
 import { SearchPicker } from "./search-picker";
 import styles from "../sales.module.css";
 import dialogStyles from "@/app/walkin/walkin.module.css";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type Unit = { id: string; developmentId: string; code: string; location: string; address: string; details: Record<string, unknown>; price: string | null };
 const detail = (unit: Unit, key: string) => typeof unit.details[key] === "string" && unit.details[key] ? unit.details[key] as string : "ยังไม่ระบุ";
@@ -38,7 +40,7 @@ export function OpeningFields({ units, leadId, requestId }: { units: Unit[]; lea
           event.currentTarget.querySelector("button")?.focus(); setUnit(item);
         }}>
           <td><strong>{item.code}</strong></td><td>{item.location}</td><td>{detail(item, "model")}</td><td>{detail(item, "land_area")}</td><td className={styles.unitPrice}>{price(item)}</td>
-          <td><button type="button" className={styles.link} aria-haspopup="dialog" aria-label={`ดูรายละเอียดแปลง ${item.code} · ${item.location}`} onClick={event => { event.stopPropagation(); setUnit(item); }}>ดูรายละเอียด</button></td>
+          <td><button type="button" className={cn(buttonVariants({ variant: "outline", size: "auto" }), "p-2 text-primary text-[length:inherit]")} aria-haspopup="dialog" aria-label={`ดูรายละเอียดแปลง ${item.code} · ${item.location}`} onClick={event => { event.stopPropagation(); setUnit(item); }}>ดูรายละเอียด</button></td>
         </tr>)}</tbody>
       </table>
       <ul className={styles.unitCards}>{matches.map(item => <li key={item.id}>
@@ -54,7 +56,7 @@ export function OpeningFields({ units, leadId, requestId }: { units: Unit[]; lea
       {unit && <ActionForm key={unit.id} action={createCase} label="เปิดโครงการด้วยแปลงนี้">
         <div className={`${dialogStyles.dialogBar} ${styles.unitDialogHeader}`}>
           <h2 id="plot-dialog-title">แปลง {unit.code}<span>โครงการ {unit.location}</span></h2>
-          <button type="button" className={styles.link} onClick={() => dialog.current?.close()}>ปิด</button>
+          <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} onClick={() => dialog.current?.close()}>ปิด</button>
         </div>
         <div className={dialogStyles.dialogBody}>
           <dl className={styles.unitModalPrice}><dt>ราคาทะเบียน</dt><dd>{price(unit)}</dd></dl>

@@ -11,6 +11,7 @@ import { quotationPaperSchema } from "@/lib/sales/agreement-inputs";
 import { TaskHeader } from "./task-header";
 import { QuotationBrand, QuotationPreview } from "./quotation-sheet";
 import { QuotationPaperFields, type QuotationPaper } from "./quotation-paper-fields";
+import { buttonVariants } from "@/components/ui/button";
 
 const houseFields = [
   { key: "model", label: "แบบบ้าน" }, { key: "stories", label: "จำนวนชั้น" },
@@ -147,7 +148,7 @@ export function QuotationEditor({ sale, agreement, designArea, action }: {
               {message(key)}
               {current && current !== house[key] && <span className={local.import}>
                 ความต้องการล่าสุด {current}
-                <button className={styles.link} type="button" onClick={() => setHouse({ ...house, [key]: current })}>ใช้ค่าล่าสุด</button>
+                <button className={buttonVariants({ variant: "outline", size: "auto" })} type="button" onClick={() => setHouse({ ...house, [key]: current })}>ใช้ค่าล่าสุด</button>
               </span>}
             </div>;
           })}</div>
@@ -172,7 +173,7 @@ export function QuotationEditor({ sale, agreement, designArea, action }: {
               setSpecs(rows => rows.filter((_, at) => at !== index)); setErrors({}); addSpecButton.current?.focus();
             }}>ลบ</button>
           </div>)}</div>
-          <button ref={addSpecButton} type="button" className={styles.link} disabled={specs.length >= 50} onClick={() => setSpecs(rows => [...rows, { item: "", detail: "", note: "" }])}>+ เพิ่มรายการสเปก</button>
+          <button ref={addSpecButton} type="button" className={buttonVariants({ variant: "outline", size: "auto" })} disabled={specs.length >= 50} onClick={() => setSpecs(rows => [...rows, { item: "", detail: "", note: "" }])}>+ เพิ่มรายการสเปก</button>
         </fieldset>
         <fieldset className={local.section}><legend>เงื่อนไขเพิ่มเติม</legend>
           <p className={local.note}>ตรวจข้อความและขอบเขตงานให้ตรงกับข้อตกลงของโครงการนี้</p>
@@ -184,7 +185,7 @@ export function QuotationEditor({ sale, agreement, designArea, action }: {
                 setExclusions(rows => rows.filter((_, at) => at !== index)); setErrors({}); addExclusionButton.current?.focus();
               }}>ลบ</button></div>
           </li>)}</ol>
-          <button ref={addExclusionButton} type="button" className={styles.link} disabled={exclusions.length >= 50} onClick={() => setExclusions(rows => [...rows, ""])}>+ เพิ่มเงื่อนไข</button>
+          <button ref={addExclusionButton} type="button" className={buttonVariants({ variant: "outline", size: "auto" })} disabled={exclusions.length >= 50} onClick={() => setExclusions(rows => [...rows, ""])}>+ เพิ่มเงื่อนไข</button>
           <label className={styles.field}>รายละเอียดขอบเขตงานเพิ่มเติม<textarea value={description} maxLength={10000} onChange={event => setDescription(event.target.value)} /></label>
           <label className={styles.field}>หมายเหตุท้ายใบเสนอราคา<textarea value={paper.footnote} maxLength={3000} onChange={event => setPaper({ ...paper, footnote: event.target.value })} /></label>
         </fieldset>
@@ -193,7 +194,7 @@ export function QuotationEditor({ sale, agreement, designArea, action }: {
           <label className={styles.field}>ผู้เสนอราคา<input value={paper.salesperson} maxLength={200} onChange={event => setPaper({ ...paper, salesperson: event.target.value })} /></label>
         </div>
       </article>
-      <div className={local.footer}><p>ตรวจตัวอย่างก่อนออกใบเสนอราคาฉบับใหม่</p><button className={styles.primary} type="submit">ดูตัวอย่างใบเสนอราคา</button></div>
+      <div className={local.footer}><p>ตรวจตัวอย่างก่อนออกใบเสนอราคาฉบับใหม่</p><button className={buttonVariants({ size: "auto" })} type="submit">ดูตัวอย่างใบเสนอราคา</button></div>
     </form>}
   </div>;
 }

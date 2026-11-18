@@ -7,6 +7,7 @@ import { brandLabels } from "@/lib/sales/models";
 import styles from "./sales.module.css";
 import dashboard from "./executive-dashboard.module.css";
 import { tagClass } from "@/components/tag";
+import { buttonVariants } from "@/components/ui/button";
 
 const priorities = [
   { key: "pending", label: "เงินรอยืนยัน", Icon: Receipt, anchor: "pending" },
@@ -54,7 +55,7 @@ export function ExecutiveDashboard({ rows, filters, filterForm, compact = false 
         <div><h2 id="projects-title">ติดตามโครงการ</h2><p className={styles.muted}>
           {active ? `${active.label} · ` : ""}{matches.length.toLocaleString("th-TH")} โครงการ
         </p></div>
-        {active && <Link className={styles.link} href={href("")} prefetch={false}>ดูทุกโครงการ</Link>}
+        {active && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={href("")} prefetch={false}>ดูทุกโครงการ</Link>}
       </div>
       {matches.length ? <div className={dashboard.tableScroll} role="region" aria-label="ตารางติดตามโครงการ" tabIndex={0}>
         <table className={dashboard.table}>
@@ -79,9 +80,9 @@ export function ExecutiveDashboard({ rows, filters, filterForm, compact = false 
         </table>
       </div> : <p className={dashboard.empty}>ไม่พบโครงการตามตัวกรอง</p>}
       {pages > 1 && <nav aria-label="หน้าตารางโครงการ" className={dashboard.pager}>
-        {page > 1 && <Link className={styles.link} href={href(active?.key, page - 1)} prefetch={false}>ก่อนหน้า</Link>}
+        {page > 1 && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={href(active?.key, page - 1)} prefetch={false}>ก่อนหน้า</Link>}
         <span>หน้า {page} / {pages}</span>
-        {page < pages && <Link className={styles.link} href={href(active?.key, page + 1)} prefetch={false}>ถัดไป</Link>}
+        {page < pages && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={href(active?.key, page + 1)} prefetch={false}>ถัดไป</Link>}
       </nav>}
     </section>
   </>;

@@ -5,8 +5,8 @@ import Link from "next/link";
 import type { CollectionRow } from "@/lib/sales/finance-collection";
 import { formatMoney } from "@/lib/sales/money";
 import { formatDate } from "@/lib/sales/date";
-import shared from "../sales.module.css";
 import styles from "./finance-collection.module.css";
+import { buttonVariants } from "@/components/ui/button";
 
 const filters = [
   { id: "all", label: "ทั้งหมด" }, { id: "ready", label: "รอออกบิล" }, { id: "payment", label: "รอชำระ / ยืนยัน" },
@@ -18,8 +18,8 @@ function RowActions({ row }: { row: CollectionRow }) {
     {row.isReference ? "ดูเพื่ออ้างอิง" : row.filter === "complete" ? "ไม่มีงานค้าง" : "ยังดำเนินการไม่ได้ตามสถานะหรือสิทธิ์"}
   </span>;
   return <div className={styles.actions}>
-    {row.primaryAction && <Link className={shared.primary} href={row.primaryAction.href} prefetch={false}>{row.primaryAction.label}</Link>}
-    {row.links.map(link => <Link className={shared.link} key={link.href} href={link.href} prefetch={false}>{link.label}</Link>)}
+    {row.primaryAction && <Link className={buttonVariants({ size: "auto" })} href={row.primaryAction.href} prefetch={false}>{row.primaryAction.label}</Link>}
+    {row.links.map(link => <Link className={buttonVariants({ variant: "outline", size: "auto" })} key={link.href} href={link.href} prefetch={false}>{link.label}</Link>)}
     {row.history.length > 0 && <details className={styles.history}><summary>ประวัติบิล ({row.history.length})</summary>
       <ul>{row.history.map(link => <li key={link.href}><Link href={link.href} prefetch={false}>{link.label}{link.cancelled ? " · ยกเลิกแล้ว" : ""}</Link></li>)}</ul>
     </details>}

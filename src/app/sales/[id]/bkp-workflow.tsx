@@ -11,6 +11,7 @@ import { WorkspaceHeading } from "./workspace-heading";
 import { formatMoney } from "@/lib/sales/money";
 import workspace from "./workspace-section.module.css";
 import { panelClass } from "@/components/panel";
+import { buttonVariants } from "@/components/ui/button";
 
 export function BkpOverview({ data, step }: { data: SummaryData; step: NextStep | null }) {
   const { sale, finance, agreement } = data;
@@ -50,7 +51,7 @@ export function BkpOverview({ data, step }: { data: SummaryData; step: NextStep 
         {step?.hint && <p className={shared.muted}>{step.hint}</p>}
         {step && !step.allowed && <p className={shared.muted}>รอผู้มีสิทธิ์ดำเนินการ</p>}
       </div>
-      {step?.allowed && step.kind !== "done" && (!step.task || task) && <Link className={shared.primary} prefetch={false}
+      {step?.allowed && step.kind !== "done" && (!step.task || task) && <Link className={buttonVariants({ size: "auto" })} prefetch={false}
         href={task && !isFinanceStep ? taskHref(sale.id, task.name, task.row) : `/sales/${sale.id}?tab=${step.tab}${step.anchor ? `#${step.anchor}` : ""}`}>
         {isFinanceStep ? "ไปหน้าการเงิน" : "ไปทำงานถัดไป"}
       </Link>}

@@ -14,6 +14,7 @@ import { UnitForm } from "./unit-form";
 import sales from "../../sales.module.css";
 import styles from "../settings.module.css";
 import { panelClass } from "@/components/panel";
+import { buttonVariants } from "@/components/ui/button";
 
 const base = "/sales/settings/catalog";
 const statusLabels = { available: "ว่าง", reserved: "กันไว้แล้ว", inactive: "ปิดใช้งาน" };
@@ -81,9 +82,9 @@ async function Catalog({ searchParams }: SettingsPageProps) {
       : "เลือกโครงการธาราวิลล์เพื่อดูบ้าน แปลง และราคาทะเบียน"}
     back={development ? { href: base, label: "โครงการหมู่บ้าน" } : undefined}
     actions={canEdit && (development ? <>
-      <Link href={editHref("project")} className={sales.link} prefetch={false}>แก้ไขโครงการ</Link>
-      {development.is_active && <Link href={editHref("new-unit")} className={sales.primary} prefetch={false}>เพิ่มบ้าน/แปลง</Link>}
-    </> : <Link href={editHref("new-project")} className={sales.primary} prefetch={false}>เพิ่มโครงการ</Link>)}>
+      <Link href={editHref("project")} className={buttonVariants({ variant: "outline", size: "auto" })} prefetch={false}>แก้ไขโครงการ</Link>
+      {development.is_active && <Link href={editHref("new-unit")} className={buttonVariants({ size: "auto" })} prefetch={false}>เพิ่มบ้าน/แปลง</Link>}
+    </> : <Link href={editHref("new-project")} className={buttonVariants({ size: "auto" })} prefetch={false}>เพิ่มโครงการ</Link>)}>
     <form className={`${panelClass} ${styles.filters}`} action={base} role="search">
       {development && <input type="hidden" name="project" value={development.id} />}
       <label className={sales.field}>{development ? "ค้นหาบ้าน/แปลง" : "ค้นหาโครงการ"}
@@ -92,8 +93,8 @@ async function Catalog({ searchParams }: SettingsPageProps) {
         <option value="">ทุกสถานะ</option>
         {Object.entries(statuses).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
       </select></label>
-      <button className={sales.primary}>ค้นหา</button>
-      {(q || status) && <Link href={project} className={sales.link} prefetch={false}>ล้างตัวกรอง</Link>}
+      <button className={buttonVariants({ size: "auto" })}>ค้นหา</button>
+      {(q || status) && <Link href={project} className={buttonVariants({ variant: "outline", size: "auto" })} prefetch={false}>ล้างตัวกรอง</Link>}
     </form>
     {!page.rows.length ? <p className={panelClass}>{q || status ? "ไม่พบรายการตามตัวกรอง" : development ? "โครงการนี้ยังไม่มีบ้าน/แปลง" : "ยังไม่มีโครงการที่คุณดูได้"}</p>
       : <div className={styles.tableWrap} tabIndex={0} role="region" aria-label={development ? "ทะเบียนบ้านและแปลง" : "รายการโครงการหมู่บ้าน"}>
@@ -107,7 +108,7 @@ async function Catalog({ searchParams }: SettingsPageProps) {
               <td className={styles.amount}>{item.list_price_cents != null ? formatMoney(item.list_price_cents) : "—"}</td>
               <td className={styles.status}><span className={styles[state]}>{statusLabels[state]}</span></td>
               {canEdit && <td><div className={styles.rowActions} role="group" aria-label={`จัดการบ้าน/แปลง ${item.code}`}>
-                <Link className={sales.link} href={editHref("unit", item.id)} prefetch={false} aria-label={"แก้ไขบ้าน/แปลง " + item.code}>แก้ไข</Link>
+                <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={editHref("unit", item.id)} prefetch={false} aria-label={"แก้ไขบ้าน/แปลง " + item.code}>แก้ไข</Link>
                 {development.is_active && <ActionForm inline action={setUnitActivity.bind(null, {
                   projectId: development.id, unitId: item.id, version: item.version, requestId: randomUUID(),
                   active: !item.is_active, q, status, page: page.page,
@@ -120,15 +121,15 @@ async function Catalog({ searchParams }: SettingsPageProps) {
           <tbody>{developmentPage.rows.map(item => <tr key={item.id}>
             <th scope="row">{item.name}{item.address && <small>{item.address}</small>}</th>
             <td>{item.units.length} แปลง</td><td className={styles.status}>{item.is_active ? "เปิดใช้งาน" : "ปิดใช้งาน"}</td>
-            <td><Link className={sales.link} href={base + "?project=" + item.id} prefetch={false} aria-label={"เปิดทะเบียน " + item.name}>เปิดทะเบียน</Link></td>
+            <td><Link className={buttonVariants({ variant: "outline", size: "auto" })} href={base + "?project=" + item.id} prefetch={false} aria-label={"เปิดทะเบียน " + item.name}>เปิดทะเบียน</Link></td>
           </tr>)}</tbody>
         </table>}
       </div>}
     <footer className={styles.footer}>
       <p className={sales.muted}>{development ? units?.length : developments.length} รายการ{page.pages > 1 && ` · หน้า ${page.page} จาก ${page.pages}`}</p>
       {page.pages > 1 && <nav className="flex flex-wrap items-center gap-3" aria-label="หน้ารายการ">
-        {page.page > 1 && <Link className={sales.link} href={listHref(page.page - 1)} prefetch={false}>ก่อนหน้า</Link>}
-        {page.page < page.pages && <Link className={sales.link} href={listHref(page.page + 1)} prefetch={false}>ถัดไป</Link>}
+        {page.page > 1 && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={listHref(page.page - 1)} prefetch={false}>ก่อนหน้า</Link>}
+        {page.page < page.pages && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={listHref(page.page + 1)} prefetch={false}>ถัดไป</Link>}
       </nav>}
     </footer>
   </SettingsShell>;
