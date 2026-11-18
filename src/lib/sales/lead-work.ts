@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { requireStaff } from "@/lib/supabase/staff";
 import { loadCaseData } from "./case-loader";
 import { caseDetailSchema, caseStatusLabels } from "./models";
+import type { ProjectProgress } from "./case-progress";
 
 type Supabase = Awaited<ReturnType<typeof requireStaff>>["supabase"];
 
@@ -14,7 +15,7 @@ const workSchema = z.object({
 });
 const tagsSchema = z.record(z.uuid(), z.object({ count: z.number().int(), status: statusSchema, plot_code: z.string().nullable() }));
 export type LeadCase = z.infer<typeof workSchema>["cases"][number];
-export type LeadCaseDetail = { plot: string | null; nextStep: string | null; outstanding: string | null };
+export type LeadCaseDetail = { plot: string | null; nextStep: string | null; outstanding: string | null; progress: ProjectProgress | null };
 export type LeadWork = { canCreate: boolean; cases: (LeadCase & { detail: LeadCaseDetail | null })[] };
 
 /** Financial extras for a case card. Any failure drops them: the card keeps its status-only form. */
@@ -23,8 +24,8 @@ async function caseDetail(supabase: Supabase, id: string): Promise<LeadCaseDetai
     const { data, error } = await supabase.rpc("sales_case_detail", { p_case_id: id });
     if (error) return null;
     const sale = caseDetailSchema.parse(data);
-    const { step, summary } = await loadCaseData(supabase, sale);
-    return { plot: sale.unit_label ?? null, nextStep: step?.title ?? null, outstanding: summary?.outstanding ?? null };
+    const { step, summary, progress } = await loadCaseData(supabase, sale);
+    return { plot: sale.unit_label ?? null, nextStep: step?.title ?? null, outstanding: summary?.outstanding ?? null, progress };
   } catch { return null; }
 }
 

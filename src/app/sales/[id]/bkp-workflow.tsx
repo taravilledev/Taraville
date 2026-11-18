@@ -1,0 +1,67 @@
+import Link from "next/link";
+import { bkpOverviewStage, bkpOverviewStages, bkpWorkflow } from "@/lib/sales/bkp-workflow";
+import type { NextStep } from "@/lib/sales/case-progress";
+import { findTask, taskHref } from "@/lib/sales/tasks";
+import type { SummaryData } from "./summary-sections";
+import shared from "../sales.module.css";
+import styles from "./bkp-workflow.module.css";
+import { QuotationSection } from "./quotation-section";
+import { ContractSection } from "./contract-section";
+import { WorkspaceHeading } from "./workspace-heading";
+import { formatMoney } from "@/lib/sales/money";
+import workspace from "./workspace-section.module.css";
+
+export function BkpOverview({ data, step }: { data: SummaryData; step: NextStep | null }) {
+  const { sale, finance, agreement } = data;
+  if (!finance || !agreement) return null;
+  const flow = bkpWorkflow(finance, agreement);
+  const construction = data.summary?.net ?? null;
+  const hasSeparateDesignFee = flow.contract?.payload.design_fee_separate === true;
+  const design = hasSeparateDesignFee ? finance.design_plan?.total_cents ?? null : null;
+  const projectValue = construction !== null && design !== null ? (BigInt(construction) + BigInt(design)).toString() : construction;
+  const outstanding = hasSeparateDesignFee && flow.contract?.state !== "signed" && !data.closeout ? null : data.summary?.outstanding ?? null;
+  const stageDone = {
+    intake: true, design: flow.done.fees, quotation: flow.done.quotation,
+    contract: flow.contract?.state === "signed", money: flow.done.contract,
+  };
+  const current = bkpOverviewStage(flow);
+  const isFinanceStep = step?.tab === "money";
+  const task = step?.task ? findTask(data.tasks, step.task, step.row) : null;
+  return <>
+    <WorkspaceHeading caseId={sale.id} title="ภาพรวมโครงการ" description="มูลค่า ความคืบหน้า และงานที่ต้องทำต่อของโครงการนี้" />
+    {data.summary && <dl className={`${shared.summary} ${workspace.overviewTotals}`}>
+      <div><dt>มูลค่าโครงการ (ราคาสุทธิ)</dt><dd>{projectValue === null ? "ยังไม่ระบุ" : `${formatMoney(projectValue)} บาท`}
+        {construction !== null && design !== null && <p className={shared.muted}>ค่าก่อสร้าง {formatMoney(construction)} + ค่าออกแบบ {formatMoney(design)} บาท</p>}</dd></div>
+      <div><dt>รับแล้วหลังหักคืนเงิน</dt><dd>{formatMoney(data.summary.received)} บาท</dd></div>
+      <div><dt>{hasSeparateDesignFee && !data.closeout ? "ค้างชำระค่าก่อสร้าง" : "ค้างชำระ"}</dt><dd>{outstanding === null ? "ยังไม่ระบุ" : `${formatMoney(outstanding)} บาท`}</dd></div>
+    </dl>}
+    {sale.status !== "cancelled" && <section className={styles.flow} aria-label="สถานะโครงการ">
+      <ol className={styles.stages}>{Object.entries(bkpOverviewStages).map(([id, label], index) => {
+        const isDone = stageDone[id as keyof typeof stageDone];
+        return <li key={id} aria-current={!isDone && current === id ? "step" : undefined}>
+          <span className={styles.number}>{index + 1}</span>
+          <span><strong>{label}</strong><small>{isDone ? "เสร็จแล้ว" : current === id ? "กำลังดำเนินการ" : "ยังไม่เสร็จ"}</small></span>
+        </li>;
+      })}</ol>
+    </section>}
+    <section className={`${shared.panel} ${styles.context}`}>
+      <div><h2>งานถัดไป</h2><p>{step?.title ?? "ไม่มีงานถัดไปในขณะนี้"}</p>
+        {step?.hint && <p className={shared.muted}>{step.hint}</p>}
+        {step && !step.allowed && <p className={shared.muted}>รอผู้มีสิทธิ์ดำเนินการ</p>}
+      </div>
+      {step?.allowed && step.kind !== "done" && (!step.task || task) && <Link className={shared.primary} prefetch={false}
+        href={task && !isFinanceStep ? taskHref(sale.id, task.name, task.row) : `/sales/${sale.id}?tab=${step.tab}${step.anchor ? `#${step.anchor}` : ""}`}>
+        {isFinanceStep ? "ไปหน้าการเงิน" : "ไปทำงานถัดไป"}
+      </Link>}
+    </section>
+  </>;
+}
+
+export function BkpAgreementSection({ data, tab }: { data: SummaryData; tab: "quotation" | "contract" }) {
+  const { finance, agreement } = data;
+  if (!finance || !agreement) return null;
+  return <>
+    {tab === "quotation" && <QuotationSection data={data} />}
+    {tab === "contract" && <ContractSection data={data} />}
+  </>;
+}

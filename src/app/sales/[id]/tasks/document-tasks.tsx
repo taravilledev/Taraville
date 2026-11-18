@@ -1,0 +1,141 @@
+import { ContractAddendumForm } from "./contract-addendum-form";
+import { addContractAddendum } from "../../agreement-actions";
+import { contractPaperMissing } from "@/lib/sales/contract-paper";
+import { ActionForm } from "@/app/walkin/action-form";
+
+import { acceptQuotation, issueQuotation, prepareContract, signContract, signPropertyContract, lockContract, unlockContract } from "../../agreement-actions";
+import { saveBookingSummary } from "../../adjustment-actions";
+import { saveDesign } from "../../money-actions";
+import { EvidenceUpload } from "../../evidence-upload";
+import { QuotationEditor } from "./quotation-editor";
+import { ContractWizard } from "./contract-wizard";
+import { AgreementContent } from "../../documents/[id]/agreement-content";
+import Link from "next/link";
+import styles from "../../sales.module.css";
+import { idOf, type TaskData } from "./task-data";
+import { DesignPackages } from "./design-packages";
+import { formatMoney } from "@/lib/sales/money";
+import acceptance from "./quotation-acceptance.module.css";
+
+export function DesignTask({ sale, finance }: TaskData) {
+  const plan = finance?.design_plan;
+  return <ActionForm action={saveDesign.bind(null, idOf(sale, sale.id, finance?.version))} label="บันทึกค่าออกแบบ">
+    <DesignPackages initialArea={plan ? plan.usable_area ?? "" : sale.house_brief?.usable_area ?? String(sale.details?.usable_area ?? "")} plan={plan} />
+  </ActionForm>;
+}
+
+export function IssueQuotationTask({ sale, agreement, finance }: TaskData) {
+  return <QuotationEditor sale={sale} agreement={agreement} designArea={finance?.design_plan?.usable_area}
+    action={issueQuotation.bind(null, idOf(sale))} />;
+}
+
+export function AcceptQuotationTask({ sale, agreement, row }: TaskData) {
+  const document = agreement?.documents.find(doc => doc.id === row && doc.kind === "quotation");
+  if (!document) return null;
+  return <ActionForm action={acceptQuotation.bind(null, { ...idOf(sale, row), caseId: sale.id })} label="บันทึกลูกค้ายอมรับใบเสนอราคาฉบับนี้">
+    <div className={acceptance.content}>
+      <div className={acceptance.quote}><div><h3>{document.number ?? "ใบเสนอราคา"} · ฉบับที่ {document.revision}</h3>
+        <p>{document.payload.paper?.customer_name ?? document.customer_snapshot?.full_name ?? sale.customer_name} · ยอดเสนอ {formatMoney(document.payload.total_cents ?? "0")} บาท</p></div>
+        <Link className={styles.link} href={`/sales/documents/${document.id}`} prefetch={false} target="_blank" rel="noopener noreferrer">ดูใบเสนอราคาฉบับนี้ (แท็บใหม่)</Link></div>
+      <div><p className={acceptance.help}>แนบภาพแชต LINE หรือเอกสารที่ยืนยันว่าลูกค้ายอมรับใบเสนอราคาฉบับนี้ ก่อนดำเนินการสัญญา</p>
+        <EvidenceUpload caseId={sale.id} category="agreement" className={acceptance.evidence} /></div>
+      <label className={acceptance.confirmation}><input type="checkbox" name="confirmed" required />ยืนยันว่าลูกค้ายอมรับใบเสนอราคาฉบับที่ {document.revision} ตามหลักฐานที่แนบแล้ว</label>
+    </div>
+  </ActionForm>;
+}
+
+export function PrepareContractTask({ sale, agreement, finance, row, contractTemplate }: TaskData) {
+  if (!agreement) return null;
+  const draft = agreement.documents.find(doc => doc.id === row && doc.state === "draft");
+  const credit = finance?.payments.filter(payment => payment.kind === "design_fee")
+    .reduce((sum, payment) => sum + BigInt(payment.totals.free_cents ?? "0"), BigInt(0)).toString() ?? "0";
+  return <ContractWizard sale={sale} agreement={agreement} draftId={draft?.id} creditCents={credit} contractText={contractTemplate?.contract_text}
+    contractTextApproved={contractTemplate?.contract_text_approved}
+    contractDefaults={{ contractor_name: contractTemplate?.contractor_name ?? "", contractor_address: contractTemplate?.contractor_address ?? "" }}
+    action={prepareContract.bind(null, { ...idOf(sale), documentId: draft?.id ?? null, documentVersion: draft?.version ?? null })} />;
+}
+
+export function LockContractTask({ sale, agreement, row, contractTemplate }: TaskData) {
+  const draft = agreement?.documents.find(doc => doc.id === row && doc.state === "draft");
+  if (!draft) return null;
+  const paper = draft.payload.contract_paper;
+  const missing = [...(paper ? contractPaperMissing(paper, !!contractTemplate?.is_synthetic) : []), ...(!draft.payload.start_date ? ["วันเริ่มก่อสร้าง"] : [])];
+  const needsApproval = !contractTemplate?.is_synthetic && (!contractTemplate?.contract_text_approved || draft.payload.contract_text !== contractTemplate.contract_text);
+  const canLock = !needsApproval && (!!paper || contractTemplate?.is_synthetic) && !missing.length && !!draft.payload.contract_text?.trim();
+  return <>
+    <p>ตรวจข้อมูลก่อนออกเลขสัญญา ยอดเครดิตจะคำนวณจากเงินที่รับจริง ณ ตอนล็อก</p>
+    <AgreementContent payload={draft.payload} />
+    {!canLock && <p className={styles.notice} role="status">{needsApproval
+      ? "รอตรวจข้อความบริษัท หรือบันทึกร่างอีกครั้งเพื่อใช้ข้อความที่อนุมัติล่าสุด"
+      : missing.length ? `กรอกข้อมูลก่อนออกเลข: ${missing.join(" · ")}` : "กลับไปบันทึกร่างบนแม่แบบใหม่และตรวจข้อความบริษัทก่อนออกเลข"}</p>}
+    {!canLock && <p><Link className={styles.link} href={`/sales/${sale.id}?task=edit-contract&row=${draft.id}`} prefetch={false}>กลับไปแก้ร่าง</Link></p>}
+    {canLock && <ActionForm action={lockContract.bind(null, { ...idOf(sale), documentId: draft.id, documentVersion: draft.version })} label="ล็อกและออกเลขสัญญา"
+      secondaryAction={{ label: "กลับไปแก้ร่าง", href: `/sales/${sale.id}?task=edit-contract&row=${draft.id}` }}>
+      <label className={styles.check}><input type="checkbox" name="confirmed" required />ตรวจข้อมูลและพร้อมพิมพ์ให้ลงนาม</label>
+    </ActionForm>}
+  </>;
+}
+
+export function UnlockContractTask({ sale, agreement, row }: TaskData) {
+  const doc = agreement?.documents.find(item => item.id === row && item.state === "awaiting_signature");
+  if (!doc) return null;
+  return <ActionForm action={unlockContract.bind(null, { ...idOf(sale), documentId: doc.id, documentVersion: doc.version })} label="ปลดล็อกและสร้างร่างใหม่">
+    <p>เลขที่ {doc.number} จะเก็บเป็นฉบับยกเลิก การล็อกร่างใหม่จะออกเลขใหม่</p>
+    <label className={styles.field}>เหตุผลที่แก้ร่าง<textarea name="reason" required maxLength={3000} /></label>
+    <label className={styles.check}><input type="checkbox" name="confirmed" required />ฉบับนี้ยังไม่ได้ลงนาม และยืนยันกลับไปแก้ร่าง</label>
+  </ActionForm>;
+}
+
+export function SignContractTask({ sale, agreement, row }: TaskData) {
+  const document = agreement?.documents.find(doc => doc.id === row && doc.kind === "contract" && doc.state === "awaiting_signature");
+  if (!document) return null;
+  const scheduleCount = document.payload.schedule?.length ?? document.payload.schedule_input?.length;
+  return <ActionForm action={signContract.bind(null, { ...idOf(sale, row), caseId: sale.id })} label="บันทึกลงนามสัญญาฉบับนี้">
+    <div className={acceptance.content}>
+      <div className={acceptance.quote}><div><h3>{document.number ?? "สัญญา"} · ฉบับที่ {document.revision}</h3>
+        <p>{document.payload.customer?.full_name ?? document.customer_snapshot?.full_name ?? sale.customer_name}</p>
+        <p>มูลค่าสัญญา {document.payload.total_cents == null ? "ยังไม่ระบุ" : `${formatMoney(document.payload.total_cents)} บาท`}
+          {scheduleCount != null ? ` · ${scheduleCount} งวด` : ""} · รอลงนาม</p></div>
+        <Link className={styles.link} href={`/sales/documents/${document.id}`} prefetch={false} target="_blank" rel="noopener noreferrer">เปิดสัญญาฉบับนี้ (แท็บใหม่)</Link>
+      </div>
+      <div><p className={acceptance.help}>เปิดตรวจเลขสัญญาและตารางงวดให้ตรงฉบับ แล้วแนบเอกสารที่ลงนามเรียบร้อยแล้ว</p>
+        <EvidenceUpload caseId={sale.id} category="agreement" className={acceptance.evidence} title="สัญญาและตารางงวดที่ลงนามแล้ว" /></div>
+      <label className={acceptance.confirmation}><input type="checkbox" name="confirmed" required />ตรวจสอบสัญญา {document.number ?? `ฉบับที่ ${document.revision}`} และตารางงวดที่ลงนามแล้ว ตรงกับหลักฐานที่อัปโหลด</label>
+    </div>
+  </ActionForm>;
+}
+
+export function BookingSummaryTask({ sale }: TaskData) {
+  return <ActionForm action={saveBookingSummary.bind(null, idOf(sale))} label="บันทึกสรุปการจอง">
+    <p>บันทึกเอกสารแต่ละฉบับจากข้อมูลการขายล่าสุด การบันทึกเอกสารไม่กันแปลง</p>
+    <div className={styles.grid}>
+      <label className={styles.field}>ยอดจอง (บาท)<input name="booking" inputMode="decimal" /></label>
+      <label className={styles.field}>ยอดวันทำสัญญา (บาท)<input name="contract" inputMode="decimal" /></label>
+      <label className={styles.field}>ยอดดาวน์รวม (บาท)<input name="down" inputMode="decimal" /></label>
+      <label className={styles.field}>ยอดยื่นกู้ (บาท)<input name="mortgage" inputMode="decimal" /></label>
+      <label className={styles.field}>วันนัดจอง<input name="booking_date" type="date" /></label>
+      <label className={styles.field}>วันนัดทำสัญญา<input name="contract_date" type="date" /></label>
+      <label className={styles.field}>วันนัดดาวน์งวดแรก<input name="down_date" type="date" /></label>
+      <label className={styles.field}>เงื่อนไข<textarea name="conditions" maxLength={5000} /></label>
+      <label className={styles.field}>ของแถม<textarea name="freebies" maxLength={5000} /></label>
+    </div>
+  </ActionForm>;
+}
+
+export function SignPropertyContractTask({ sale, finance }: TaskData) {
+  const summaries = finance?.documents.filter(doc => doc.kind === "summary") ?? [];
+  return <ActionForm action={signPropertyContract.bind(null, idOf(sale))} label="บันทึกสัญญาขาย">
+    <label className={styles.field}>สรุปการจองที่ตกลง<select name="summary_id" required defaultValue="">
+      <option value="" disabled>เลือกเอกสาร</option>{summaries.map(doc => <option key={doc.id} value={doc.id}>{doc.number}</option>)}
+    </select></label>
+    <label className={styles.field}>จำนวนงวดดาวน์ (0 หากไม่มี)<input name="down_count" type="number" min={0} max={98} step={1} required /></label>
+    <EvidenceUpload caseId={sale.id} category="agreement" />
+    <label className={styles.check}><input type="checkbox" name="confirmed" required />ตรวจสอบสัญญาที่ลงนามและยอดเงินจองแล้ว</label>
+  </ActionForm>;
+}
+
+export function ContractAddendumTask({ sale, agreement, row }: TaskData) {
+  const contract = agreement?.documents.find(doc => doc.id === row && doc.kind === "contract" && doc.state === "signed");
+  return contract ? <ContractAddendumForm contract={contract} caseId={sale.id}
+    action={addContractAddendum.bind(null, { ...idOf(sale, contract.id), caseId: sale.id })} /> : null;
+}

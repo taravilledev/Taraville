@@ -14,16 +14,15 @@ const catalogIdentity = z.object({ id: z.uuid().nullable(), version: z.number().
 
 export async function createCase(_state: ActionState, form: FormData): Promise<ActionState> {
   const session = await requireStaff(true);
-  const parsed = z.object({ leadId: z.uuid(), unitId: optionalId, customerId: optionalId, requestId: z.uuid() }).safeParse({
+  const parsed = z.object({ leadId: z.uuid(), projectId: optionalId, unitId: optionalId, customerId: optionalId, requestId: z.uuid() }).safeParse({
     leadId: form.get("lead_id"), unitId: form.get("unit_id") ?? "", customerId: form.get("customer_id") ?? "", requestId: form.get("request_id"),
+    projectId: form.get("project_id") ?? "",
   });
   if (!parsed.success) return invalid;
-  const { data: projects, error } = await session.supabase.from("projects").select("id").eq("lead_id", parsed.data.leadId).eq("status", "active").limit(1);
-  if (error) return { error: "โหลดโครงการไม่ได้ กรุณาลองใหม่" };
   return salesMutation(session, "sales_create_case", {
-    p_lead_id: parsed.data.leadId, p_project_id: projects?.[0]?.id ?? null, p_unit_id: parsed.data.unitId,
+    p_lead_id: parsed.data.leadId, p_project_id: parsed.data.projectId, p_unit_id: parsed.data.unitId,
     p_customer_id: parsed.data.customerId, p_request_id: parsed.data.requestId,
-  }, "case");
+  }, "case", parsed.data.projectId ? "design" : "reserve");
 }
 
 export async function setCapability(_state: ActionState, form: FormData): Promise<ActionState> {
@@ -36,7 +35,7 @@ export async function setCapability(_state: ActionState, form: FormData): Promis
   return salesMutation(session, "sales_set_capability", {
     p_staff_id: parsed.data.staffId, p_action: parsed.data.action, p_scope: parsed.data.scope,
     p_enabled: parsed.data.enabled, p_request_id: parsed.data.requestId,
-  }, "/sales/admin");
+  }, `/sales/settings/permissions?staff=${parsed.data.staffId}`);
 }
 
 export async function saveCase(context: unknown, _state: ActionState, form: FormData): Promise<ActionState> {
@@ -85,7 +84,7 @@ export async function saveDevelopment(context: unknown, _state: ActionState, for
   return salesMutation(session, "sales_save_development", {
     p_id: parsed.data.id, p_expected_version: parsed.data.version, p_name: fields.data.name, p_address: fields.data.address,
     p_is_active: form.get("is_active") === "on", p_request_id: parsed.data.requestId,
-  }, "/sales/catalog");
+  }, parsed.data.id ? `/sales/settings/catalog?project=${parsed.data.id}` : "/sales/settings/catalog");
 }
 
 export async function saveUnit(context: unknown, _state: ActionState, form: FormData): Promise<ActionState> {
@@ -109,5 +108,5 @@ export async function saveUnit(context: unknown, _state: ActionState, form: Form
     p_id: parsed.data.id, p_expected_version: parsed.data.version, p_development_id: parsed.data.developmentId,
     p_code: fields.data.code, p_details: { ...unit?.details, model: fields.data.model, usable_area: fields.data.usable_area, land_area: fields.data.land_area, layout: fields.data.layout, build_status: fields.data.build_status },
     p_list_price_cents: price, p_is_active: form.get("is_active") === "on", p_request_id: parsed.data.requestId,
-  }, "/sales/catalog");
+  }, `/sales/settings/catalog?project=${parsed.data.developmentId}`);
 }

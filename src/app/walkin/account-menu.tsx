@@ -19,7 +19,7 @@ export function AccountMenu({ staff }: { staff: Staff }) {
     return () => { document.removeEventListener("pointerdown", onPointer); document.removeEventListener("keydown", onKey); };
   }, []);
   return <details ref={menu} className={styles.account}>
-    <summary className={styles.accountTrigger}>
+    <summary className={styles.accountTrigger} aria-label={`เมนูบัญชี ${staff.full_name} · ${staff.role === "sale" ? "ฝ่ายขาย" : "ผู้บริหาร"}`}>
       <span className={styles.avatar} aria-hidden="true">{Array.from(staff.full_name)[0]?.toUpperCase()}</span>
       <span className={styles.accountName}><strong>{staff.full_name}</strong><small>{staff.role === "sale" ? "ฝ่ายขาย" : "ผู้บริหาร"}</small></span>
       <ChevronDown aria-hidden="true" />

@@ -38,8 +38,12 @@ export const caseDetailSchema = caseSummarySchema.extend({
   details: z.record(z.string(), z.unknown()).optional(), list_price_cents: money.optional(),
   promotion_price_cents: money.optional(), discount_cents: money.optional(), net_price_cents: money.optional(),
   unit_label: z.string().nullish(),
+  house_brief: z.record(z.string(), z.string()).nullish(),
 });
 export type SalesBootstrap = z.infer<typeof bootstrapSchema>;
 export type SalesCase = z.infer<typeof caseDetailSchema>;
 export const brandLabels = { BAAN_KUNAPAP: "บ้านคุณภาพ", TARAVILLE: "ธาราวิลล์" };
 export const caseStatusLabels = { draft: "เตรียมข้อมูล", reserved: "จองแล้ว", contracted: "ทำสัญญาแล้ว", completed: "ครบยอดแล้ว", cancelled: "ยกเลิก" };
+export const workQueueKinds = { payment_pending: "เงินเข้ารอยืนยัน", refund_pending: "คำขอคืนเงินรออนุมัติ", refund_approved: "อนุมัติคืนเงินแล้ว รอจ่ายจริง", acceptance: "รอตรวจรับงาน" };
+export const workQueueSchema = z.object({ case_id: z.uuid(), code: z.string(), brand: brandSchema, customer_name: z.string().nullable(),
+  kind: z.enum(["payment_pending", "refund_pending", "refund_approved", "acceptance"]), count: z.number().int(), since: z.string() }).array();

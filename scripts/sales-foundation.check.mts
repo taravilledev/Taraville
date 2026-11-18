@@ -215,12 +215,16 @@ async function page(path: string, user: Actor) {
   assert.equal(response.status, 200);
   return response.text();
 }
-assert.ok((await page("/sales", executive)).includes("งานและรายการขาย"));
-assert.ok((await page("/sales/admin", executive)).includes('name="staff_id"'));
-assert.ok((await page("/sales/catalog", executive)).includes("ราคาทะเบียน"));
+const salesHome = await page("/sales", executive);
+assert.ok(salesHome.includes("งานและรายการขาย") && salesHome.includes("งานรอทำ"), "The Work Queue sits above the list");
+assert.ok((await page("/sales/settings", executive)).includes("/sales/settings/permissions"));
+const permissionsHtml = await page(`/sales/settings/permissions?staff=${owner.id}`, executive);
+assert.ok(!/<details(?! class="[^"]*__account)/.test(permissionsHtml), "Permissions: no form inside details");
+assert.ok((await page(`/sales/settings/permissions?staff=${owner.id}`, executive)).includes('name="staff_id"'));
+assert.ok((await page("/sales/settings/catalog", executive)).includes("ราคาทะเบียน"));
 assert.ok((await page(`/sales/new?lead=${tvLead}`, owner)).includes('name="lead_id"'));
 const noLead = await page("/sales/new", owner);
-assert.ok(!noLead.includes('name="lead_id"') && noLead.includes("เปิดรายการขายได้จากหน้า Lead เท่านั้น"), "No form without a Lead");
+assert.ok(!noLead.includes('name="lead_id"') && noLead.includes("เปิดโครงการได้จากหน้า Lead เท่านั้น"), "No form without a Lead");
 const ownerPage = await page(`/sales/${tv.id}`, owner);
 assert.ok(ownerPage.includes("3,540,000.00"));
 const operatorPage = await page(`/sales/${created.id}`, operator);
@@ -243,9 +247,9 @@ assert.ok((await denied.text()).includes("คุณไม่มีสิทธ�
 assert.equal(ok(await rpc("sales_case_detail", owner, { p_case_id: tv.id })).version, 2);
 const grantForm = new FormData();
 for (const [key, value] of Object.entries({ staff_id: owner.id, capability: "financial.prepare", enabled: "true", scope: "own", request_id: randomUUID() })) grantForm.set(key, value);
-const granted = await callAction("/sales/admin", "src/app/sales/actions.ts", "setCapability", [{ error: "" }, grantForm], await cookieHeader(executive));
+const granted = await callAction("/sales/settings/permissions", "src/app/sales/actions.ts", "setCapability", [{ error: "" }, grantForm], await cookieHeader(executive));
 await granted.text();
-assert.ok(granted.headers.get("x-action-redirect")?.startsWith("/sales/admin"));
+assert.ok(granted.headers.get("x-action-redirect")?.startsWith("/sales/settings/permissions"));
 caseForm.set("list_price", "3540000.02");
 const allowed = await callAction(`/sales/${tv.id}`, "src/app/sales/actions.ts", "saveCase",
   [{ id: tv.id, version: 2, requestId: randomUUID() }, { error: "" }, caseForm], await cookieHeader(owner));
@@ -255,4 +259,33 @@ assert.equal(ok(await rpc("sales_case_detail", owner, { p_case_id: tv.id })).net
 sql(`update public.staff set is_active=false where id='${other.id}'`);
 assert.equal((await rpc("sales_bootstrap", other)).status, 403, "Inactive user denied with existing token");
 sql(`update public.staff set is_active=true where id='${other.id}'`);
+// One Lead may have concurrent BKP Projects; case creation must use the selected Project.
+const multiLead = randomUUID();
+sql(`insert into public.leads(id,brand,first_name,last_name,phone,owner_id,created_by,create_request_id,create_payload_hash,privacy_mode)
+values('${multiLead}','BAAN_KUNAPAP','Synthetic Multiple','Projects','0000000000','${owner.id}','${owner.id}','${randomUUID()}',repeat('0',64),'synthetic')`);
+const multiFirst = ok(await rpc("walkin_open_project", owner, { p_lead_id: multiLead, p_expected_version: 1, p_request_id: randomUUID() }));
+const multiOpen = { p_lead_id: multiLead, p_expected_version: 2, p_request_id: randomUUID() };
+const multiSecond = ok(await rpc("walkin_open_project", owner, multiOpen));
+assert.notEqual(multiSecond.id, multiFirst.id); assert.notEqual(multiSecond.code, multiFirst.code);
+assert.equal(ok(await rpc("walkin_open_project", owner, multiOpen)).id, multiSecond.id, "Project-open replay must not create a third Project");
+assert.equal(sql(`select count(*) from public.projects where lead_id='${multiLead}' and status='active'`), "2");
+assert.equal((await rpc("walkin_open_project", owner, { ...multiOpen, p_expected_version: 1, p_request_id: randomUUID() })).status, 409);
+assert.equal((await rpc("walkin_open_project", other, { ...multiOpen, p_expected_version: 3, p_request_id: randomUUID() })).status, 403);
+const multiPath = `/sales/new?lead=${multiLead}&project=${multiSecond.id}`;
+const multiForm = new FormData();
+for (const [key, value] of Object.entries({ lead_id: multiLead, project_id: String(multiSecond.id), unit_id: "", customer_id: "", request_id: randomUUID() })) multiForm.set(key, value);
+const multiSubmit = await callAction(multiPath, "src/app/sales/actions.ts", "createCase", [{ error: "" }, multiForm], await cookieHeader(owner));
+await multiSubmit.text();
+assert.ok(multiSubmit.headers.get("x-action-redirect")?.startsWith("/sales/"), "Selected-Project case creation must succeed through the actual action");
+assert.equal(sql(`select project_id from private.sales_cases where lead_id='${multiLead}'`), String(multiSecond.id), "The action must not silently choose the first active Project");
+const multiFirstPage = await page(`/sales/new?lead=${multiLead}&project=${multiFirst.id}`, owner);
+assert.ok(multiFirstPage.includes('name="lead_id"'), "The other active Project must still permit its own case");
+assert.ok(new RegExp(`<option(?=[^>]*value="${multiFirst.id}")(?=[^>]*selected)[^>]*>|<input(?=[^>]*name="project_id")(?=[^>]*value="${multiFirst.id}")[^>]*>`).test(multiFirstPage), "The requested Project must be explicitly selected");
+const foreignProjectPage = await page(`/sales/new?lead=${multiLead}&project=${opened.id}`, owner);
+assert.ok(!foreignProjectPage.includes('name="lead_id"'), "A Project from another Lead must not expose a create form");
+multiForm.set("project_id", String(opened.id)); multiForm.set("request_id", randomUUID());
+const foreignProjectSubmit = await callAction(multiPath, "src/app/sales/actions.ts", "createCase", [{ error: "" }, multiForm], await cookieHeader(owner));
+await foreignProjectSubmit.text();
+assert.equal(foreignProjectSubmit.headers.get("x-action-redirect"), null, "A forged cross-Lead Project must be rejected by the action");
+assert.equal(sql(`select count(*) from private.sales_cases where lead_id='${multiLead}'`), "1", "Rejected Project selection must not create an accidental case");
 console.log("PASS: local authenticated HTTP case creation, replay, shared Lead isolation, financial revocation/reassignment and inactive denial");

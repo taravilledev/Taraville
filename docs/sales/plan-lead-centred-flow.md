@@ -8,7 +8,7 @@ Tag: R1 UI refactor plus new read RPCs. Money rules stay the same. The status-on
 
 ## Terms
 
-- **Customer Work** (งานของลูกค้า): a Baan Kunapap Project or Taraville Property Sale viewed from its Lead.
+- **Customer Work** (staff UI label: โครงการ): a Baan Kunapap Project or Taraville Property Sale viewed from its Lead.
 - **Work Queue** (งานรอทำ): cross-Lead work that needs an authorized person's action now. It sits beside the full list of work, it does not replace it.
 
 ## Decisions
@@ -22,6 +22,7 @@ Tag: R1 UI refactor plus new read RPCs. Money rules stay the same. The status-on
 - Settings live under `/sales/settings`.
 - Closing a Lead with open Taraville work warns. It does not block.
 - Leads stay per brand, with no automatic merge.
+- Owner wording update, 2026-11-05: the Lead section and creation entry use “โครงการ” for both brands. Domain relationships remain BKP Project / Taraville Property Sale. The green “เปิดโครงการ” CTA precedes the secondary phone action and opens new work. Both brands allow multiple concurrent Projects per Lead (ADR0031). BKP uses the existing confirmation form even when other Projects exist; each card selects its own project_id when starting a financial case. Existing cards open their own summary. No new financial access is implied.
 
 ## Layout rules
 
@@ -111,3 +112,5 @@ Done when no form inside `<details>` remains under `src/app/sales/[id]`, and eve
 ## Not doing
 
 Lead list filter by work status, next steps in the Work Queue, blocking Lead close in the database, automatic merging of Leads across brands, a permanent import page, a wizard.
+
+Lead UI refinement, 2026-11-05: BKP header creation opens the existing confirmation form in a native modal; no repeated create zone below the Project list. Contact recording is a secondary inline action beside Phone. Financially authorized cards show five stable lifecycle milestones, with only the current label expanded; status-only readers do not receive financial progress. BKP: opened → design → quotation → contract → payment. Taraville: opened → reservation → booking summary → contract → payment. Pending money/refunds stay separate from milestone advancement.

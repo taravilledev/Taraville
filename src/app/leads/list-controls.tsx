@@ -42,12 +42,12 @@ export function ListControls({ filters, owners, activeCount }: Props) {
     {filters.brand && <input type="hidden" name="brand" value={filters.brand} />}
     {filters.closed && <input type="hidden" name="closed" value={filters.closed} />}
     <div className={styles.searchRow}>
-      <label className={styles.field}>ค้นหาชื่อ เบอร์โทร หรือ LINE ID
-        <input type="search" name="q" defaultValue={filters.q} maxLength={50} autoComplete="off" /></label>
-      <button type="button" className={styles.filterToggle} aria-expanded={isOpen} onClick={() => setIsOpen(open => !open)}>
+      <label className={styles.field}><span className={styles.srOnly}>ค้นหาชื่อ เบอร์โทร หรือ LINE ID</span>
+        <input type="search" name="q" placeholder="ค้นหาชื่อ เบอร์โทร หรือ LINE ID" defaultValue={filters.q} maxLength={50} autoComplete="off" /></label>
+      <button type="button" className={styles.filterToggle} aria-controls="lead-filters" aria-expanded={isOpen} onClick={() => setIsOpen(open => !open)}>
         ตัวกรอง{activeCount > 0 ? ` (${activeCount})` : ""}</button>
     </div>
-    <div className={`${styles.filters} ${isOpen ? styles.filtersOpen : ""}`}>
+    <div id="lead-filters" className={`${styles.filters} ${isOpen ? styles.filtersOpen : ""}`}>
       <label className={styles.field}>สถานะ
         <select name="stage" defaultValue={filters.stage ?? ""}>
           <option value="">ทุกสถานะ</option>{STAGE_CODES.map(stage => <option key={stage} value={stage}>{STAGE_LABELS[stage]}</option>)}</select></label>

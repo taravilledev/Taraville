@@ -4,16 +4,24 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { requireStaff } from "@/lib/supabase/staff";
 import { documentSchema, savedDocumentSchema, paymentKinds, paymentMethods } from "@/lib/sales/financial-models";
-import { scheduleRowSchema } from "@/lib/sales/agreement-models";
+import { agreementPayloadSchema } from "@/lib/sales/agreement-models";
 import { formatMoney } from "@/lib/sales/money";
+import { formatDate } from "@/lib/sales/date";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { PrintButton } from "@/app/leads/report/print-button";
 import styles from "./document.module.css";
+import { AgreementContent } from "./agreement-content";
+import { PhotoContractContent } from "./photo-contract-content";
+import { QuotationContent } from "./quotation-content";
+import { QuotationPages } from "./quotation-pages";
+import { ReceiptPaper } from "./receipt-paper";
+import Image from "next/image";
 
 export const metadata = { title: "เอกสารการขาย · Taraville Group", robots: { index: false, follow: false } };
-type Props = { params: Promise<{ id: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 export default function DocumentPage(props: Props) { return <Suspense fallback={<PageSkeleton />}><Document {...props} /></Suspense>; }
-async function Document({ params }: Props) {
+async function Document({ params, searchParams }: Props) {
+  const isPreview = (await searchParams).preview === "1";
   const { id } = await params; const { supabase } = await requireStaff();
   if (!z.uuid().safeParse(id).success) notFound();
   const result = await supabase.rpc("sales_document_detail", { p_document_id: id });
@@ -23,13 +31,17 @@ async function Document({ params }: Props) {
   const receipt = doc.kind === "receipt" ? documentSchema.parse(result.data).payload : null;
   if (!["receipt", "quotation", "contract", "invoice", "refund", "amendment", "closeout", "summary"].includes(doc.kind)) notFound();
   const isSynthetic = z.boolean().parse(doc.payload.is_synthetic);
-  const agreement = ["quotation", "contract"].includes(doc.kind) ? z.object({ description: z.string(), total_cents: z.string().regex(/^\d+$/),
-    contract_text: z.string().optional(), credit_cents: z.string().regex(/^\d+$/).optional(), schedule: scheduleRowSchema.array().optional() }).parse(doc.payload) : null;
+  const isTextAddendum = doc.kind === "amendment" && !!doc.payload.text_addendum;
+  const agreement = (isTextAddendum || ["quotation", "contract"].includes(doc.kind)) ? agreementPayloadSchema.parse(doc.payload) : null;
+  const isQuotation = doc.kind === "quotation" && issuer.brand === "BAAN_KUNAPAP";
+  const isPaperContract = isTextAddendum || doc.kind === "contract" && issuer.brand === "BAAN_KUNAPAP" && !!agreement?.customer && !!agreement?.schedule;
+  const quotePaper = isQuotation ? agreement?.paper : undefined;
   const invoice = doc.kind === "invoice" ? z.object({ label: z.string(), gross_cents: z.string().regex(/^\d+$/), credit_cents: z.string().regex(/^\d+$/),
-    net_cents: z.string().regex(/^\d+$/), due_date: z.string(), credit_settled: z.boolean() }).parse(doc.payload) : null;
+    net_cents: z.string().regex(/^\d+$/), due_date: z.string(), credit_settled: z.boolean(),
+    acceptance_date: z.iso.date().nullish(), payment_due_days: z.literal(30).nullish() }).parse(doc.payload) : null;
   const refund = doc.kind === "refund" ? z.object({ amount_cents: z.string().regex(/^\d+$/), reason: z.string(),
     method: z.enum(["cash", "transfer", "cheque"]), paid_date: z.string() }).parse(doc.payload) : null;
-  const adjustment = ["amendment", "closeout"].includes(doc.kind) ? z.object({
+  const adjustment = !isTextAddendum && ["amendment", "closeout"].includes(doc.kind) ? z.object({
     reason: z.string(), agreement_text: z.string(), total_cents: z.string().optional(),
     contract_number: z.string().optional(), development: z.string().optional(), plot: z.string().optional(),
     retained_cents: z.string().optional(), received_cents: z.string().optional(),
@@ -42,41 +54,79 @@ async function Document({ params }: Props) {
     list_cents: z.string().nullish(), promotion_cents: z.string().nullish(), discount_cents: z.string().nullish(),
     mortgage_cents: z.string().nullish(), booking_date: z.string().nullish(), contract_date: z.string().nullish(), down_date: z.string().nullish(),
   }).parse(doc.payload) : null;
-  const title = summary ? "สรุปการจอง" : doc.kind === "amendment" ? "ข้อตกลงแก้ไขสัญญา" : doc.kind === "closeout" ? "ข้อตกลงปิดงาน"
+  const title = isTextAddendum ? "บันทึกข้อตกลงแนบท้ายสัญญา" : summary ? "สรุปการจอง" : doc.kind === "amendment" ? "ข้อตกลงแก้ไขสัญญา" : doc.kind === "closeout" ? "ข้อตกลงปิดงาน"
     : receipt ? "ใบเสร็จรับเงิน" : refund ? "เอกสารจ่ายคืนเงิน" : doc.kind === "quotation" ? "ใบเสนอราคา" : doc.kind === "contract" ? (issuer.brand === "TARAVILLE" ? "สัญญาขาย" : "สัญญาก่อสร้าง") : invoice?.credit_settled ? "สรุปชำระด้วยเครดิตเดิม" : "ใบแจ้งชำระ";
+  const invoiceAdjustments = invoice && doc.adjustments.length > 0 ? <section className={styles.invoiceAdjustments}>
+    <h3>การปรับยอดตามข้อตกลงภายหลัง</h3>
+    <ul>{doc.adjustments.map(item => <li key={item.document_id}>
+      <Link href={`/sales/documents/${item.document_id}`} prefetch={false}>{item.number}</Link>
+      {" · "}{item.amount_cents.startsWith("-") ? "ลดยอด " : "เพิ่มยอด "}{formatMoney(item.amount_cents.replace(/^-/, ""))} บาท
+    </li>)}</ul>
+    <p>ยอดสุทธิหลังปรับ {formatMoney(doc.adjustments.reduce((total, item) => total + BigInt(item.amount_cents), BigInt(invoice.net_cents)).toString())} บาท</p>
+  </section> : null;
+  const paymentNotice = [isSynthetic ? "ข้อมูลทดสอบ · ไม่ใช่เอกสารธุรกรรมจริง" : "",
+    doc.state === "cancelled" ? `ยกเลิกเอกสาร${doc.cancel_reason ? ` · ${doc.cancel_reason}` : ""}` : ""].filter(Boolean).join(" · ");
+  if (receipt && issuer.brand === "BAAN_KUNAPAP") return <main className={styles.page}>
+    <nav className={styles.controls}>{!isPreview && <Link href={`/sales/${doc.case_id}?tab=money#receipts`} prefetch={false}>กลับหน้าการเงิน</Link>}<PrintButton /></nav>
+    <ReceiptPaper issuer={issuer} customer={doc.customer_snapshot} number={doc.number} date={doc.document_date}
+      paidDate={receipt.paid_date} method={receipt.method} payerName={receipt.payer_name} receiverName={receipt.confirmed_by_name}
+      amountCents={receipt.amount_cents} label={paymentKinds[receipt.kind]} description={receipt.description}
+      isInstalment={receipt.kind === "instalment" || receipt.kind === "design_fee"}
+      notice={paymentNotice}
+      replacement={receipt.replaces_number ? `ออกแทนใบเสร็จเลขที่ ${receipt.replaces_number}${receipt.replacement_reason ? ` · ${receipt.replacement_reason}` : ""}` : undefined} />
+  </main>;
+  if (invoice && issuer.brand === "BAAN_KUNAPAP") return <main className={styles.page}>
+    <nav className={styles.controls}>{!isPreview && <Link href={`/sales/${doc.case_id}?tab=money#${typeof doc.payload.design_position === "number" ? "design-fees" : "schedule"}`}
+      prefetch={false}>กลับหน้าการเงิน</Link>}<PrintButton /></nav>
+    <ReceiptPaper issuer={issuer} customer={doc.customer_snapshot} number={doc.number} date={doc.document_date}
+      amountCents={invoice.net_cents} label={invoice.label} isInstalment notice={paymentNotice}
+      invoice={{ dueDate: invoice.due_date, grossCents: invoice.gross_cents, creditCents: invoice.credit_cents,
+        acceptanceDate: invoice.payment_due_days === 30 ? invoice.acceptance_date ?? undefined : undefined, isCreditSettled: invoice.credit_settled }}>
+      {invoiceAdjustments}
+    </ReceiptPaper>
+  </main>;
+  if (quotePaper && agreement) return <main className={styles.page}>
+    <nav className={styles.controls}>{!isPreview && <Link href={`/sales/${doc.case_id}`} prefetch={false}>กลับงาน/รายการขาย</Link>}<PrintButton /></nav>
+    <QuotationPages payload={agreement} date={doc.document_date} number={doc.number} issuerName={issuer.legal_name}
+      notice={[isSynthetic ? "ข้อมูลทดสอบ · ไม่ใช่เอกสารธุรกรรมจริง" : "", doc.state === "cancelled" ? `ยกเลิกเอกสาร · ${doc.cancel_reason}` : ""].filter(Boolean).join(" · ")} />
+  </main>;
+  if (isPaperContract && agreement?.contract_paper && !isTextAddendum) return <main className={styles.page}>
+    <nav className={styles.controls}>{!isPreview && <Link href={`/sales/${doc.case_id}`} prefetch={false}>กลับงาน/รายการขาย</Link>}<PrintButton /></nav>
+    <PhotoContractContent payload={agreement} number={doc.number} notice={[
+      isSynthetic ? "ข้อมูลทดสอบ · ไม่ใช่เอกสารธุรกรรมจริง" : "",
+      doc.state === "draft" ? "ร่างสัญญา · รอตรวจและล็อกเพื่อออกเลข" : "",
+      doc.state === "awaiting_signature" ? "รอลงนาม · ยังไม่เป็นสัญญาที่ลงนามแล้ว" : "",
+      doc.state === "cancelled" ? `ยกเลิกเอกสาร · ${doc.cancel_reason}` : "",
+    ].filter(Boolean).join(" · ")} />
+  </main>;
   return <main className={styles.page}>
-    <nav className={styles.controls}><Link href={`/sales/${doc.case_id}`} prefetch={false}>กลับงาน/รายการขาย</Link><PrintButton /></nav>
-    <article className={summary ? `${styles.paper} ${styles.summary}` : styles.paper}>
+    <nav className={styles.controls}>{!isPreview && <Link href={`/sales/${doc.case_id}`} prefetch={false}>กลับงาน/รายการขาย</Link>}<PrintButton /></nav>
+    <article className={`${styles.paper}${summary ? ` ${styles.summary}` : ""}${isQuotation ? ` ${styles.quotation}` : ""}${isPaperContract ? ` ${styles.contractDocument}` : ""}`}>
       {isSynthetic && <p className={styles.watermark}>ข้อมูลทดสอบ · ไม่ใช่เอกสารธุรกรรมจริง</p>}
+      {doc.state === "draft" && <p className={styles.watermark}>ร่างสัญญา · รอตรวจและล็อกเพื่อออกเลข</p>}
       {doc.state === "cancelled" && <p className={styles.watermark}>ยกเลิกเอกสาร · {doc.cancel_reason}</p>}
       {doc.state === "awaiting_signature" && <p className={styles.watermark}>รอลงนาม · ยังไม่เป็นสัญญาที่ลงนามแล้ว</p>}
+      {isQuotation && <Image className={styles.quoteLogo} src="/brand/baan-kunapap-logo.jpg" alt="บ้านคุณภาพ" width={100} height={76} />}
       <div className={styles.header}><div><h1>{issuer.legal_name}</h1><p>{issuer.address}</p>{issuer.tax_id && <p>เลขประจำตัวผู้เสียภาษี {issuer.tax_id}</p>}<p>{issuer.contact}</p></div>
-        <div><h2>{title}</h2><p>เลขที่ {doc.number}</p><p>วันที่ {doc.document_date}</p></div></div>
-      <section className={styles.customer}><p><strong>ลูกค้า</strong> {doc.customer_snapshot.full_name}</p><p><strong>ที่อยู่</strong> {doc.customer_snapshot.address || "—"}</p>
-        <p><strong>โทรศัพท์</strong> {doc.customer_snapshot.phone || "—"}</p>{receipt && <p><strong>ผู้ชำระ</strong> {receipt.payer_name}</p>}</section>
+        <div><h2>{title}</h2><p>เลขที่ {doc.number ?? "ยังไม่ออกเลข"}</p><p>วันที่ {doc.document_date}</p></div></div>
+      <section className={styles.customer}><p><strong>ลูกค้า</strong> {quotePaper?.customer_name ?? doc.customer_snapshot.full_name}</p><p><strong>{isQuotation ? "ที่อยู่ลูกค้า" : "ที่อยู่"}</strong> {(quotePaper?.customer_address ?? doc.customer_snapshot.address) || "—"}</p>
+        <p><strong>โทรศัพท์</strong> {(quotePaper?.customer_phone ?? doc.customer_snapshot.phone) || "—"}</p>
+        {isQuotation && <><p><strong>สถานที่ก่อสร้าง</strong> {quotePaper?.site_address || "—"}</p><p><strong>ฝ่ายขาย</strong> {(quotePaper?.salesperson ?? doc.customer_snapshot.salesperson) || "—"}</p></>}
+        {receipt && <p><strong>ผู้ชำระ</strong> {receipt.payer_name}</p>}</section>
       {receipt && <>{receipt.replaces_number && <p>ออกแทนใบเสร็จเลขที่ {receipt.replaces_number}{receipt.replacement_reason ? ` · ${receipt.replacement_reason}` : ""}</p>}
         <table className={styles.table}><thead><tr><th>รายการ</th><th>จำนวนเงิน (บาท)</th></tr></thead><tbody><tr><td>{paymentKinds[receipt.kind]}<br />{receipt.description}</td><td>{formatMoney(receipt.amount_cents)}</td></tr></tbody>
         <tfoot><tr><th>รวมรับชำระ</th><td>{formatMoney(receipt.amount_cents)}</td></tr></tfoot></table>
         <p>รับเงินโดย {paymentMethods[receipt.method]} · วันที่รับเงินจริง {receipt.paid_date}</p>
         <div className={styles.signatures}><div><p>ผู้ชำระเงิน</p><p>________________________</p><p>{receipt.payer_name}</p></div><div><p>ผู้รับเงิน / ผู้ออกเอกสาร</p><p>________________________</p><p>{receipt.confirmed_by_name}</p></div></div></>}
-      {agreement && <><p className={styles.content}>{agreement.description}</p><p><strong>ราคารวม {formatMoney(agreement.total_cents)} บาท</strong></p>
-        {agreement.schedule && <><p>เงินที่รับไว้และนำมาเป็นเครดิต {formatMoney(agreement.credit_cents ?? "0")} บาท</p><table className={styles.table}><thead><tr><th>งวด</th><th>ยอดเต็ม</th><th>เครดิตเดิม</th><th>สุทธิ (บาท)</th></tr></thead>
-          <tbody>{agreement.schedule.map(row => <tr key={row.position}><td>{row.label}{row.progress_percent != null ? ` (${row.progress_percent}%)` : ""}</td><td>{formatMoney(row.gross_cents)}</td><td>{formatMoney(row.credit_cents)}</td><td>{formatMoney(row.net_cents)}</td></tr>)}</tbody></table></>}
-        {agreement.contract_text && <p className={styles.content}>{agreement.contract_text}</p>}
-        <div className={styles.signatures}><div><p>{issuer.brand === "TARAVILLE" ? "ผู้ซื้อ" : "ผู้ว่าจ้าง / ลูกค้า"}</p><p>________________________</p><p>{doc.customer_snapshot.full_name}</p></div><div><p>{issuer.brand === "TARAVILLE" ? "ผู้ขาย" : "ผู้รับจ้าง / บริษัท"}</p><p>________________________</p><p>{issuer.legal_name}</p></div></div>
+      {agreement && <>{isQuotation ? <QuotationContent payload={agreement} date={doc.document_date} /> : <AgreementContent payload={{ ...agreement, ...(isTextAddendum && !agreement.customer ? { customer: { full_name: doc.customer_snapshot.full_name, phone: doc.customer_snapshot.phone, site_address: "" } } : {}) }} number={doc.number} />}
+        {!quotePaper && !isPaperContract && <div className={styles.signatures}><div><p>{issuer.brand === "TARAVILLE" ? "ผู้ซื้อ" : "ผู้ว่าจ้าง / ลูกค้า"}</p><p>________________________</p><p>{doc.customer_snapshot.full_name}</p></div><div><p>{issuer.brand === "TARAVILLE" ? "ผู้ขาย" : "ผู้รับจ้าง / บริษัท"}</p><p>________________________</p><p>{issuer.legal_name}</p></div></div>}
       </>}
       {invoice && <><table className={styles.table}><thead><tr><th>รายการ</th><th>จำนวนเงิน (บาท)</th></tr></thead><tbody><tr><td>{invoice.label}</td><td>{formatMoney(invoice.gross_cents)}</td></tr><tr><td>หักเครดิตจากเงินที่รับไว้</td><td>{formatMoney(invoice.credit_cents)}</td></tr></tbody>
         <tfoot><tr><th>ยอดต้องชำระตามเอกสาร</th><td>{formatMoney(invoice.net_cents)}</td></tr></tfoot></table><p>ครบกำหนด {invoice.due_date}</p>
+        {invoice.payment_due_days === 30 && invoice.acceptance_date && <p>ชำระภายใน 30 วันปฏิทินหลังวันที่ตรวจรับจริง {formatDate(invoice.acceptance_date)}</p>}
         {invoice.credit_settled && doc.adjustments.length === 0 && <p>งวดนี้ชำระครบด้วยเครดิตเงินเดิม ไม่มีการรับเงินใหม่หรือออกใบเสร็จใหม่</p>}
       </>}
-      {invoice && doc.adjustments.length > 0 && <section>
-        <h3>การปรับยอดตามข้อตกลงภายหลัง</h3>
-        <ul>{doc.adjustments.map(item => <li key={item.document_id}>
-          <Link href={`/sales/documents/${item.document_id}`} prefetch={false}>{item.number}</Link>
-          {" · "}{item.amount_cents.startsWith("-") ? "ลดยอด " : "เพิ่มยอด "}{formatMoney(item.amount_cents.replace(/^-/, ""))} บาท
-        </li>)}</ul>
-        <p>ยอดสุทธิหลังปรับ {formatMoney(doc.adjustments.reduce((total, item) => total + BigInt(item.amount_cents), BigInt(invoice.net_cents)).toString())} บาท</p>
-      </section>}
+      {invoiceAdjustments}
       {refund && <><p className={styles.content}>{refund.reason}</p><p><strong>จ่ายคืน {formatMoney(refund.amount_cents)} บาท</strong></p><p>วันที่จ่ายคืน {refund.paid_date} · {paymentMethods[refund.method]}</p><p>อ้างอิงการรับเงินและการอนุมัติคืนเงินที่บันทึกไว้ในระบบ</p></>}
       {adjustment && <>
         {adjustment.contract_number && <p>อ้างอิงสัญญา {adjustment.contract_number} · โครงการ {adjustment.development} · แปลงใหม่ {adjustment.plot}</p>}

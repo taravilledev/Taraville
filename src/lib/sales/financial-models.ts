@@ -2,12 +2,19 @@ import { z } from "zod";
 import { brandSchema, customerSnapshotSchema } from "./models";
 
 const cents = z.string().regex(/^\d+$/);
+export const designBillSchema = z.object({ id: z.uuid(), position: z.number().int().min(1).max(3), label: z.string(),
+  amount_cents: cents, due_date: z.iso.date(), document_id: z.uuid(), state: z.enum(["issued", "cancelled"]),
+  pending_id: z.uuid().nullable(), receipt_document_id: z.uuid().nullable(), received_cents: cents, pending_cents: cents,
+  has_confirmed_payment: z.boolean() });
 export const paymentKinds = { design_fee: "ค่าออกแบบ", booking: "เงินจอง", instalment: "ค่างวด", unallocated: "เงินเข้าที่ยังไม่ระบุงวด" };
 export const paymentMethods = { cash: "เงินสด", transfer: "โอนเงิน", cheque: "เช็คที่เรียกเก็บแล้ว" };
 export const financialSchema = z.object({
   case_id: z.uuid(), version: z.number().int().positive(), issuer_ready: z.boolean(), can_change_design: z.boolean(),
   design_plan: z.object({ tier: z.string(), usable_area: z.string().nullable(), total_cents: cents,
     instalments: cents.array().length(3), note: z.string() }).nullable(),
+  design_bills: designBillSchema.array().default([]),
+  design_legacy_received_cents: cents.default("0"),
+  design_legacy_has_payments: z.boolean().default(false),
   pending: z.object({ id: z.uuid(), kind: z.enum(["design_fee", "booking", "instalment", "unallocated"]),
     amount_cents: cents, method: z.enum(["cash", "transfer", "cheque"]), paid_date: z.string(), payer_name: z.string(),
     description: z.string(), proof_path: z.string().nullable() }).array(),
@@ -17,7 +24,7 @@ export const financialSchema = z.object({
     document_date: z.string(), amount_cents: cents.nullable(), booking_cents: cents.nullish() }).array(),
 });
 export const issuerSchema = z.object({ brand: brandSchema, legal_name: z.string(), address: z.string(), tax_id: z.string(),
-  contact: z.string(), contract_text: z.string(), is_synthetic: z.boolean(), version: z.number().int().positive() });
+  contact: z.string(), contract_text: z.string(), contract_text_approved: z.boolean().optional(), is_synthetic: z.boolean(), version: z.number().int().positive() });
 export const documentSchema = z.object({ id: z.uuid(), case_id: z.uuid(), kind: z.string(), number: z.string().nullable(),
   revision: z.number().int(), state: z.string(), document_date: z.string(),
   customer_snapshot: customerSnapshotSchema,

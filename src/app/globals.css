@@ -9,6 +9,7 @@
   --tint: #f1f5f9;
   --line: #e2e8f0;
   --line-strong: #cbd5e1;
+  --control-border: #7c8a9d;
   --paper: #fff;
   --canvas: #f8fafc;
   --skeleton: #e2e8f0;
@@ -66,4 +67,8 @@ body {
 .dense { --control-h: var(--tap-min); font-size: var(--text-md); }
 @media (pointer: fine) {
   .dense { --text-xs: 12px; --text-sm: 13px; --text-md: 13px; --text-lg: 18px; --text-title: 24px; --control-h: 36px; --tap-min: 32px; }
+}
+
+@media print {
+  [data-sonner-toaster] { display: none !important; }
 }

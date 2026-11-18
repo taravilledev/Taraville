@@ -1,100 +1,82 @@
 import { Suspense } from "react";
-import { randomUUID } from "node:crypto";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { salesCase } from "@/lib/sales/queries";
 import { loadCaseData } from "@/lib/sales/case-loader";
-import { formatMoney } from "@/lib/sales/money";
+import { bkpCaseTabs, resolveCaseTab } from "@/lib/sales/case-navigation";
 import { type CaseTab } from "@/lib/sales/case-progress";
+import { availableTasks, findTask } from "@/lib/sales/tasks";
+import { taskContext } from "@/lib/sales/task-context";
 import { AppShell } from "@/app/walkin/app-shell";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
-import { ActionForm } from "@/app/walkin/action-form";
-import { assignCase } from "../actions";
-import { CaseForm } from "./case-form";
 import { CaseHeader } from "./case-header";
-import { DesignPanel, PendingPayments, PreparePayment, Receipts } from "./financial-panel";
-import { QuotationPanel, SchedulePanel } from "./agreement-panel";
-import { RefundPanel } from "./refund-panel";
-import { AdjustmentPanel } from "./adjustment-panel";
-import { BookingSummary } from "./booking-summary";
-import { AcceptanceForm } from "./acceptance-form";
+import { BkpOverview, BkpAgreementSection } from "./bkp-workflow";
+import { BkpProgress } from "./bkp-progress";
+import { HouseBriefPanel } from "./house-brief-panel";
+import { DesignBillingPanel } from "./design-billing-panel";
+import { DocumentsSection, MoneySection, OverviewSection } from "./summary-sections";
+import { TaskView } from "./tasks/task-view";
+import { usesFocusedTaskHeader } from "./tasks/task-header";
 import styles from "../sales.module.css";
 
 export const metadata = { title: "ข้อมูลงานและรายการขาย · Taraville Group", robots: { index: false, follow: false } };
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
-const tabLabels: Record<CaseTab, string> = { overview: "ภาพรวม", documents: "เอกสาร", money: "รับเงิน", adjust: "แก้ไข/ยกเลิก" };
+const tabLabels: Record<CaseTab, string> = { overview: "ภาพรวม", design: "ออกแบบ", quotation: "ใบเสนอราคา", contract: "สัญญา", documents: "เอกสารทั้งหมด", money: "การเงิน" };
+const one = (value: string | string[] | undefined) => typeof value === "string" ? value : undefined;
 
 export default function CasePage(props: Props) { return <Suspense fallback={<PageSkeleton />}><CaseDetail {...props} /></Suspense>; }
 async function CaseDetail({ params, searchParams }: Props) {
   const { id } = await params;
-  const raw = (await searchParams).tab;
+  const query = await searchParams;
   const { staff, sale, supabase } = await salesCase(id);
-  const { work, finance, agreement, closeout, reservation, refunds, pending, summary, step } = await loadCaseData(supabase, sale);
+  const { work, finance, agreement, closeout, reservation, refunds, pending, summary, step, progress } = await loadCaseData(supabase, sale);
   const assignments = sale.can_assign ? await supabase.from("staff").select("id,full_name").eq("is_active", true).order("full_name") : { data: [], error: null };
   if (assignments.error) throw new Error("โหลดผู้รับผิดชอบไม่ได้ กรุณาลองใหม่");
   const owners = z.object({ id: z.uuid(), full_name: z.string() }).array().parse(assignments.data);
+  const tasks = availableTasks(taskContext({ sale, finance, agreement, refunds, staffId: staff.id, reservation, work }));
+  const name = one(query.task);
+  const task = name ? findTask(tasks, name, one(query.row)) : undefined;
+  // A stale or no-longer-allowed task link returns to the summary with the reason.
+  if (name && !task) redirect(`/sales/${sale.id}?notice=task`);
 
-  const tabs = (sale.can_finance ? ["overview", "documents", "money", "adjust"] : ["overview"]) as CaseTab[];
-  const tab = tabs.find(item => item === raw) ?? "overview";
-  const canEditSale = sale.permissions["financial.prepare"] && ["draft", "reserved"].includes(sale.status);
-
+  const isBkp = sale.brand === "BAAN_KUNAPAP";
+  const hasBkpWorkspace = isBkp && sale.can_finance;
+  const tabs: readonly CaseTab[] = sale.can_finance ? isBkp ? bkpCaseTabs : ["overview", "documents", "money"] : ["overview"];
+  const tab = resolveCaseTab(hasBkpWorkspace ? [...tabs, "documents"] : tabs, one(query.tab), one(query.flow));
+  const data = { sale, finance, agreement, refunds, closeout, tasks, work, summary };
+  const houseBrief = <HouseBriefPanel sale={sale} task={task} tab={tab} />;
+  const isDesignBillingTask = !!task && ["issue-design-invoice", "prepare-design-payment", "cancel-design-invoice"].includes(task.name);
+  let contractTemplate: { contract_text: string; contract_text_approved?: boolean; contractor_name?: string; contractor_address?: string; is_synthetic?: boolean } | undefined;
+  if (task && ["prepare-contract", "edit-contract", "lock-contract"].includes(task.name)) {
+    const template = await supabase.rpc("sales_contract_template", { p_case_id: sale.id });
+    if (template.error) throw new Error("โหลดแม่แบบสัญญาไม่ได้ กรุณาลองใหม่");
+    contractTemplate = z.object({ contract_text: z.string(), contract_text_approved: z.boolean().optional(),
+      contractor_name: z.string().optional(), contractor_address: z.string().optional(), is_synthetic: z.boolean().optional() }).parse(template.data);
+  }
+  const isFocusedTask = !!task && usesFocusedTaskHeader(task.name, isBkp);
+  const isShowingNextStep = task && step?.task === task.name && step.row === task.row;
+  const navigation = !task && tabs.length > 1 ? <nav className={`${styles.tabs} ${isBkp ? styles.caseTabs : ""}`} aria-label="หมวดข้อมูลงาน">{tabs.map(item => <Link key={item} href={`/sales/${sale.id}?tab=${item}`} prefetch={false}
+    aria-current={item === tab ? "page" : undefined}>{!isBkp && item === "documents" ? "เอกสาร" : !isBkp && item === "money" ? "รับเงิน" : tabLabels[item]}{item === "money" && pending > 0 ? ` (${pending})` : ""}</Link>)}</nav> : null;
   return <AppShell staff={staff} wide><div className={styles.page}>
-    <CaseHeader sale={sale} summary={summary} step={step} />
-    {tabs.length > 1 && <nav className={styles.tabs} aria-label="หมวดข้อมูลงาน">{tabs.map(item => <Link key={item} href={`/sales/${sale.id}?tab=${item}`} prefetch={false}
-      aria-current={item === tab ? "page" : undefined}>{tabLabels[item]}{item === "money" && pending > 0 ? ` (${pending})` : ""}</Link>)}</nav>}
-
-    {tab === "overview" && <>
-      <section className={styles.panel}><h2>ข้อมูลงาน</h2><dl className={styles.facts}>
-        <div><dt>ผู้รับผิดชอบงาน/รายการขาย</dt><dd>{sale.responsible_name}</dd></div><div><dt>เจ้าของ Lead ปัจจุบัน</dt><dd>{sale.lead_owner_name}</dd></div>
-        {sale.can_finance && <>
-          {sale.brand === "TARAVILLE" && <div><dt>แปลง/บ้าน</dt><dd>{sale.unit_label ?? "—"}</dd></div>}
-          <div><dt>ราคาขาย</dt><dd>{sale.list_price_cents != null ? `${formatMoney(sale.list_price_cents)} บาท` : "—"}</dd></div>
-          <div><dt>ราคาสุทธิ</dt><dd>{sale.net_price_cents != null ? `${formatMoney(sale.net_price_cents)} บาท` : "—"}</dd></div>
-          <div><dt>โทรศัพท์ลูกค้า</dt><dd>{sale.customer_snapshot?.phone || "—"}</dd></div><div><dt>ที่อยู่ลูกค้า</dt><dd>{sale.customer_snapshot?.address || "—"}</dd></div>
-        </>}
-      </dl><p><Link href={`/leads/${sale.lead_id}`} prefetch={false}>เปิด Lead ต้นทาง</Link></p></section>
-      {canEditSale && <section className={styles.panel} id="edit"><details open={sale.net_price_cents == null}><summary><h2>แก้ข้อมูลการขาย</h2></summary>
-        <CaseForm sale={sale} requestId={randomUUID()} /></details></section>}
-      {sale.can_assign && <section className={styles.panel}><details><summary><h2>เปลี่ยนผู้รับผิดชอบงาน</h2></summary>
-        <p className={styles.muted}>ไม่เปลี่ยนเจ้าของ Lead หรือเพิ่มสิทธิ์การเงินให้ผู้รับผิดชอบใหม่</p>
-        <ActionForm action={assignCase.bind(null, { id: sale.id, version: sale.version, requestId: randomUUID() })} label="เปลี่ยนผู้รับผิดชอบ">
-          <label className={styles.field}>ผู้รับผิดชอบ<select name="responsible_id" defaultValue={sale.responsible_id}>{owners.map(owner => <option key={owner.id} value={owner.id}>{owner.full_name}</option>)}</select></label>
-        </ActionForm></details></section>}
-      {!sale.can_finance && <p className={styles.notice}>คุณดูข้อมูลงานได้ แต่ไม่มีสิทธิ์ดูเอกสารและข้อมูลการเงินของรายการนี้ ให้ผู้บริหารตรวจสอบสิทธิ์หากจำเป็นต้องใช้</p>}
-      {work.length > 0 && <section className={styles.panel}><h2>ตรวจรับงานก่อสร้าง</h2>
-        {work.map(item => <details key={item.id}><summary>งวดที่ {item.position}{item.progress_percent == null ? "" : ` · ความคืบหน้า ${item.progress_percent}%`} · {item.accepted ? "ตรวจรับแล้ว" : "รอตรวจรับ"}</summary>
-          {!item.accepted && <AcceptanceForm caseId={sale.id} identity={{ id: item.id, version: sale.version, requestId: randomUUID() }} />}
-        </details>)}
-      </section>}
-    </>}
-
-    {tab === "documents" && finance && agreement && <>
-      <BookingSummary sale={sale} finance={finance} />
-      <DesignPanel sale={sale} finance={finance} />
-      <QuotationPanel sale={sale} agreement={agreement} />
-    </>}
-
-    {tab === "money" && finance && agreement && <>
-      {!finance.issuer_ready && <p className={styles.notice}>ยังไม่ได้ตั้งค่าบริษัทผู้ออกเอกสาร ให้ผู้บริหารตั้งค่าก่อนยืนยันรับเงินและออกใบเสร็จ</p>}
-      <PendingPayments sale={sale} finance={finance} />
-      <SchedulePanel sale={sale} agreement={agreement} />
-      {sale.status === "contracted" && agreement.is_settled && <p className={styles.notice}>ชำระครบทุกงวดตามสัญญาแล้ว</p>}
-      <PreparePayment sale={sale} finance={finance} />
-      <Receipts sale={sale} finance={finance} />
-    </>}
-
-    {tab === "adjust" && finance && agreement && <>
-      {closeout && <section className={styles.panel}><h2>ยอดปิดงานปัจจุบัน</h2>
-        <dl className={styles.facts}>
-          <div><dt>ยอดตามข้อตกลงปิดงาน</dt><dd>{formatMoney(closeout.retained_cents)} บาท</dd></div>
-          <div><dt>รับสุทธิหลังหักยอดคืนแล้ว</dt><dd>{formatMoney(closeout.received_cents)} บาท</dd></div>
-          <div><dt>ยังต้องรับ</dt><dd>{formatMoney(closeout.remaining_cents)} บาท</dd></div>
-          <div><dt>ยังต้องคืน</dt><dd>{formatMoney(closeout.refund_due_cents)} บาท</dd></div>
-        </dl>
-        <Link href={`/sales/documents/${closeout.document_id}`} prefetch={false}>เปิดข้อตกลงปิดงาน</Link>
-      </section>}
-      <AdjustmentPanel sale={sale} agreement={agreement} reservation={reservation} />
-      {(finance.payments.length > 0 || refunds.length > 0) && <RefundPanel sale={sale} finance={finance} refunds={refunds} staffId={staff.id} />}
+    {!isFocusedTask && <CaseHeader sale={sale} summary={!isBkp ? summary : null} step={isShowingNextStep ? null : step}
+      showProgress={!isBkp || !!task}
+      navigation={isBkp ? navigation : undefined}
+      workflow={sale.brand === "BAAN_KUNAPAP" && finance && agreement && progress ?
+        <BkpProgress sale={sale} finance={finance} agreement={agreement} progress={progress} step={step} tasks={tasks} activeTask={task} compact={(!task && tab === "documents") || isFocusedTask || isDesignBillingTask} /> : undefined} />}
+    {!isDesignBillingTask && !isFocusedTask && task?.name !== "accept-quotation" && (task || (!isBkp && tab !== "overview")) && houseBrief}
+    {one(query.notice) === "task" && <p className={styles.notice} role="status">งานที่เปิดไม่ได้แล้ว เพราะสถานะหรือสิทธิ์เปลี่ยน กรุณาเลือกจากหน้านี้ใหม่</p>}
+    {task ? <TaskView task={task} context={task.name === "design" ? houseBrief : undefined}
+      data={{ sale, finance, agreement, staffId: staff.id, reservation, refunds, owners, contractTemplate, work }} /> : <>
+      {!isBkp && navigation}
+      {tab === "overview" && <>
+        {hasBkpWorkspace && <BkpOverview data={data} step={step} />}
+        <OverviewSection data={data} houseBrief={houseBrief} />
+      </>}
+      {tab === "design" && finance && <DesignBillingPanel sale={sale} finance={finance} tasks={tasks} />}
+      {(tab === "quotation" || tab === "contract") && <BkpAgreementSection data={data} tab={tab} />}
+      {tab === "documents" && <DocumentsSection data={data} />}
+      {tab === "money" && <MoneySection data={data} />}
     </>}
   </div></AppShell>;
 }

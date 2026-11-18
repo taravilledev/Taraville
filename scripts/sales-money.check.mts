@@ -43,6 +43,18 @@ async function rpc(name: string, user: typeof owner | null, input: Record<string
 function ok(result: Awaited<ReturnType<typeof rpc>>) {
   assert.equal(result.status, 200, JSON.stringify(result.body)); return result.body;
 }
+function quoteInput(total_cents: string) {
+  return { house: { model: "Synthetic house", stories: "2", bedrooms: "3", kitchens: "1", bathrooms: "2", usable_area: "180" },
+    total_cents, spec_rows: [], exclusions: [], description: "Synthetic construction" };
+}
+function draftInput(schedule: unknown) {
+  return { customer: { full_name: "Synthetic signer", phone: "0000000000", site_address: "Synthetic site" },
+    start_date: "2026-11-08", schedule };
+}
+async function lockDraft(draft: Record<string, unknown>) {
+  return ok(await rpc("sales_lock_contract", owner, { p_document_id: draft.document_id, p_version: draft.version,
+    p_document_version: draft.document_version, p_request_id: randomUUID() }));
+}
 async function grant(action: string, enabled: boolean) {
   ok(await rpc("sales_set_capability", executive, { p_staff_id: owner.id, p_action: action,
     p_scope: "own", p_enabled: enabled, p_request_id: randomUUID() }));
@@ -101,10 +113,17 @@ const ssr = createServerClient(local.NEXT_PUBLIC_SUPABASE_URL, local.NEXT_PUBLIC
 assert.equal((await ssr.auth.setSession({ access_token: owner.token, refresh_token: owner.refreshToken })).error, null);
 const cookie = cookies.map(item => `${item.name}=${item.value}`).join("; ");
 async function page(path: string) {
-  const response = await fetch(`http://127.0.0.1:3100${path}`, { headers: { Cookie: cookie } });
+  const response = await fetch(`http://127.0.0.1:3000${path}`, { headers: { Cookie: cookie } });
   const html = await response.text(); assert.equal(response.status, 200); return html;
 }
 assert.ok((await page(`/sales/${sale.id}?tab=money`)).includes("ใบเสร็จรับเงิน"));
+const paymentTask = await page(`/sales/${sale.id}?task=prepare-payment`);
+assert.ok(paymentTask.includes("บันทึกเงินเข้า") && paymentTask.includes('name="amount"'), "Task view renders its form");
+assert.ok(!/<details(?! class="[^"]*__account)/.test(paymentTask), "No form inside details on a task view");
+const staleTask = await page(`/sales/${sale.id}?task=withdraw-payment&row=${randomUUID()}`);
+// The redirect happens while streaming, so the HTTP body carries it as a client redirect to the summary.
+assert.ok(staleTask.includes(`/sales/${sale.id}?notice=task`), "A stale task link returns to the summary with a reason");
+assert.ok((await page(`/sales/${sale.id}?notice=task`)).includes("งานที่เปิดไม่ได้แล้ว"));
 assert.ok((await page(`/sales/documents/${received.document_id}`)).includes(String(received.number)));
 // Real RSC Server Action: exact-satang input must persist through the form boundary.
 const require = createRequire(import.meta.url);
@@ -117,8 +136,8 @@ assert.ok(action);
 const form = new FormData();
 Object.entries({ kind: "design_fee", amount: "10.01", method: "cash", paid_date: "2026-11-03",
   payer_name: "Synthetic action payer", description: "Synthetic action fee" }).forEach(([key, value]) => form.set(key, value));
-const actionResponse = await fetch(`http://127.0.0.1:3100/sales/${sale.id}`, { method: "POST", redirect: "manual",
-  headers: { Cookie: cookie, Origin: "http://127.0.0.1:3100", Accept: "text/x-component", "Next-Action": action[0] },
+const actionResponse = await fetch(`http://127.0.0.1:3000/sales/${sale.id}`, { method: "POST", redirect: "manual",
+  headers: { Cookie: cookie, Origin: "http://127.0.0.1:3000", Accept: "text/x-component", "Next-Action": action[0] },
   body: await encodeReply([{ id: sale.id, version: received.version, requestId: randomUUID() }, { error: "" }, form]) });
 await actionResponse.text();
 assert.ok(actionResponse.headers.get("x-action-redirect")?.startsWith(`/sales/${sale.id}`));
@@ -132,13 +151,13 @@ async function storage(method: string, path: string, body?: Buffer) {
 }
 assert.equal((await storage("POST", `sales-evidence/${proof}`, png)).status, 200);
 assert.equal((await storage("GET", `authenticated/sales-evidence/${proof}`)).status, 200);
-assert.equal((await fetch(`http://127.0.0.1:3100/sales/${sale.id}/evidence?path=${encodeURIComponent(proof)}`, { headers: { Cookie: cookie } })).status, 200);
+assert.equal((await fetch(`http://127.0.0.1:3000/sales/${sale.id}/evidence?path=${encodeURIComponent(proof)}`, { headers: { Cookie: cookie } })).status, 200);
 assert.notEqual((await storage("PUT", `sales-evidence/${proof}`, png)).status, 200, "Proof must not be overwritten");
 await grant("financial.view", false);
 assert.equal((await rpc("sales_financial_detail", owner, { p_case_id: sale.id })).status, 403);
 assert.equal((await rpc("sales_document_detail", owner, { p_document_id: received.document_id })).status, 403);
 assert.notEqual((await storage("GET", `authenticated/sales-evidence/${proof}`)).status, 200, "Proof revocation uses the same token");
-assert.equal((await fetch(`http://127.0.0.1:3100/sales/${sale.id}/evidence?path=${encodeURIComponent(proof)}`, { headers: { Cookie: cookie } })).status, 404);
+assert.equal((await fetch(`http://127.0.0.1:3000/sales/${sale.id}/evidence?path=${encodeURIComponent(proof)}`, { headers: { Cookie: cookie } })).status, 404);
 await grant("financial.view", true);
 const issuerNow = Number(sql("select version from private.sales_issuers where brand='BAAN_KUNAPAP'"));
 ok(await rpc("sales_save_issuer", executive, { p_brand: "BAAN_KUNAPAP", p_version: issuerNow,
@@ -148,18 +167,19 @@ current = ok(await rpc("sales_save_case", owner, { p_case_id: sale.id, p_expecte
   p_input: { customer_snapshot: current.customer_snapshot, details: current.details,
     list_price_cents: "1000001", promotion_price_cents: null, discount_cents: "0" } }));
 const quote = ok(await rpc("sales_issue_quotation", owner, { p_case_id: sale.id, p_version: current.version,
-  p_description: "Synthetic test construction", p_request_id: randomUUID() }));
+  p_input: { ...quoteInput("1000001"), description: "Synthetic test construction" }, p_request_id: randomUUID() }));
 const schedule = [1000, 1800, 1800, 1800, 1800, 1800].map((basis_points, index) => ({
   basis_points, label: `Synthetic instalment ${index}`, progress_percent: index === 0 ? null : index * 20,
 }));
 const contractInput = { p_case_id: sale.id, p_version: quote.version, p_quotation_id: quote.document_id,
-  p_schedule: schedule, p_request_id: randomUUID() };
-assert.equal((await rpc("sales_prepare_contract", owner, contractInput)).status, 400, "Explicit accepted revision is required");
+  p_input: draftInput(schedule), p_document_id: null, p_document_version: null, p_request_id: randomUUID() };
+assert.equal((await rpc("sales_save_contract_draft", owner, contractInput)).status, 400, "Explicit accepted revision is required");
 const agreementProof = `${sale.id}/agreement/${randomUUID()}.png`;
 assert.equal((await storage("POST", `sales-evidence/${agreementProof}`, png)).status, 200);
 const accepted = ok(await rpc("sales_accept_quotation", owner, { p_document_id: quote.document_id, p_version: quote.version,
   p_evidence_path: agreementProof, p_request_id: randomUUID() }));
-const contract = ok(await rpc("sales_prepare_contract", owner, { ...contractInput, p_version: accepted.version }));
+const savedDraft = ok(await rpc("sales_save_contract_draft", owner, { ...contractInput, p_version: accepted.version }));
+const contract = await lockDraft(savedDraft);
 const contractDoc = ok(await rpc("sales_document_detail", owner, { p_document_id: contract.document_id }));
 const contractPayload = contractDoc.payload as Record<string, unknown>;
 const contractRows = contractPayload.schedule as Record<string, unknown>[];
@@ -249,7 +269,7 @@ const blockedApproved = ok(await rpc("sales_decide_refund", executive, { ...deci
   p_version: blockedRefund.version, p_request_id: randomUUID() }));
 assert.equal((await rpc("sales_pay_refund", owner, { ...payout, p_refund_id: blockedRefund.refund_id,
   p_version: blockedApproved.version, p_request_id: randomUUID() })).status, 400, "Cannot refund still-applied design credit");
-assert.ok((await page(`/sales/${sale.id}?tab=adjust`)).includes("คืนเงินจริง"));
+assert.ok((await page(`/sales/${sale.id}?tab=money`)).includes("คืนเงินจริง"));
 assert.ok((await page(`/sales/documents/${paid.document_id}`)).includes("เอกสารจ่ายคืนเงิน"));
 const amendment = ok(await rpc("sales_amend_contract", executive, {
   p_case_id: sale.id, p_version: blockedApproved.version, p_request_id: randomUUID(),
@@ -281,7 +301,7 @@ assert.equal(closeBalance.remaining_cents, "0");
 assert.equal(closeBalance.refund_due_cents, "0");
 assert.equal((await rpc("sales_request_refund", owner, { p_root_payment_id: received.payment_id, p_version: closed.version,
   p_amount_cents: "1", p_reason: "Exceeds signed close-out", p_request_id: randomUUID() })).status, 400);
-assert.ok((await page(`/sales/${sale.id}?tab=adjust`)).includes("ยอดปิดงานปัจจุบัน"));
+assert.ok((await page(`/sales/${sale.id}?tab=money`)).includes("ยอดปิดงานปัจจุบัน"));
 console.log("PASS local HTTP/SSR/Server Action: receipts/evidence, agreements/credit/QC, partial billing, independent refunds and allocation/credit guards");
 const tvLead = randomUUID(), development = randomUUID(), unit = randomUUID();
 sql(`insert into public.leads(id,brand,first_name,last_name,phone,owner_id,created_by,create_request_id,create_payload_hash,privacy_mode)
@@ -446,6 +466,10 @@ assert.equal(leadSales.can_create, true);
 assert.ok(Array.isArray(leadSales.cases) && leadSales.cases.length === 3);
 assert.deepEqual(Object.keys(leadSales.cases[0]).sort(), ["brand", "can_finance", "can_open", "code", "id", "project_id", "status"]);
 const reader = await actor("reader", "sale");
+assert.deepEqual(ok(await rpc("sales_work_queue", reader)), [], "No capability, no queue");
+const queue = ok(await rpc("sales_work_queue", executive)) as unknown as Record<string, unknown>[];
+assert.ok(Array.isArray(queue));
+for (const item of queue) assert.deepEqual(Object.keys(item).sort(), ["brand", "case_id", "code", "count", "customer_name", "kind", "since"], "Queue rows carry no amounts");
 const readerSales = ok(await rpc("sales_cases_for_lead", reader, { p_lead_id: tvLead })) as { cases: Record<string, unknown>[]; can_create: boolean };
 assert.equal(readerSales.cases.length, 3);
 for (const row of readerSales.cases) {
@@ -468,7 +492,7 @@ assert.equal(freshLead in tags, false);
 const ownerTags = ok(await rpc("sales_lead_tags", owner, { p_lead_ids: [tvLead] })) as Record<string, { count: number; plot_code: string | null }>;
 assert.equal(ownerTags[tvLead].count, tags[tvLead].count);
 const leadHtml = await page(`/leads/${tvLead}`);
-assert.ok(leadHtml.includes(`/sales/${waiting.id}`) && leadHtml.includes("เปิดรายการขายใหม่"));
+assert.ok(leadHtml.includes(`/sales/${waiting.id}`) && leadHtml.includes("เปิดโครงการ"));
 const otherCurrent = ok(await rpc("sales_case_detail", owner, { p_case_id: other.id }));
 const otherProof = `${other.id}/agreement/${randomUUID()}.png`;
 assert.equal((await storage("POST", `sales-evidence/${otherProof}`, png)).status, 200);
@@ -518,13 +542,14 @@ values('${creditLead}','BAAN_KUNAPAP','Synthetic Credit','Boundary','0000000000'
     p_input: { customer_snapshot: snapshot.customer_snapshot, details: snapshot.details,
       list_price_cents: "1000000", promotion_price_cents: null, discount_cents: "0" } }));
   const offer = ok(await rpc("sales_issue_quotation", owner, { p_case_id: caseId, p_version: job.version,
-    p_description: "Synthetic credit boundary", p_request_id: randomUUID() }));
+    p_input: { ...quoteInput("1000000"), description: "Synthetic credit boundary" }, p_request_id: randomUUID() }));
   const proof = `${caseId}/agreement/${randomUUID()}.png`;
   assert.equal((await storage("POST", `sales-evidence/${proof}`, png)).status, 200);
   job = ok(await rpc("sales_accept_quotation", owner, { p_document_id: offer.document_id, p_version: offer.version,
     p_evidence_path: proof, p_request_id: randomUUID() }));
-  job = ok(await rpc("sales_prepare_contract", owner, { p_case_id: caseId, p_version: job.version,
-    p_quotation_id: offer.document_id, p_schedule: schedule, p_request_id: randomUUID() }));
+  job = ok(await rpc("sales_save_contract_draft", owner, { p_case_id: caseId, p_version: job.version,
+    p_quotation_id: offer.document_id, p_input: draftInput(schedule), p_document_id: null, p_document_version: null, p_request_id: randomUUID() }));
+  job = await lockDraft(job);
   job = ok(await rpc("sales_sign_contract", executive, { p_document_id: job.document_id, p_version: job.version,
     p_evidence_path: proof, p_request_id: randomUUID() }));
   const detail = ok(await rpc("sales_agreement_detail", owner, { p_case_id: caseId }));

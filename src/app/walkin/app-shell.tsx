@@ -7,6 +7,7 @@ import styles from "./walkin.module.css";
 
 export function AppShell({ children, staff, wide }: { children: ReactNode; staff?: Staff; wide?: boolean }) {
   return <div className={`${styles.shell} dense`} lang="th">
+    <a className={styles.skipLink} href="#main-content">ข้ามไปเนื้อหาหลัก</a>
     <header className={styles.header}>
       <a href="/walkin" className={styles.wordmark}>
         <span className={styles.logoMark} aria-hidden="true"><Building2 size={18} /></span>
@@ -15,7 +16,7 @@ export function AppShell({ children, staff, wide }: { children: ReactNode; staff
       {staff && <NavTabs />}
       {staff && <AccountMenu staff={staff} />}
     </header>
-    <main className={wide ? `${styles.main} ${styles.mainWide}` : styles.main}>{children}</main>
+    <main id="main-content" tabIndex={-1} className={wide ? `${styles.main} ${styles.mainWide}` : styles.main}>{children}</main>
     <footer className={styles.siteFooter}>Taraville Group · ธาราวิล · บ้านคุณภาพ © 2026</footer>
   </div>;
 }

@@ -4,12 +4,14 @@ import type { requireStaff } from "@/lib/supabase/staff";
 import { financialSchema } from "./financial-models";
 import { agreementSchema } from "./agreement-models";
 import { refundSchema } from "./refund-models";
-import { moneySummary, nextStep } from "./case-progress";
+import { moneySummary, nextStep, projectProgress, type NextStepInput } from "./case-progress";
 import type { SalesCase } from "./models";
 
 type Supabase = Awaited<ReturnType<typeof requireStaff>>["supabase"];
 
-const workSchema = z.object({ id: z.uuid(), position: z.number().int(), progress_percent: z.number().nullable(), accepted: z.boolean() }).array();
+const workSchema = z.object({ id: z.uuid(), position: z.number().int(), progress_percent: z.number().nullable(), accepted: z.boolean(),
+  requires_acceptance_date: z.boolean().nullish().transform(value => value ?? false),
+  acceptance_date: z.iso.date().nullable().optional(), due_date: z.iso.date().nullable().optional() }).array();
 const closeoutSchema = z.object({ document_id: z.uuid(), retained_cents: z.string(), received_cents: z.string(),
   remaining_cents: z.string(), refund_due_cents: z.string() }).nullable();
 const reservationSchema = z.object({ active: z.boolean(), options: z.object({ id: z.uuid(), label: z.string() }).array() });
@@ -40,20 +42,24 @@ export async function loadCaseData(supabase: Supabase, sale: SalesCase) {
   const pending = finance?.pending.length ?? 0;
   const rows = (agreement?.instalments ?? []).filter(row => row.is_active).sort((a, b) => a.position - b.position);
   const row = rows.find(item => item.balance?.outstanding_cents !== "0");
-  const contract = agreement?.documents.find(doc => doc.kind === "contract" && ["awaiting_signature", "signed"].includes(doc.state));
-  const quotations = agreement?.documents.filter(doc => doc.kind === "quotation") ?? [];
-  const summary = finance && agreement ? moneySummary({ net: sale.net_price_cents ?? null, payments: finance.payments, instalments: agreement.instalments }) : null;
-  const step = finance && agreement ? nextStep({
+  const contract = agreement?.documents.find(doc => doc.kind === "contract" && ["draft", "awaiting_signature", "signed"].includes(doc.state));
+  const quotations = agreement?.documents.filter(doc => doc.kind === "quotation" && doc.payload.price_set !== false && BigInt(doc.payload.total_cents ?? "0") > BigInt(0)) ?? [];
+  const net = sale.brand === "BAAN_KUNAPAP" && !contract ? null : sale.net_price_cents ?? null;
+  const summary = finance && agreement ? moneySummary({ net, payments: finance.payments, instalments: agreement.instalments, closeout }) : null;
+  const input: NextStepInput | null = finance && agreement ? {
     brand: sale.brand, status: sale.status, can: sale.permissions, hasNetPrice: sale.net_price_cents != null,
     hasSummary: finance.documents.some(doc => doc.kind === "summary"), hasBookingReceipt: finance.payments.some(payment => payment.kind === "booking"),
     isBookingDue: BigInt(finance.documents.findLast(doc => doc.kind === "summary")?.booking_cents ?? "0") > BigInt(0),
     hasDesignPlan: finance.design_plan != null, pendingPayments: pending,
     refundsToAct: refunds.filter(refund => refund.state === "pending" || refund.state === "approved").length,
     plotHeld: reservation?.active ?? false, isSettled: agreement.is_settled,
-    quotations: { offered: quotations.filter(doc => doc.state === "offered").length, accepted: quotations.filter(doc => doc.state === "accepted").length },
-    contract: contract ? contract.state === "signed" ? "signed" : "awaiting" : "none",
-    instalment: row ? { label: row.label, needsAcceptance: row.needs_acceptance, accepted: row.accepted_at != null,
+    quotations: { offered: quotations.filter(doc => doc.state === "offered").length, accepted: quotations.filter(doc => doc.state === "accepted").length,
+      offeredId: quotations.find(doc => doc.state === "offered")?.id },
+    contract: contract ? contract.state === "signed" ? "signed" : contract.state === "draft" ? "draft" : "awaiting" : "none", contractId: contract?.id,
+    instalment: row ? { id: row.id, label: row.label, needsAcceptance: row.needs_acceptance, accepted: row.accepted_at != null,
       hasInvoice: row.invoice_id != null, outstanding: row.balance?.outstanding_cents !== "0", isCreditCovered: row.net_cents === "0" } : null,
-  }) : null;
-  return { work, finance, agreement, closeout, reservation, refunds, pending, summary, step };
+  } : null;
+  const step = input ? nextStep(input) : null;
+  const progress = input ? projectProgress(input) : null;
+  return { work, finance, agreement, closeout, reservation, refunds, pending, summary, step, progress };
 }

@@ -2,8 +2,10 @@
 
 import { z } from "zod";
 import { redirect } from "next/navigation";
+import { withSuccessFeedback } from "@/lib/action-feedback";
 import { revalidatePath } from "next/cache";
 import { requireStaff } from "@/lib/supabase/staff";
+import { dialablePhone, PHONE_HINT } from "@/lib/walkin/phone";
 import { leadSchema } from "@/lib/walkin/models";
 import { mutationContextSchema, parseLeadForm, mutationError, type MutationContext } from "@/lib/walkin/validation";
 import type { ActionState } from "./action-form";
@@ -14,11 +16,18 @@ export async function saveLead(context: MutationContext, _state: ActionState, fo
   let input;
   const parsed = mutationContextSchema.safeParse(context);
   if (!parsed.success) return { error: "แบบฟอร์มหมดอายุหรือไม่ถูกต้อง กรุณาเปิดใหม่" };
+  const phone = form.get("phone");
+  if (parsed.data.brand === "BAAN_KUNAPAP" && (typeof phone !== "string" || !dialablePhone(phone))) {
+    return { error: PHONE_HINT, field: "phone" };
+  }
   form.set("survey.sales_staff", staff.full_name);
   let consent: boolean | null = null;
+  if (!context.id) {
+    try { consent = parsePrivacyIntake(form); }
+    catch { return { error: "กรุณายืนยันว่าได้แจ้งประกาศและลูกค้าขอให้ติดต่อกลับ", field: "intake_confirmed" }; }
+  }
   try {
-    if (!context.id) consent = parsePrivacyIntake(form);
-    else {
+    if (context.id) {
       const latest = await supabase.from("lead_privacy_events").select("survey_consent")
         .eq("lead_id", context.id).not("survey_consent", "is", null).order("id", { ascending: false }).limit(1);
       if (latest.error) return { error: mutationError() };
@@ -26,7 +35,13 @@ export async function saveLead(context: MutationContext, _state: ActionState, fo
     }
     input = parseLeadForm(parsed.data, form, consent !== false);
   }
-  catch { return { error: "กรุณาตรวจข้อมูลที่จำเป็น การแสดงประกาศ คำขอติดต่อกลับ และตัวเลือกแบบสอบถาม" }; }
+  catch (error) {
+    if (error instanceof z.ZodError) {
+      const field = error.issues[0]?.path[0];
+      if (field === "first_name") return { error: "กรุณากรอกชื่อผู้สนใจ", field };
+    }
+    return { error: "กรุณาตรวจข้อมูลติดต่อ ผู้ดูแล และคำตอบแบบสอบถาม" };
+  }
   if (staff.role === "sale" && input.owner !== staff.id) return { error: "ฝ่ายขายบันทึกได้เฉพาะรายการของตนเอง" };
   const request = context.id ? supabase.rpc("walkin_update_lead", {
     p_lead_id: context.id, p_expected_version: context.version, p_contact: input.contact, p_survey: input.survey,
@@ -40,9 +55,10 @@ export async function saveLead(context: MutationContext, _state: ActionState, fo
   if (result.error) return { error: mutationError(result.error.code, result.error.message) };
   const lead = leadSchema.safeParse(result.data);
   if (!lead.success) return { error: "ได้รับผลบันทึกไม่ครบ กรุณาตรวจรายการก่อนส่งซ้ำ" };
+  revalidatePath("/dashboard");
   revalidatePath("/leads");
   revalidatePath(`/leads/${lead.data.id}`);
-  redirect(`/leads/${lead.data.id}?saved=1`);
+  redirect(withSuccessFeedback(`/leads/${lead.data.id}?saved=1`, context.id ? "lead_updated" : "lead_created"));
 }
 
 export async function reassignLead(id: string, version: number, _state: ActionState, form: FormData): Promise<ActionState> {
@@ -56,6 +72,7 @@ export async function reassignLead(id: string, version: number, _state: ActionSt
   }).single();
   if (error) return { error: mutationError(error.code, error.message) };
   if (!leadSchema.safeParse(data).success) return { error: "กรุณาตรวจรายการล่าสุดก่อนดำเนินการซ้ำ" };
+  revalidatePath("/dashboard");
   revalidatePath("/leads"); revalidatePath(`/leads/${id}`);
-  redirect(`/leads/${id}?saved=1`);
+  redirect(withSuccessFeedback(`/leads/${id}?saved=1`, "lead_reassigned"));
 }

@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { withSuccessFeedback } from "@/lib/action-feedback";
 import { revalidatePath } from "next/cache";
 import { requireStaff } from "@/lib/supabase/staff";
 import { leadSchema } from "@/lib/walkin/models";
@@ -28,6 +29,7 @@ export async function recordPrivacy(context: PrivacyMutation, _state: ActionStat
   } catch { return { error: mutationError() }; }
   if (result.error) return { error: mutationError(result.error.code, result.error.message) };
   if (!leadSchema.safeParse(result.data).success) return { error: "กรุณาเปิดรายการล่าสุดก่อนดำเนินการซ้ำ" };
+  revalidatePath("/dashboard");
   revalidatePath("/leads"); revalidatePath(`/leads/${input.id}`);
-  redirect(`/leads/${input.id}?saved=1`);
+  redirect(withSuccessFeedback(`/leads/${input.id}?saved=1`, input.operation === "contact" ? "contact_recorded" : "survey_choice_saved"));
 }

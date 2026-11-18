@@ -1,9 +1,10 @@
+import { PHONE_HINT, PHONE_PATTERN } from "@/lib/walkin/phone";
 import type { Lead, Staff } from "@/lib/walkin/models";
 import { SURVEY_QUESTIONS, type Brand } from "@/lib/walkin/survey-questions";
 import { SurveyField } from "./survey-field";
 import { ActionForm } from "./action-form";
 import { saveLead } from "./actions";
-import { ConsentFields } from "./consent-fields";
+import { ConsentFields, SurveyConsent } from "./consent-fields";
 import { NoticeDialog } from "./notice-dialog";
 import { RequiredMark } from "./required-mark";
 import { VersionedNotice } from "./versioned-notice";
@@ -17,6 +18,9 @@ export function LeadForm({ brand, staff, owners, lead, requestId, choice = null 
   const questions = SURVEY_QUESTIONS[brand];
   const context = { brand, requestId, ...(lead ? { id: lead.id, version: lead.version } : {}) };
   const isSurveyShown = lead ? choice !== false : true;
+  const isBkp = brand === "BAAN_KUNAPAP";
+  const survey = <div className={styles.questions}>{questions.filter(question => question.key !== "sales_staff" && (!question.legacy || lead?.survey[question.key])).map(question =>
+    <SurveyField key={question.key} question={question} answers={lead?.survey} />)}</div>;
   return <>
     {!lead && <NoticeDialog><VersionedNotice brand={brand} /></NoticeDialog>}
     <ActionForm id={LEAD_FORM_ID} sticky action={saveLead.bind(null, context)}>
@@ -30,7 +34,10 @@ export function LeadForm({ brand, staff, owners, lead, requestId, choice = null 
           <label className={styles.field}>นามสกุล<input name="last_name" defaultValue={lead?.last_name} autoComplete="family-name" maxLength={200} /></label>
         </div>
         <div className={styles.contactGrid}>
-          <label className={styles.field}><span>เบอร์โทรศัพท์มือถือ<RequiredMark /></span><input name="phone" type="tel" inputMode="tel" defaultValue={lead?.phone} autoComplete="tel" required maxLength={80} /></label>
+          <label className={styles.field}><span>เบอร์โทรศัพท์มือถือ<RequiredMark /></span><input name="phone" type="tel" inputMode="tel" defaultValue={lead?.phone} autoComplete="tel" required maxLength={80}
+            pattern={isBkp ? PHONE_PATTERN : undefined} title={isBkp ? PHONE_HINT : undefined}
+            aria-describedby={isBkp ? "lead-phone-hint" : undefined} />
+            {isBkp && <small id="lead-phone-hint">{PHONE_HINT}</small>}</label>
           <label className={styles.field}>LINE ID<input name="line_id" defaultValue={lead?.line_id} autoComplete="off" maxLength={200} /></label>
         </div>
         {!lead && staff.role === "executive" ? <label className={styles.field}><span>ฝ่ายขายผู้ดูแล<RequiredMark /></span>
@@ -40,8 +47,7 @@ export function LeadForm({ brand, staff, owners, lead, requestId, choice = null 
       </section>
       {isSurveyShown ? <section id="survey" className={styles.card} aria-labelledby="survey-title">
         <h2 id="survey-title">แบบสอบถามความต้องการ</h2><p className={styles.sectionHint}>ไม่บังคับ ข้อที่ลูกค้าไม่ตอบ เว้นว่างได้</p>
-        <div className={styles.questions}>{questions.filter(question => question.key !== "sales_staff" && (!question.legacy || lead?.survey[question.key])).map(question =>
-          <SurveyField key={question.key} question={question} answers={lead?.survey} />)}</div>
+        {lead ? survey : <SurveyConsent>{survey}</SurveyConsent>}
       </section> : <p className={styles.hint} role="status">ลูกค้าไม่ให้ข้อมูลแบบสอบถามเพิ่มเติม · เปลี่ยนตัวเลือกได้จากหน้ารายละเอียด</p>}
       {!lead && <ConsentFields />}
     </ActionForm>

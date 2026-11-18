@@ -11,12 +11,9 @@ const mutation = (lead: Lead, operation: "contact" | "opt_in" | "withdraw") =>
   recordPrivacy.bind(null, { id: lead.id, version: lead.version, requestId: randomUUID(), operation });
 
 export function ContactRecord({ lead }: { lead: Lead }) {
-  return <section className={styles.card}><h2>บันทึกว่าติดต่อลูกค้าแล้ว</h2>
-    <ActionForm action={mutation(lead, "contact")} label="ยืนยันบันทึกการติดต่อ">
+  return <ActionForm action={mutation(lead, "contact")} label="บันทึกการติดต่อ" inline>
       <input type="hidden" name="confirm_operation" value="on" />
-      <p className={styles.hint}>ระบบใช้เวลาที่กดยืนยันเป็นวันที่ติดต่อล่าสุด ย้อนกลับไม่ได้</p>
-    </ActionForm>
-  </section>;
+    </ActionForm>;
 }
 
 export function SurveyChoice({ lead, events, canEdit }: { lead: Lead; events: PrivacyEvent[]; canEdit: boolean }) {

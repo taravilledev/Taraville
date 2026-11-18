@@ -2,7 +2,7 @@ import "server-only";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { requireStaff } from "@/lib/supabase/staff";
-import { bootstrapSchema, caseDetailSchema, caseListRowSchema } from "./models";
+import { bootstrapSchema, caseDetailSchema, caseListRowSchema, workQueueSchema } from "./models";
 
 export async function salesBootstrap() {
   const session = await requireStaff();
@@ -18,6 +18,13 @@ export async function salesCase(id: string) {
   if (error?.code === "42501") notFound();
   if (error) throw new Error("โหลดข้อมูลงานไม่ได้ กรุณาลองใหม่");
   return { ...session, sale: caseDetailSchema.parse(data) };
+}
+
+export async function salesWorkQueue() {
+  const session = await requireStaff();
+  const { data, error } = await session.supabase.rpc("sales_work_queue");
+  const parsed = error ? null : workQueueSchema.safeParse(data);
+  return parsed?.success ? parsed.data : null; // null: the list below still works, the queue shows a notice
 }
 
 export async function salesCaseList(filters: { status: string; brand: string; query: string }) {

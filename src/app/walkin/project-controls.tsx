@@ -5,8 +5,8 @@ import { cancelProject, openProject } from "./project-actions";
 import styles from "./walkin.module.css";
 
 export function OpenProject({ lead }: { lead: Lead }) {
-  return <ActionForm action={openProject.bind(null, { id: lead.id, version: lead.version, requestId: randomUUID() })} label="ยืนยันเปิดโครงการ">
-    <p className={styles.hint}>ระบบออกรหัสโครงการให้ทันที แต่ละรายการมีโครงการที่ใช้งานอยู่ได้ครั้งละหนึ่งโครงการ และปิดรายการไม่ได้ขณะมีโครงการ</p>
+  return <ActionForm id="open-project" action={openProject.bind(null, { id: lead.id, version: lead.version, requestId: randomUUID() })} label="ยืนยันเปิดโครงการ">
+    <p className={styles.hint}>เปิดได้หลายโครงการ แต่ละโครงการมีรหัสและข้อมูลแยกกัน</p>
     <label className={styles.option}><input type="checkbox" name="confirm_operation" required /><span>ยืนยันเปิดโครงการสำหรับรายการนี้</span></label>
   </ActionForm>;
 }

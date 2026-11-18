@@ -14,7 +14,8 @@ import { BrandTiles } from "./brand-tiles";
 import { ListChips } from "./list-chips";
 import { LeadCards } from "./lead-cards";
 import { ListPager } from "./list-pager";
-import { DownloadIcon, ReportIcon } from "./header-icons";
+import { ReportIcon } from "./header-icons";
+import { LeadExportDialog } from "./export-dialog";
 import styles from "./leads.module.css";
 
 export const metadata = { title: "รายการผู้สนใจ · Taraville Group", robots: { index: false, follow: false } };
@@ -44,23 +45,35 @@ async function List({ searchParams }: Props) {
   const activeCount = [filters.owner, filters.from, filters.to, filters.stage, filters.sort !== "created" || filters.dir !== "desc"].filter(Boolean).length;
   return <AppShell staff={session.staff} wide>
     <div className={styles.page}>
-    <div className={styles.titleRow}>
-      <div><h1>รายการผู้สนใจ</h1><p className={styles.total}>ทั้งหมด {total.toLocaleString("th-TH")} รายการ</p></div>
-      <div className={styles.headerActions}>
-        <Link href="/leads/report" prefetch={false} className={styles.actionBtn}><ReportIcon />รายงานรายเดือน</Link>
-        {isExecutive && (filters.brand
-          ? <a href={listHref(filters, { page: undefined }).replace("/leads", "/leads/export")} download className={styles.actionBtn}><DownloadIcon />ส่งออก CSV</a>
-          : <span className={styles.actionNote}><button type="button" disabled aria-describedby="export-hint" className={styles.actionBtn}><DownloadIcon />ส่งออก CSV</button><small id="export-hint">เลือกแบรนด์ก่อน</small></span>)}
-      </div>
-    </div>
-    <RetentionReview session={session} />
-    <BrandTiles filters={filters} counts={counts} />
-    <ListControls filters={filters} owners={owners} activeCount={activeCount} />
-    <ListChips filters={filters} ownerName={ownerName} />
-    {leads.length ? <LeadCards leads={leads} workTags={workTags} ownerName={ownerName} />
-      : activeCount || filters.q || filters.brand ? <p className={styles.empty}>ไม่พบรายการที่ตรงกับการค้นหา</p>
-      : <p className={styles.empty}>ยังไม่มีผู้สนใจที่กำลังติดตาม · <Link href="/walkin" prefetch={false}>เริ่มรับลูกค้า Walk-in</Link></p>}
-    <ListPager filters={filters} total={total} />
+      <header className={styles.titleRow}>
+        <h1>รายการผู้สนใจ</h1>
+        <div className={styles.headerActions}>
+          <Link href="/leads/report" prefetch={false} className={styles.actionBtn}><ReportIcon />รายงานรายเดือน</Link>
+          {isExecutive && <LeadExportDialog options={[
+            { label: "ธาราวิล", href: listHref(filters, { brand: "TARAVILLE", page: undefined }).replace("/leads", "/leads/export") },
+            { label: "บ้านคุณภาพ", href: listHref(filters, { brand: "BAAN_KUNAPAP", page: undefined }).replace("/leads", "/leads/export") },
+          ]} />}
+          <Link href="/walkin" prefetch={false} className={`${styles.actionBtn} ${styles.primaryAction}`}>รับลูกค้า</Link>
+        </div>
+      </header>
+      <RetentionReview session={session} />
+      <section className={styles.toolbar} aria-label="ค้นหาและกรองรายการผู้สนใจ">
+        <BrandTiles filters={filters} counts={counts} />
+        <ListControls filters={filters} owners={owners} activeCount={activeCount} />
+        <ListChips filters={filters} ownerName={ownerName} />
+      </section>
+      <section aria-label="ผลการค้นหาผู้สนใจ">
+        <p className={styles.total} role="status">พบ {total.toLocaleString("th-TH")} รายการ</p>
+        {leads.length ? <LeadCards leads={leads} workTags={workTags} ownerName={ownerName} />
+          : activeCount || filters.q || filters.brand ? <div className={styles.empty}>
+            <p>ไม่พบรายการที่ตรงกับตัวกรอง</p>
+            {filters.q
+              ? <a className={styles.actionBtn} href={listHref(filters, { q: undefined, page: undefined })}>ล้างคำค้น</a>
+              : <a className={styles.actionBtn} href={listHref(filters, { stage: undefined, owner: undefined, from: undefined, to: undefined, brand: undefined, page: undefined })}>ล้างตัวกรอง</a>}
+          </div>
+          : <p className={styles.empty}>ยังไม่มีผู้สนใจที่กำลังติดตาม · <Link href="/walkin" prefetch={false}>เริ่มรับลูกค้า Walk-in</Link></p>}
+        <ListPager filters={filters} total={total} />
+      </section>
     </div>
   </AppShell>;
 }

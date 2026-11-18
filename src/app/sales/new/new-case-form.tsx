@@ -3,27 +3,36 @@ import { ActionForm } from "@/app/walkin/action-form";
 import type { SalesBootstrap } from "@/lib/sales/models";
 import { createCase } from "../actions";
 import styles from "../sales.module.css";
+import { OpeningFields } from "./opening-fields";
 
 type Lead = SalesBootstrap["leads"][number];
 
-export function NewCaseForm({ workspace, lead, requestId }: { workspace: SalesBootstrap; lead: Lead; requestId: string }) {
+export function NewCaseForm({ workspace, lead, projects, projectId, requestId }: {
+  workspace: SalesBootstrap; lead: Lead; projects: { id: string; code: string }[]; projectId: string; requestId: string;
+}) {
   const units = workspace.developments.filter(development => development.is_active)
     .map(development => ({ ...development, units: development.units.filter(unit => unit.is_active && unit.is_available) }))
     .filter(development => development.units.length > 0);
-  return <ActionForm action={createCase} label="เปิดรายการขาย">
+  if (lead.brand === "TARAVILLE" && !units.length) return <div className={styles.notice}>
+    <h2>ยังไม่มีบ้าน/แปลงว่างให้เปิดโครงการ</h2>
+    <p>ต้องมีบ้าน/แปลงว่างก่อน จึงจะเปิดร่างโครงการได้</p>
+    {workspace.can_catalog ? <Link className={styles.link} href="/sales/settings/catalog" prefetch={false}>จัดการหมู่บ้านและบ้าน/แปลง</Link>
+      : <p>ติดต่อผู้มีสิทธิ์จัดการหมู่บ้านและบ้าน/แปลงเพื่อเพิ่มหรือปล่อยแปลง</p>}
+  </div>;
+  if (lead.brand === "TARAVILLE") return <OpeningFields leadId={lead.id} requestId={requestId}
+    units={units.flatMap(development => development.units.map(unit => ({
+      id: unit.id, developmentId: development.id, code: unit.code, location: development.name, address: development.address,
+      details: unit.details, price: unit.list_price_cents,
+    })))} />;
+  return <ActionForm action={createCase} label="เปิดโครงการ">
     <input type="hidden" name="request_id" value={requestId} />
     <div className={styles.grid}>
       <input type="hidden" name="lead_id" value={lead.id} />
-      <p className={styles.full}>ลูกค้า: <strong>{lead.full_name}</strong>{lead.project_code ? ` · ${lead.project_code}` : ""}</p>
-      {lead.brand === "TARAVILLE" && !units.length && <p className={`${styles.notice} ${styles.full}`}>ยังไม่มีบ้าน/แปลงที่ว่าง เพิ่มหรือปล่อยแปลงได้ที่ <Link href="/sales/catalog" prefetch={false}>โครงการและบ้าน/แปลง</Link></p>}
-      {lead.brand === "TARAVILLE" && units.length > 0 && <label className={`${styles.field} ${styles.full}`}>บ้าน/แปลง<select name="unit_id" required defaultValue="">
-        <option value="" disabled>เลือกบ้าน/แปลง</option>{units.map(development => <optgroup key={development.id} label={development.name}>
-          {development.units.map(unit => <option key={unit.id} value={unit.id}>{unit.code}</option>)}
-        </optgroup>)}
-      </select><small className={styles.muted}>เปิดร่างยังไม่กันแปลง ต้องยืนยันจองอีกครั้ง</small></label>}
-      <label className={`${styles.field} ${styles.full}`}>ข้อมูลลูกค้า<select name="customer_id" defaultValue="">
-        <option value="">สร้างข้อมูลลูกค้าจาก Lead นี้</option>{workspace.customers.filter(customer => customer.brand === lead.brand).map(customer => <option key={customer.id} value={customer.id}>{customer.full_name}{customer.phone ? ` · ${customer.phone}` : ""}</option>)}
-      </select><small className={styles.muted}>เลือกลูกค้าเดิมด้วยตัวเอง ระบบไม่รวมคนจากเบอร์โทรอัตโนมัติ</small></label>
+      <label className={`${styles.field} ${styles.full}`}>โครงการ<select name="project_id" required defaultValue={projectId}>
+        <option value="" disabled>เลือกโครงการ</option>{projects.map(project => <option key={project.id} value={project.id}>{project.code}</option>)}
+      </select></label>
+      <input type="hidden" name="customer_id" value="" />
     </div>
+    <p className={styles.muted}>เปิดเป็นร่างสำหรับโครงการที่เลือก สามารถกรอกข้อมูลต่อได้หลังเปิดโครงการ</p>
   </ActionForm>;
 }
