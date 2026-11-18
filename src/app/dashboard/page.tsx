@@ -10,6 +10,7 @@ import { ExecutiveDashboard } from "../sales/executive-dashboard";
 import { DashboardOverview } from "./overview";
 import { groupDashboardProjects, projectOwnershipLabels, type ProjectOwnership } from "./project-ownership";
 import styles from "../sales/sales.module.css";
+import { tabLinksClass } from "@/components/tab-links";
 import { pageHeaderClass } from "@/components/page-header";
 import { noticeClass } from "@/components/notice";
 import { panelClass } from "@/components/panel";
@@ -61,7 +62,7 @@ async function Workspace({ searchParams }: Props) {
       <div className={pageHeaderClass}><div><h1>แดชบอร์ด</h1><p>ติดตามงานและโครงการของบ้านคุณภาพและธาราวิลล์</p></div>
         <div className="flex flex-wrap items-center gap-3"><Link className={buttonVariants({ size: "auto" })} href="/summary" prefetch={false}>สรุปการเงินบ้านคุณภาพ</Link>{settings}</div>
       </div>
-      <nav className={styles.tabs} aria-label="เลือกแบรนด์สำหรับแดชบอร์ด">
+      <nav className={tabLinksClass} aria-label="เลือกแบรนด์สำหรับแดชบอร์ด">
         {brands.map(({ value, label }) => <Link key={value} href={value ? `/dashboard?brand=${value}` : "/dashboard"}
           aria-current={value === brand ? "page" : undefined} prefetch={false}>{label}</Link>)}
       </nav>
@@ -91,14 +92,14 @@ async function Workspace({ searchParams }: Props) {
     <section className={panelClass} id="queue" aria-labelledby="queue-title"><h2 id="queue-title">งานรอทำ</h2>
       {!queue ? <p className={noticeClass} role="status">โหลดงานรอทำไม่ได้ ลองรีเฟรชหน้านี้ รายการทั้งหมดด้านล่างยังใช้ได้</p>
         : !queue.length ? <p className="text-sm text-muted-foreground">ไม่มีงานที่รอคุณดำเนินการ</p>
-        : <ul className={styles.list}>{queue.map(item => <li key={`${item.case_id}:${item.kind}`} className={styles.case}>
+        : <ul className="grid gap-3">{queue.map(item => <li key={`${item.case_id}:${item.kind}`} className={styles.case}>
           <div><Link href={`/sales/${item.case_id}?tab=money#${item.kind === "acceptance" ? "schedule" : item.kind === "payment_pending" ? "pending" : "refunds"}`} prefetch={false}>{item.code}{item.customer_name ? ` · ${item.customer_name}` : ""}</Link>
             <p className="text-sm text-muted-foreground">{workQueueKinds[item.kind]} {item.count} รายการ · รอตั้งแต่ {new Date(item.since).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })}</p></div>
           <span className={tagClass}>{brandLabels[item.brand]}</span></li>)}</ul>}
     </section>
     <section className="grid gap-6" id="dashboard-projects" aria-labelledby="dashboard-projects-title">
       <h2 id="dashboard-projects-title">โครงการ</h2>
-      {!executive && <nav className={styles.tabs} aria-label="ผู้รับผิดชอบโครงการ">
+      {!executive && <nav className={tabLinksClass} aria-label="ผู้รับผิดชอบโครงการ">
         {(Object.keys(projectOwnershipLabels) as ProjectOwnership[]).map(item =>
           <Link href={ownershipHref(item)} key={item} prefetch={false} aria-current={item === ownership ? "page" : undefined}>
             {projectOwnershipLabels[item]}
@@ -106,7 +107,7 @@ async function Workspace({ searchParams }: Props) {
       </nav>}
       {filterForm}
       <p className="text-sm text-muted-foreground">พบ {visibleCases.length} โครงการ{cases.length === 100 && " จากผลล่าสุด 100 รายการ"}</p>
-      {visibleCases.length ? <ul className={styles.list}>{visibleCases.map(sale => <li key={sale.id} className={styles.case}>
+      {visibleCases.length ? <ul className="grid gap-3">{visibleCases.map(sale => <li key={sale.id} className={styles.case}>
         <div><Link href={`/sales/${sale.id}`} prefetch={false}>{sale.code} · {sale.customer_name}</Link>
           <p className="text-sm text-muted-foreground">{brandLabels[sale.brand]}
             {!executive && (sale.responsible_id === staff.id ? " · ฉันดูแล" : " · คนอื่นดูแล")}

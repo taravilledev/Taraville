@@ -62,7 +62,7 @@ export function OverviewSection({ data, houseBrief }: { data: SummaryData; house
     </dl><p><Link href={`/leads/${sale.lead_id}`} prefetch={false}>เปิด Lead ต้นทาง</Link>{" "}<TaskLink data={data} name="edit-case" /></p></section>
     {houseBrief}
     {!sale.can_finance && <p className={noticeClass}>คุณดูข้อมูลงานได้ แต่ไม่มีสิทธิ์ดูเอกสารและข้อมูลการเงินของรายการนี้ ให้ผู้บริหารตรวจสอบสิทธิ์หากจำเป็นต้องใช้</p>}
-    {work.length > 0 && <section className={panelClass}><h2>ตรวจรับงานก่อสร้าง</h2><ul className={sale.brand === "BAAN_KUNAPAP" ? workspace.rows : styles.list}>
+    {work.length > 0 && <section className={panelClass}><h2>ตรวจรับงานก่อสร้าง</h2><ul className={sale.brand === "BAAN_KUNAPAP" ? workspace.rows : "grid gap-3"}>
       {work.map(item => sale.brand === "BAAN_KUNAPAP" ? <li key={item.id} className={workspace.card}>
         <div className={workspace.rowHeading}><strong>งวดที่ {item.position}{item.progress_percent == null ? "" : ` · ความคืบหน้า ${item.progress_percent}%`}</strong>
           <span className={workspace.status} data-done={item.accepted}>{item.accepted ? "ตรวจรับแล้ว" : "รอตรวจรับ"}</span></div>
@@ -71,7 +71,7 @@ export function OverviewSection({ data, houseBrief }: { data: SummaryData; house
         <TaskLink data={data} name="acceptance" row={item.id} /></li>)}</ul></section>}
     {managementTasks.length > 0 && <section className={panelClass} id="manage" aria-labelledby="manage-title">
       <h2 id="manage-title">{sale.brand === "BAAN_KUNAPAP" ? "จัดการโครงการ" : "จัดการรายการขาย"}</h2>
-      <ul className={`${styles.list} ${styles.managementList}`}>{managementTasks.map(task => {
+      <ul className={`grid gap-3 ${styles.managementList}`}>{managementTasks.map(task => {
         const action = managementActions[task.name];
         return <li key={task.name} data-close={task.name === "close"}>
           <Link className={`${buttonVariants({ variant: "outline", size: "auto" })} ${styles.managementLink}`} href={taskHref(sale.id, task.name)} prefetch={false}>
@@ -114,7 +114,7 @@ export function MoneySection({ data }: { data: SummaryData }) {
     {!finance.issuer_ready && <p className={noticeClass}>ยังไม่ได้ตั้งค่าบริษัทผู้ออกเอกสาร ให้ผู้บริหารตั้งค่าก่อนยืนยันรับเงินและออกใบเสร็จ</p>}
     <PendingPayments data={data} payments={finance.pending} />
     {rows.length > 0 && <section className={panelClass} id="schedule"><h2>งวดชำระตามสัญญา</h2>
-      <ul className={styles.list}>{rows.map(row => <li key={row.id}>
+      <ul className="grid gap-3">{rows.map(row => <li key={row.id}>
         <p><strong>{row.label}</strong> · สุทธิ {formatMoney(row.net_cents)} บาท{row.balance ? row.balance.outstanding_cents === "0" ? " · ครบยอดแล้ว" : ` · ค้าง ${formatMoney(row.balance.outstanding_cents)} บาท` : ""}</p>
         <p className="text-sm text-muted-foreground">ยอดงวด {formatMoney(row.gross_cents)} · หักเงินที่รับไว้ {formatMoney(row.credit_cents)} · {row.needs_acceptance ? row.accepted_at ? "ตรวจรับและลูกค้ายอมรับแล้ว" : "รอตรวจรับงานและหลักฐานลูกค้ายอมรับ" : "เงินมัดจำวันเซ็น ไม่ต้องตรวจรับงานก่อสร้าง"}</p>
         {row.balance && <p className="text-sm text-muted-foreground">รับจัดสรรแล้ว {formatMoney(row.balance.allocated_cents)} · คงเหลือ {formatMoney(row.balance.outstanding_cents)} บาท</p>}
@@ -126,7 +126,7 @@ export function MoneySection({ data }: { data: SummaryData }) {
     {findTask(data.tasks, "prepare-payment", undefined) && <section className={panelClass} id="prepare"><h2>บันทึกเงินเข้า</h2><p><TaskLink data={data} name="prepare-payment" /></p></section>}
     <details className={`${panelClass} ${styles.moneyDisclosure}`} open><summary>ประวัติใบเสร็จรับเงิน ({receiptCount})</summary>
       {!finance.documents.some(doc => doc.kind === "receipt") && <p className="text-sm text-muted-foreground">ยังไม่มีใบเสร็จ</p>}
-      <ul className={styles.list}>{finance.documents.filter(doc => doc.kind === "receipt").map(doc => <li key={doc.id}>
+      <ul className="grid gap-3">{finance.documents.filter(doc => doc.kind === "receipt").map(doc => <li key={doc.id}>
         <Link href={`/sales/documents/${doc.id}`} prefetch={false}>{doc.number} · {formatDate(doc.document_date)} · {doc.amount_cents ? `${formatMoney(doc.amount_cents)} บาท` : "—"}{doc.state === "cancelled" ? " · ยกเลิก" : ""}</Link>{" "}
         <TaskLink data={data} name="fix-receipt" row={doc.id} /></li>)}</ul>
     </details>
@@ -141,7 +141,7 @@ export function MoneySection({ data }: { data: SummaryData }) {
     </section>}
     {(finance.payments.length > 0 || refunds.length > 0) && <details className={`${panelClass} ${styles.moneyDisclosure}`} id="refunds" open><summary>คืนเงินจริง ({refunds.length})</summary>
       {!refunds.length && <p className="text-sm text-muted-foreground">ยังไม่มีคำขอคืนเงิน</p>}
-      <ul className={styles.list}>{refunds.map(refund => <li key={refund.id}>
+      <ul className="grid gap-3">{refunds.map(refund => <li key={refund.id}>
         <p>{formatMoney(refund.amount_cents)} บาท · {refundStates[refund.state]} · {refund.requested_by_name}</p>
         <p className="text-sm text-muted-foreground">{refund.reason}{refund.decision_note ? ` · ผลพิจารณา: ${refund.decision_note}` : ""}</p>
         {refund.document_id && <p><Link href={`/sales/documents/${refund.document_id}`} prefetch={false}>เปิดเอกสารจ่ายคืน</Link></p>}
