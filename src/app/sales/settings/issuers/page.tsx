@@ -8,10 +8,12 @@ import { ActionForm } from "@/app/walkin/action-form";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { saveIssuer } from "../../money-actions";
 import { SettingsLinks, SettingsShell, type SettingsPageProps } from "../settings-shell";
-import styles from "../../sales.module.css";
 import { checkRowClass } from "@/components/check-row";
 import settings from "../settings.module.css";
 import { panelClass } from "@/components/panel";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const base = "/sales/settings/issuers";
 
@@ -37,12 +39,12 @@ async function Issuers({ searchParams }: SettingsPageProps) {
     back={{ href: base, label: "บริษัทผู้ออกเอกสาร" }}>
     <section className={`${panelClass} ${settings.editor}`}>
       <ActionForm action={saveIssuer.bind(null, { brand, version: issuer?.version ?? 0, requestId: randomUUID() })} label="บันทึกบริษัทผู้ออกเอกสาร" secondaryAction={{ label: "ยกเลิก", href: base }}><div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
-          <label className={styles.field}>ชื่อนิติบุคคล / ผู้ออกเอกสาร<input name="legal_name" maxLength={300} required defaultValue={issuer?.legal_name} /></label>
-          <label className={styles.field}>เลขประจำตัวผู้เสียภาษี<input name="tax_id" maxLength={40} defaultValue={issuer?.tax_id} /></label>
-          <label className={`${styles.field} col-span-full`}>ที่อยู่<textarea name="address" required maxLength={3000} defaultValue={issuer?.address} /></label>
-          <label className={styles.field}>ข้อมูลติดต่อ<input name="contact" maxLength={500} defaultValue={issuer?.contact} /></label>
+          <Field><FieldLabel htmlFor="issuer-legal_name">ชื่อนิติบุคคล / ผู้ออกเอกสาร</FieldLabel><Input id="issuer-legal_name" name="legal_name" maxLength={300} required defaultValue={issuer?.legal_name} /></Field>
+          <Field><FieldLabel htmlFor="issuer-tax_id">เลขประจำตัวผู้เสียภาษี</FieldLabel><Input id="issuer-tax_id" name="tax_id" maxLength={40} defaultValue={issuer?.tax_id} /></Field>
+          <Field className="col-span-full"><FieldLabel htmlFor="issuer-address">ที่อยู่</FieldLabel><Textarea id="issuer-address" className="min-h-[100px]" name="address" required maxLength={3000} defaultValue={issuer?.address} /></Field>
+          <Field><FieldLabel htmlFor="issuer-contact">ข้อมูลติดต่อ</FieldLabel><Input id="issuer-contact" name="contact" maxLength={500} defaultValue={issuer?.contact} /></Field>
           <label className={checkRowClass}><input type="checkbox" name="is_synthetic" defaultChecked={issuer?.is_synthetic ?? true} />ข้อมูลทดสอบ (แสดงข้อความบนเอกสาร)</label>
-          <label className={`${styles.field} col-span-full`}>ข้อความสัญญามาตรฐาน<textarea name="contract_text" maxLength={100000} defaultValue={issuer?.contract_text} /><small className="text-sm text-muted-foreground">เว้นว่างได้ระหว่างเตรียมระบบ ต้องมีฉบับที่บริษัทอนุมัติก่อนออกสัญญาจริง</small></label>
+          <Field className="col-span-full"><FieldLabel htmlFor="issuer-contract_text">ข้อความสัญญามาตรฐาน</FieldLabel><Textarea id="issuer-contract_text" aria-describedby="issuer-contract_text-hint" name="contract_text" maxLength={100000} defaultValue={issuer?.contract_text} /><FieldDescription id="issuer-contract_text-hint">เว้นว่างได้ระหว่างเตรียมระบบ ต้องมีฉบับที่บริษัทอนุมัติก่อนออกสัญญาจริง</FieldDescription></Field>
           {brand === "BAAN_KUNAPAP" && <label className={checkRowClass}><input type="checkbox" name="contract_text_approved" />ยืนยันว่าบริษัทอนุมัติข้อความฉบับที่บันทึกนี้ให้ใช้กับธุรกรรมจริง{issuer?.contract_text_approved ? " · ข้อความที่บันทึกอยู่ได้รับอนุมัติแล้ว" : ""}</label>}
         </div></ActionForm>
     </section>

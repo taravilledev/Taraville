@@ -7,9 +7,10 @@ import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { ActionForm } from "@/app/walkin/action-form";
 import { setCapability } from "../../actions";
 import { SettingsLinks, SettingsShell, type SettingsPageProps } from "../settings-shell";
-import sales from "../../sales.module.css";
 import styles from "../settings.module.css";
 import { panelClass } from "@/components/panel";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { NativeSelect } from "@/components/ui/native-select";
 
 const base = "/sales/settings/permissions";
 const groups = {
@@ -58,8 +59,8 @@ async function Permissions({ searchParams }: SettingsPageProps) {
           <ActionForm action={setCapability} label="บันทึกสิทธิ์" inline>
             <input type="hidden" name="staff_id" value={user.id} /><input type="hidden" name="capability" value={action} /><input type="hidden" name="request_id" value={randomUUID()} />
             <div className={styles.permissionFields}>
-              <label className={sales.field}>การเข้าถึง<select name="enabled" defaultValue={String(enabled)}><option value="true">อนุญาต</option><option value="false">ไม่อนุญาต</option></select></label>
-              <label className={sales.field}>ขอบเขต<select name="scope" defaultValue={action === "catalog.manage" ? "all" : scope}>{action !== "catalog.manage" && <option value="own">เฉพาะของตน</option>}<option value="all">ทุกรายการ</option></select></label>
+              <Field><FieldLabel htmlFor={`perm-${user.id}-${action}-enabled`}>การเข้าถึง</FieldLabel><NativeSelect id={`perm-${user.id}-${action}-enabled`} name="enabled" defaultValue={String(enabled)}><option value="true">อนุญาต</option><option value="false">ไม่อนุญาต</option></NativeSelect></Field>
+              <Field><FieldLabel htmlFor={`perm-${user.id}-${action}-scope`}>ขอบเขต</FieldLabel><NativeSelect id={`perm-${user.id}-${action}-scope`} name="scope" defaultValue={action === "catalog.manage" ? "all" : scope}>{action !== "catalog.manage" && <option value="own">เฉพาะของตน</option>}<option value="all">ทุกรายการ</option></NativeSelect></Field>
             </div>
           </ActionForm>
         </section>;

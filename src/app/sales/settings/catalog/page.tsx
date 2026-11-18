@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useId } from "react";
 import { randomUUID } from "node:crypto";
 import Link from "next/link";
 import { salesBootstrap } from "@/lib/sales/queries";
@@ -11,11 +11,14 @@ import { SettingsShell, type SettingsPageProps } from "../settings-shell";
 import { catalogPage, matchesQuery, unitStatus } from "./catalog-list";
 import { setUnitActivity } from "./unit-activity";
 import { UnitForm } from "./unit-form";
-import sales from "../../sales.module.css";
 import { checkRowClass } from "@/components/check-row";
 import styles from "../settings.module.css";
 import { panelClass } from "@/components/panel";
 import { buttonVariants } from "@/components/ui/button";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Textarea } from "@/components/ui/textarea";
 
 const base = "/sales/settings/catalog";
 const statusLabels = { available: "ว่าง", reserved: "กันไว้แล้ว", inactive: "ปิดใช้งาน" };
@@ -88,12 +91,11 @@ async function Catalog({ searchParams }: SettingsPageProps) {
     </> : <Link href={editHref("new-project")} className={buttonVariants({ size: "auto" })} prefetch={false}>เพิ่มโครงการ</Link>)}>
     <form className={`${panelClass} ${styles.filters}`} action={base} role="search">
       {development && <input type="hidden" name="project" value={development.id} />}
-      <label className={sales.field}>{development ? "ค้นหาบ้าน/แปลง" : "ค้นหาโครงการ"}
-        <input type="search" name="q" maxLength={200} defaultValue={q} placeholder={development ? "เลขแปลงหรือแบบบ้าน" : "ชื่อโครงการหรือที่ตั้ง"} /></label>
-      <label className={sales.field}>สถานะ<select name="status" defaultValue={status}>
+      <Field><FieldLabel htmlFor="catalog-q">{development ? "ค้นหาบ้าน/แปลง" : "ค้นหาโครงการ"}</FieldLabel><Input id="catalog-q" type="search" name="q" maxLength={200} defaultValue={q} placeholder={development ? "เลขแปลงหรือแบบบ้าน" : "ชื่อโครงการหรือที่ตั้ง"} /></Field>
+      <Field><FieldLabel htmlFor="catalog-status">สถานะ</FieldLabel><NativeSelect id="catalog-status" name="status" defaultValue={status}>
         <option value="">ทุกสถานะ</option>
         {Object.entries(statuses).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-      </select></label>
+      </NativeSelect></Field>
       <button className={buttonVariants({ size: "auto" })}>ค้นหา</button>
       {(q || status) && <Link href={project} className={buttonVariants({ variant: "outline", size: "auto" })} prefetch={false}>ล้างตัวกรอง</Link>}
     </form>
@@ -137,11 +139,12 @@ async function Catalog({ searchParams }: SettingsPageProps) {
 }
 
 function DevelopmentForm({ development, backHref }: { development?: Development; backHref: string }) {
+  const id = useId();
   return <ActionForm action={saveDevelopment.bind(null, { id: development?.id ?? null, version: development?.version ?? null, requestId: randomUUID() })}
     label={development ? "บันทึกโครงการ" : "เพิ่มโครงการ"} secondaryAction={{ href: backHref, label: "ยกเลิก" }}>
     <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
-      <label className={sales.field}>ชื่อโครงการ<input name="name" required maxLength={200} defaultValue={development?.name} /></label>
-      <label className={`${sales.field} col-span-full`}>ที่ตั้งโครงการ<textarea name="address" maxLength={2000} defaultValue={development?.address} /></label>
+      <Field><FieldLabel htmlFor={`${id}-name`}>ชื่อโครงการ</FieldLabel><Input id={`${id}-name`} name="name" required maxLength={200} defaultValue={development?.name} /></Field>
+      <Field className="col-span-full"><FieldLabel htmlFor={`${id}-address`}>ที่ตั้งโครงการ</FieldLabel><Textarea id={`${id}-address`} className="min-h-[100px]" name="address" maxLength={2000} defaultValue={development?.address} /></Field>
     </div>
     <label className={checkRowClass}><input type="checkbox" name="is_active" defaultChecked={development?.is_active ?? true} />เปิดใช้งาน</label>
   </ActionForm>;

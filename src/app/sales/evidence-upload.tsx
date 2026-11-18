@@ -1,17 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { supabaseConfig } from "@/lib/supabase/config";
-import styles from "./sales.module.css";
 import local from "./evidence-upload.module.css";
 import { noticeClass } from "@/components/notice";
 import { buttonVariants } from "@/components/ui/button";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 const extensions: Record<string, string> = { "application/pdf": "pdf", "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 export function EvidenceUpload({ caseId, category = "payment", className, title = "หลักฐานการยอมรับ" }: {
   caseId: string; category?: "payment" | "agreement" | "refund" | "acceptance"; className?: string; title?: string;
 }) {
+  const id = useId();
   const [file, setFile] = useState<File | null>(null);
   const [path, setPath] = useState(""); const [error, setError] = useState(""); const [isPending, setPending] = useState(false);
   const isGrouped = !!className;
@@ -27,11 +30,12 @@ export function EvidenceUpload({ caseId, category = "payment", className, title 
       if (result.error) setError("แนบหลักฐานไม่ได้ กรุณาตรวจสอบสิทธิ์และลองใหม่"); else setPath(nextPath);
     } catch { setError("แนบหลักฐานไม่ได้ กรุณาลองใหม่"); } finally { setPending(false); }
   }
-  const picker = <label>{isGrouped ? "1. เลือกไฟล์หลักฐาน" : "หลักฐาน (PDF / รูปภาพ ไม่เกิน 10 MB)"}<input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" disabled={isPending}
-      onChange={event => { setFile(event.target.files?.[0] ?? null); setPath(""); setError(""); }} /></label>;
+  const picker = <Field><FieldLabel htmlFor={`${id}-file`}>{isGrouped ? "1. เลือกไฟล์หลักฐาน" : "หลักฐาน (PDF / รูปภาพ ไม่เกิน 10 MB)"}</FieldLabel>
+    <Input id={`${id}-file`} type="file" accept="application/pdf,image/jpeg,image/png,image/webp" disabled={isPending}
+      onChange={event => { setFile(event.target.files?.[0] ?? null); setPath(""); setError(""); }} /></Field>;
   const uploadButton = <button type="button" className={isGrouped ? local.upload : buttonVariants({ variant: "outline", size: "auto" })} onClick={upload} disabled={isPending || !file || !!path}>
     {isPending ? "กำลังอัปโหลด…" : path ? "อัปโหลดสำเร็จแล้ว" : isGrouped ? "2. อัปโหลดไฟล์ที่เลือก" : "อัปโหลดหลักฐาน"}</button>;
-  return <div className={`${styles.field} ${className ?? ""}`}>
+  return <div className={cn("flex min-w-0 flex-col gap-2", className)}>
     <input type="hidden" name="proof_path" value={path} />
     {isGrouped ? <>
       <div className={local.heading}><strong>{title}</strong><small>PDF / รูปภาพ · ไม่เกิน 10 MB</small></div>

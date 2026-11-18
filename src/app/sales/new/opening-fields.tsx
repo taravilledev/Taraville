@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { ActionForm } from "@/app/walkin/action-form";
 import { formatMoney } from "@/lib/sales/money";
 import { createCase } from "../actions";
@@ -11,12 +11,15 @@ import { pageHeaderClass } from "@/components/page-header";
 import dialogStyles from "@/app/walkin/walkin.module.css";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 type Unit = { id: string; developmentId: string; code: string; location: string; address: string; details: Record<string, unknown>; price: string | null };
 const detail = (unit: Unit, key: string) => typeof unit.details[key] === "string" && unit.details[key] ? unit.details[key] as string : "ยังไม่ระบุ";
 const price = (unit: Unit) => unit.price === null ? "ยังไม่ระบุ" : `${formatMoney(unit.price)} บาท`;
 
 export function OpeningFields({ units, leadId, requestId }: { units: Unit[]; leadId: string; requestId: string }) {
+  const id = useId();
   const [query, setQuery] = useState("");
   const [developmentId, setDevelopmentId] = useState("");
   const [unit, setUnit] = useState<Unit | null>(null);
@@ -30,7 +33,7 @@ export function OpeningFields({ units, leadId, requestId }: { units: Unit[]; lea
   }, [unit]);
   return <div className={styles.unitBrowser}>
     <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
-      <label className={styles.field}>ค้นหาแปลงหรือแบบบ้าน<input type="search" placeholder="เลขแปลง หรือชื่อแบบบ้าน" value={query} onChange={event => setQuery(event.target.value)} /></label>
+      <Field><FieldLabel htmlFor={`${id}-query`}>ค้นหาแปลงหรือแบบบ้าน</FieldLabel><Input id={`${id}-query`} type="search" placeholder="เลขแปลง หรือชื่อแบบบ้าน" value={query} onChange={event => setQuery(event.target.value)} /></Field>
       <SearchPicker label="โครงการ" placeholder="ทุกโครงการ" options={developments} selectedId={developmentId} onChange={setDevelopmentId} />
     </div>
     <div className={cn(pageHeaderClass, "items-center gap-2 [&_p]:m-0")}><h2>เลือกแปลงเพื่อเปิดโครงการ</h2><p role="status">{matches.length} จาก {units.length} แปลงว่าง</p></div>
