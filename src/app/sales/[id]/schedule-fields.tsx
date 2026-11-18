@@ -15,6 +15,6 @@ export function ScheduleFields() {
     </div>)}
     <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} disabled={rows.length >= 100} onClick={() => setRows(previous => [...previous,
       { id: crypto.randomUUID(), label: "งวดงานเพิ่มเติม", percent: "", progress: "" }])}>เพิ่มงวดงาน</button>
-    <p className={styles.muted}>รวมสัดส่วนต้องเป็น 100% เศษสตางค์อยู่ในงวดสุดท้าย ค่าออกแบบที่รับไว้หักจากงวดท้ายย้อนขึ้นมา</p>
+    <p className="text-sm text-muted-foreground">รวมสัดส่วนต้องเป็น 100% เศษสตางค์อยู่ในงวดสุดท้าย ค่าออกแบบที่รับไว้หักจากงวดท้ายย้อนขึ้นมา</p>
   </div>;
 }

@@ -44,9 +44,9 @@ export function EvidenceUpload({ caseId, category = "payment", className, title 
           <span className={local.fileName}>{file?.name}</span><small>พร้อมบันทึกรายการ</small></div> : uploadButton}</div>
       </div>
     </> : <>{picker}
-      {file && !path && !isPending && <small className={styles.muted}>ยังไม่ได้อัปโหลด · กด “อัปโหลดหลักฐาน” เพื่อส่งไฟล์ {file.name}</small>}
+      {file && !path && !isPending && <small className="text-sm text-muted-foreground">ยังไม่ได้อัปโหลด · กด “อัปโหลดหลักฐาน” เพื่อส่งไฟล์ {file.name}</small>}
       {uploadButton}
-      {path && <small className={styles.muted} role="status">อัปโหลดสำเร็จ · พร้อมบันทึกรายการ</small>}
+      {path && <small className="text-sm text-muted-foreground" role="status">อัปโหลดสำเร็จ · พร้อมบันทึกรายการ</small>}
     </>}
     {error && <p role="alert" className={noticeClass}>{error}</p>}
   </div>;

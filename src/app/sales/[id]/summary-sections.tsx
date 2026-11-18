@@ -75,7 +75,7 @@ export function OverviewSection({ data, houseBrief }: { data: SummaryData; house
         return <li key={task.name} data-close={task.name === "close"}>
           <Link className={`${buttonVariants({ variant: "outline", size: "auto" })} ${styles.managementLink}`} href={taskHref(sale.id, task.name)} prefetch={false}>
             <span><strong>{action?.title ?? task.label}</strong>
-              {action && <span className={styles.muted}>{action.description}</span>}
+              {action && <span className="block mt-1 text-sm font-normal text-muted-foreground">{action.description}</span>}
             </span>
             <span aria-hidden="true">→</span>
           </Link>
@@ -93,7 +93,7 @@ export function DocumentsSection({ data }: { data: SummaryData }) {
   const history = agreement.documents.filter(doc => doc.kind === "amendment" || doc.kind === "closeout");
   return <>
     {sale.brand === "TARAVILLE" && <section className={panelClass} id="summary"><h2>สรุปการจองและสัญญาขาย</h2>
-      {!summaries.length && <p className={styles.muted}>ยังไม่มีสรุปการจอง</p>}
+      {!summaries.length && <p className="text-sm text-muted-foreground">ยังไม่มีสรุปการจอง</p>}
       {summaries.map(doc => <p key={doc.id}><Link href={`/sales/documents/${doc.id}`} prefetch={false}>สรุปการจอง {doc.number} · {formatDate(doc.document_date)}</Link></p>)}
       {finance.documents.filter(doc => doc.kind === "contract").map(doc => <p key={doc.id}><Link href={`/sales/documents/${doc.id}`} prefetch={false}>สัญญาขาย {doc.number}</Link></p>)}
       <p><TaskLink data={data} name="booking-summary" /> <TaskLink data={data} name="sign-property-contract" /></p>
@@ -115,8 +115,8 @@ export function MoneySection({ data }: { data: SummaryData }) {
     {rows.length > 0 && <section className={panelClass} id="schedule"><h2>งวดชำระตามสัญญา</h2>
       <ul className={styles.list}>{rows.map(row => <li key={row.id}>
         <p><strong>{row.label}</strong> · สุทธิ {formatMoney(row.net_cents)} บาท{row.balance ? row.balance.outstanding_cents === "0" ? " · ครบยอดแล้ว" : ` · ค้าง ${formatMoney(row.balance.outstanding_cents)} บาท` : ""}</p>
-        <p className={styles.muted}>ยอดงวด {formatMoney(row.gross_cents)} · หักเงินที่รับไว้ {formatMoney(row.credit_cents)} · {row.needs_acceptance ? row.accepted_at ? "ตรวจรับและลูกค้ายอมรับแล้ว" : "รอตรวจรับงานและหลักฐานลูกค้ายอมรับ" : "เงินมัดจำวันเซ็น ไม่ต้องตรวจรับงานก่อสร้าง"}</p>
-        {row.balance && <p className={styles.muted}>รับจัดสรรแล้ว {formatMoney(row.balance.allocated_cents)} · คงเหลือ {formatMoney(row.balance.outstanding_cents)} บาท</p>}
+        <p className="text-sm text-muted-foreground">ยอดงวด {formatMoney(row.gross_cents)} · หักเงินที่รับไว้ {formatMoney(row.credit_cents)} · {row.needs_acceptance ? row.accepted_at ? "ตรวจรับและลูกค้ายอมรับแล้ว" : "รอตรวจรับงานและหลักฐานลูกค้ายอมรับ" : "เงินมัดจำวันเซ็น ไม่ต้องตรวจรับงานก่อสร้าง"}</p>
+        {row.balance && <p className="text-sm text-muted-foreground">รับจัดสรรแล้ว {formatMoney(row.balance.allocated_cents)} · คงเหลือ {formatMoney(row.balance.outstanding_cents)} บาท</p>}
         {row.invoice_document_id && <p><Link href={`/sales/documents/${row.invoice_document_id}`} prefetch={false}>เปิดใบแจ้งชำระ / สรุปเครดิต</Link></p>}
         <p><TaskLink data={data} name="acceptance" row={row.id} /> <TaskLink data={data} name="issue-invoice" row={row.id} /> <TaskLink data={data} name="prepare-instalment" row={row.id} /></p>
       </li>)}</ul>
@@ -124,7 +124,7 @@ export function MoneySection({ data }: { data: SummaryData }) {
     </section>}
     {findTask(data.tasks, "prepare-payment", undefined) && <section className={panelClass} id="prepare"><h2>บันทึกเงินเข้า</h2><p><TaskLink data={data} name="prepare-payment" /></p></section>}
     <details className={`${panelClass} ${styles.moneyDisclosure}`} open><summary>ประวัติใบเสร็จรับเงิน ({receiptCount})</summary>
-      {!finance.documents.some(doc => doc.kind === "receipt") && <p className={styles.muted}>ยังไม่มีใบเสร็จ</p>}
+      {!finance.documents.some(doc => doc.kind === "receipt") && <p className="text-sm text-muted-foreground">ยังไม่มีใบเสร็จ</p>}
       <ul className={styles.list}>{finance.documents.filter(doc => doc.kind === "receipt").map(doc => <li key={doc.id}>
         <Link href={`/sales/documents/${doc.id}`} prefetch={false}>{doc.number} · {formatDate(doc.document_date)} · {doc.amount_cents ? `${formatMoney(doc.amount_cents)} บาท` : "—"}{doc.state === "cancelled" ? " · ยกเลิก" : ""}</Link>{" "}
         <TaskLink data={data} name="fix-receipt" row={doc.id} /></li>)}</ul>
@@ -139,10 +139,10 @@ export function MoneySection({ data }: { data: SummaryData }) {
       <Link href={`/sales/documents/${closeout.document_id}`} prefetch={false}>เปิดข้อตกลงปิดงาน</Link>
     </section>}
     {(finance.payments.length > 0 || refunds.length > 0) && <details className={`${panelClass} ${styles.moneyDisclosure}`} id="refunds" open><summary>คืนเงินจริง ({refunds.length})</summary>
-      {!refunds.length && <p className={styles.muted}>ยังไม่มีคำขอคืนเงิน</p>}
+      {!refunds.length && <p className="text-sm text-muted-foreground">ยังไม่มีคำขอคืนเงิน</p>}
       <ul className={styles.list}>{refunds.map(refund => <li key={refund.id}>
         <p>{formatMoney(refund.amount_cents)} บาท · {refundStates[refund.state]} · {refund.requested_by_name}</p>
-        <p className={styles.muted}>{refund.reason}{refund.decision_note ? ` · ผลพิจารณา: ${refund.decision_note}` : ""}</p>
+        <p className="text-sm text-muted-foreground">{refund.reason}{refund.decision_note ? ` · ผลพิจารณา: ${refund.decision_note}` : ""}</p>
         {refund.document_id && <p><Link href={`/sales/documents/${refund.document_id}`} prefetch={false}>เปิดเอกสารจ่ายคืน</Link></p>}
         <p><TaskLink data={data} name="decide-refund" row={refund.id} /> <TaskLink data={data} name="pay-refund" row={refund.id} /></p>
       </li>)}</ul>

@@ -4,7 +4,6 @@ import { ArrowUpRight, ClipboardCheck, Clock, FileCheck, FileSignature, Receipt,
 import { formatDate } from "@/lib/sales/date";
 import type { ExecutiveWork } from "@/lib/sales/executive";
 import { brandLabels } from "@/lib/sales/models";
-import styles from "./sales.module.css";
 import dashboard from "./executive-dashboard.module.css";
 import { tagClass } from "@/components/tag";
 import { buttonVariants } from "@/components/ui/button";
@@ -52,7 +51,7 @@ export function ExecutiveDashboard({ rows, filters, filterForm, compact = false 
     {filterForm}
     <section aria-labelledby="projects-title" className={dashboard.projects}>
       <div className={dashboard.bar}>
-        <div><h2 id="projects-title">ติดตามโครงการ</h2><p className={styles.muted}>
+        <div><h2 id="projects-title">ติดตามโครงการ</h2><p className="text-sm text-muted-foreground">
           {active ? `${active.label} · ` : ""}{matches.length.toLocaleString("th-TH")} โครงการ
         </p></div>
         {active && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={href("")} prefetch={false}>ดูทุกโครงการ</Link>}

@@ -154,13 +154,13 @@ export function QuotationEditor({ sale, agreement, designArea, action }: {
           })}</div>
         </fieldset>
         <fieldset className={local.section}><legend>ราคาก่อสร้างที่เสนอ</legend>
-          <p className={styles.muted}>{previous?.total_cents && previous.price_set !== false && !previous.design_fee_separate
+          <p className="text-sm text-muted-foreground">{previous?.total_cents && previous.price_set !== false && !previous.design_fee_separate
             ? "กรอกราคาก่อสร้างสำหรับฉบับใหม่ ค่าออกแบบเรียกเก็บแยก"
             : "ค่าออกแบบเรียกเก็บแยกจากราคานี้"}</p>
           <label className={styles.check}><input type="checkbox" checked={priceUnset} onChange={event => setPriceUnset(event.target.checked)} />ยังไม่ระบุราคา · ฉบับประมาณราคา</label>
           {!priceUnset && <label className={`${styles.field} ${local.price}`}>ราคาก่อสร้าง (บาท)<input name="quotation_price" inputMode="decimal" value={price} maxLength={20}
             aria-invalid={!!errors.price} aria-describedby={errors.price ? "quote-error-price" : undefined} onChange={event => setPrice(event.target.value)} />{message("price")}</label>}
-          {priceUnset && <p className={styles.muted}>ต้องเพิ่มราคาในฉบับถัดไปก่อนบันทึกลูกค้ายอมรับและเตรียมสัญญา</p>}
+          {priceUnset && <p className="text-sm text-muted-foreground">ต้องเพิ่มราคาในฉบับถัดไปก่อนบันทึกลูกค้ายอมรับและเตรียมสัญญา</p>}
         </fieldset>
         <fieldset className={local.section}><legend>รายละเอียดวัสดุและขอบเขตงาน</legend>
           <div className={local.tableHead} aria-hidden="true"><span>รายการ</span><span>ประมาณราคา / รายละเอียด</span><span>หมายเหตุ</span><span /></div>

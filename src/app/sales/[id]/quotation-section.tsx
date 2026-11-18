@@ -3,7 +3,6 @@ import { formatMoney } from "@/lib/sales/money";
 import { findTask, taskHref } from "@/lib/sales/tasks";
 import type { AgreementDetail } from "@/lib/sales/agreement-models";
 import type { SummaryData } from "./summary-sections";
-import shared from "../sales.module.css";
 import styles from "./quotation-section.module.css";
 import { WorkspaceHeading } from "./workspace-heading";
 import { buttonVariants } from "@/components/ui/button";
@@ -51,15 +50,15 @@ export function QuotationSection({ data }: { data: SummaryData }) {
             {!hasPrice(latest) ? "จัดทำฉบับใหม่พร้อมราคา" : "จัดทำฉบับใหม่"}</Link>}
           {accepted.length > 0 && <Link className={buttonVariants({ size: "auto" })} href={`/sales/${sale.id}?tab=contract`} prefetch={false}>ไปสัญญา →</Link>}
         </div>
-        {issue && <p className={shared.muted}>ฉบับใหม่เริ่มจากข้อมูลฉบับล่าสุด โดยเก็บฉบับเดิมไว้</p>}
-        {!issue && !accept && !accepted.length && !historyActions && <p className={shared.muted}>ขณะนี้บัญชีนี้ไม่มีงานแก้ไขหรือยอมรับที่ทำได้ตามสิทธิ์และสถานะโครงการ</p>}
+        {issue && <p className="text-sm text-muted-foreground">ฉบับใหม่เริ่มจากข้อมูลฉบับล่าสุด โดยเก็บฉบับเดิมไว้</p>}
+        {!issue && !accept && !accepted.length && !historyActions && <p className="text-sm text-muted-foreground">ขณะนี้บัญชีนี้ไม่มีงานแก้ไขหรือยอมรับที่ทำได้ตามสิทธิ์และสถานะโครงการ</p>}
       </div>
     </article> : <div className={styles.latest}><h3>ยังไม่มีใบเสนอราคา</h3><p>{hint}</p>
       {issue ? <Link className={buttonVariants({ size: "auto" })} href={taskHref(sale.id, issue.name)} prefetch={false}>จัดทำใบเสนอราคา</Link>
-        : <p className={shared.muted}>รอผู้มีสิทธิ์จัดทำใบเสนอราคา</p>}</div>}
+        : <p className="text-sm text-muted-foreground">รอผู้มีสิทธิ์จัดทำใบเสนอราคา</p>}</div>}
     {acceptedOlder.map(doc => <article key={doc.id} className={styles.accepted}>
       <div><h3>ฉบับที่ลูกค้ายอมรับ · ฉบับที่ {doc.revision}</h3><p>{doc.number ?? "ใบเสนอราคา"} · {amount(doc)}</p>
-        <p className={shared.muted}>การยอมรับนี้เป็นของฉบับที่ {doc.revision} แยกจากฉบับล่าสุด</p></div>{open(doc)}
+        <p className="text-sm text-muted-foreground">การยอมรับนี้เป็นของฉบับที่ {doc.revision} แยกจากฉบับล่าสุด</p></div>{open(doc)}
     </article>)}
     {history.length > 0 && <details className={styles.history}>
       <summary>ประวัติฉบับก่อน · {history.length} ฉบับ{historyActions > 0 && ` · บันทึกลูกค้ายอมรับได้ ${historyActions} ฉบับ`}</summary>

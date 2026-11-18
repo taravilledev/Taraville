@@ -22,7 +22,7 @@ export function CaseForm({ sale, requestId }: { sale: SalesCase; requestId: stri
       <label className={styles.field}>พื้นที่ใช้สอย (ตร.ม.)<input name="usable_area" inputMode="decimal" maxLength={20} defaultValue={detail("usable_area")} /></label>
       <label className={styles.field}>เนื้อที่ดิน (ตร.ว.)<input name="land_area" inputMode="decimal" maxLength={20} defaultValue={detail("land_area")} /></label>
       <label className={styles.field}>ราคาขาย (บาท)<input name="list_price" inputMode="decimal" defaultValue={money(sale.list_price_cents)} /></label>
-      <label className={styles.field}>ราคาโปรโมชั่น (บาท)<input name="promotion_price" inputMode="decimal" defaultValue={money(sale.promotion_price_cents)} /><small className={styles.muted}>เว้นว่างเพื่อใช้ราคาขาย ยอด 0 หมายถึงราคาโปรโมชั่น 0 บาท</small></label>
+      <label className={styles.field}>ราคาโปรโมชั่น (บาท)<input name="promotion_price" inputMode="decimal" defaultValue={money(sale.promotion_price_cents)} /><small className="text-sm text-muted-foreground">เว้นว่างเพื่อใช้ราคาขาย ยอด 0 หมายถึงราคาโปรโมชั่น 0 บาท</small></label>
       <label className={styles.field}>ส่วนลดเพิ่มเติม (บาท)<input name="discount" inputMode="decimal" defaultValue={money(sale.discount_cents)} /></label>
       <label className={`${styles.field} col-span-full`}>หมายเหตุ<textarea name="notes" maxLength={5000} defaultValue={detail("notes")} /></label>
     </div>

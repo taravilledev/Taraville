@@ -29,7 +29,7 @@ export function CancelDesignInvoiceTask({ sale, finance, row }: TaskData) {
   if (!bill || bill.pending_id || bill.has_confirmed_payment || BigInt(bill.received_cents) > BigInt(0)) return null;
   return <ActionForm action={cancelDesignInvoice.bind(null, idOf(sale, bill.id, finance?.version))} label="ยืนยันยกเลิกใบแจ้งชำระ">
     <p>{bill.label} · {formatMoney(bill.amount_cents)} บาท</p>
-    <p className={styles.muted}>บิลเดิมยังอยู่ในประวัติ การยกเลิกบิลนี้ไม่ลบรายการรับเงินจริง และไม่ได้ปลดล็อกแพ็กเกจที่เคยรับเงินแล้ว</p>
+    <p className="text-sm text-muted-foreground">บิลเดิมยังอยู่ในประวัติ การยกเลิกบิลนี้ไม่ลบรายการรับเงินจริง และไม่ได้ปลดล็อกแพ็กเกจที่เคยรับเงินแล้ว</p>
     <label className={styles.field}>เหตุผลที่ยกเลิก<textarea name="reason" maxLength={1000} required /></label>
     <label className={styles.check}><input type="checkbox" name="confirmed" required />ยืนยันยกเลิกใบแจ้งชำระฉบับนี้</label>
   </ActionForm>;

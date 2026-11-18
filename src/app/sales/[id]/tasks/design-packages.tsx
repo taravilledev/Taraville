@@ -72,9 +72,9 @@ export function DesignPackages({ initialArea, plan }: {
             <dt>{milestones[index]}</dt>
             <dd>{isEditing ? amountInput(index) : `${number.format(amount)} บาท`}</dd>
           </div>)}</dl>
-          {isEditing && enteredTotal && <p className={styles.muted}>รวมยอดงวด {enteredTotal} บาท</p>}
+          {isEditing && enteredTotal && <p className="text-sm text-muted-foreground">รวมยอดงวด {enteredTotal} บาท</p>}
           {isEditing && error && <p className={styles.designError} role="alert">{error}</p>}
-          {item.id !== "under150" && <small className={styles.muted}>รวมรายการคำนวณวิศวกร</small>}
+          {item.id !== "under150" && <small className="text-sm text-muted-foreground">รวมรายการคำนวณวิศวกร</small>}
         </div>;
       })}</div>
       {!areaTier && <label className={styles.check}><input type="radio" name="design_package" value="custom" checked={tier === "custom"} required onChange={() => setChoice("custom")} />กำหนดแพ็กเกจเฉพาะงาน</label>}
@@ -82,10 +82,10 @@ export function DesignPackages({ initialArea, plan }: {
     <label className={styles.field}>พื้นที่ใช้สอยจริง (ตร.ม.)
       <input name="usable_area" inputMode="decimal" pattern={designAreaPattern} required value={area} disabled={!tier && !area}
         onChange={event => setArea(event.target.value)} placeholder="เช่น 175.5" />
-      <small className={styles.muted}>ต้องกรอกพื้นที่ใช้สอยจริงก่อนบันทึกและไปขั้นต่อไป ระบบจะเปลี่ยนแพ็กเกจเมื่อพื้นที่อยู่คนละช่วง</small>
+      <small className="text-sm text-muted-foreground">ต้องกรอกพื้นที่ใช้สอยจริงก่อนบันทึกและไปขั้นต่อไป ระบบจะเปลี่ยนแพ็กเกจเมื่อพื้นที่อยู่คนละช่วง</small>
     </label>
-    {areaTier && <p className={styles.muted} role="status">{selected ? `พื้นที่ ${area} ตร.ม. อยู่ในช่วง ${selected.range}` : `พื้นที่ ${area} ตร.ม. ใช้ข้อตกลงค่าออกแบบเฉพาะงาน`}</p>}
-    <p className={styles.muted}>สิ่งที่ได้รับทุกแพ็กเกจมาตรฐาน ได้แก่ แบบแปลน, 3D, แบบขออนุญาตก่อสร้าง และ BOQ สำหรับยื่นธนาคาร</p>
+    {areaTier && <p className="text-sm text-muted-foreground" role="status">{selected ? `พื้นที่ ${area} ตร.ม. อยู่ในช่วง ${selected.range}` : `พื้นที่ ${area} ตร.ม. ใช้ข้อตกลงค่าออกแบบเฉพาะงาน`}</p>}
+    <p className="text-sm text-muted-foreground">สิ่งที่ได้รับทุกแพ็กเกจมาตรฐาน ได้แก่ แบบแปลน, 3D, แบบขออนุญาตก่อสร้าง และ BOQ สำหรับยื่นธนาคาร</p>
     <input type="hidden" name="tier" value={tier} />
     {(tier === "custom" || (override && selected)) && <input type="hidden" name="custom" value="on" />}
     {tier === "custom" && <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">

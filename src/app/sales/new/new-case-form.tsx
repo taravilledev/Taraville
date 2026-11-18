@@ -35,6 +35,6 @@ export function NewCaseForm({ workspace, lead, projects, projectId, requestId }:
       </select></label>
       <input type="hidden" name="customer_id" value="" />
     </div>
-    <p className={styles.muted}>เปิดเป็นร่างสำหรับโครงการที่เลือก สามารถกรอกข้อมูลต่อได้หลังเปิดโครงการ</p>
+    <p className="text-sm text-muted-foreground">เปิดเป็นร่างสำหรับโครงการที่เลือก สามารถกรอกข้อมูลต่อได้หลังเปิดโครงการ</p>
   </ActionForm>;
 }

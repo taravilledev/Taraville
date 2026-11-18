@@ -126,7 +126,7 @@ async function Catalog({ searchParams }: SettingsPageProps) {
         </table>}
       </div>}
     <footer className={styles.footer}>
-      <p className={sales.muted}>{development ? units?.length : developments.length} รายการ{page.pages > 1 && ` · หน้า ${page.page} จาก ${page.pages}`}</p>
+      <p className="text-sm text-muted-foreground">{development ? units?.length : developments.length} รายการ{page.pages > 1 && ` · หน้า ${page.page} จาก ${page.pages}`}</p>
       {page.pages > 1 && <nav className="flex flex-wrap items-center gap-3" aria-label="หน้ารายการ">
         {page.page > 1 && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={listHref(page.page - 1)} prefetch={false}>ก่อนหน้า</Link>}
         {page.page < page.pages && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={listHref(page.page + 1)} prefetch={false}>ถัดไป</Link>}

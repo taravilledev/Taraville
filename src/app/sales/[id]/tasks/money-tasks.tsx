@@ -14,8 +14,8 @@ export function PreparePaymentTask({ sale, finance }: TaskData) {
     { value: "unallocated", label: "เงินเข้าที่ยังไม่ระบุงวด" },
   ];
   return <>
-    {sale.brand === "BAAN_KUNAPAP" && <p className={styles.muted}>รับค่าออกแบบผ่านบิลรายงวดในหน้าการเงิน</p>}
-    {sale.brand === "TARAVILLE" && sale.status === "reserved" && <p className={styles.muted}>ก่อนเตรียมรับเงินจอง ให้บันทึกยอดจองในสรุปการจองของแปลงและราคาปัจจุบัน</p>}
+    {sale.brand === "BAAN_KUNAPAP" && <p className="text-sm text-muted-foreground">รับค่าออกแบบผ่านบิลรายงวดในหน้าการเงิน</p>}
+    {sale.brand === "TARAVILLE" && sale.status === "reserved" && <p className="text-sm text-muted-foreground">ก่อนเตรียมรับเงินจอง ให้บันทึกยอดจองในสรุปการจองของแปลงและราคาปัจจุบัน</p>}
     <PaymentPaper brand={sale.brand} mode="receipt" action={preparePayment.bind(null, idOf(sale, sale.id, finance?.version))} caseId={sale.id}
       customerPhone={sale.customer_snapshot?.phone} salesperson={sale.customer_snapshot?.salesperson}
       customerName={sale.customer_name} customerAddress={sale.customer_snapshot?.address} label="เงินเข้าที่ยังไม่ระบุงวด"
@@ -78,7 +78,7 @@ export function IssueInvoiceTask({ sale, agreement, row }: TaskData) {
   const hasAcceptanceDue = sale.brand === "BAAN_KUNAPAP" && item.needs_acceptance && contract?.payload.contract_paper?.payment_due_days === 30;
   if (hasAcceptanceDue && (!item.acceptance_date || !item.due_date)) return <p className={noticeClass}>ยังไม่มีวันที่ตรวจรับจริงและวันครบกำหนดของงวดนี้ กรุณาตรวจข้อมูลการตรวจรับก่อนออกบิล</p>;
   return <>
-    {item.net_cents === "0" && <p className={styles.muted}>ชำระครบด้วยเครดิตเดิม ไม่รับเงินใหม่และไม่ออกใบเสร็จซ้ำ</p>}
+    {item.net_cents === "0" && <p className="text-sm text-muted-foreground">ชำระครบด้วยเครดิตเดิม ไม่รับเงินใหม่และไม่ออกใบเสร็จซ้ำ</p>}
     <PaymentPaper brand={sale.brand} mode="invoice" action={issueInvoice.bind(null, idOf(sale, item.id))} caseId={sale.id}
       customerName={sale.customer_name} customerAddress={sale.customer_snapshot?.address} label={item.label} amountCents={item.net_cents}
       customerPhone={sale.customer_snapshot?.phone} salesperson={sale.customer_snapshot?.salesperson}

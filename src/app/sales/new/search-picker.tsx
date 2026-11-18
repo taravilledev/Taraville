@@ -58,7 +58,7 @@ export function SearchPicker({ label, placeholder, options, selectedId, onChange
       {matches.map((item, index) => <li key={item.id} id={`${listId}-${index}`} role="option" aria-selected={item.id === selectedId} data-active={index === activeIndex}>
         <button type="button" tabIndex={-1} onMouseDown={event => event.preventDefault()} onClick={() => select(item.id)}><strong>{item.label}</strong>{item.detail && <span>{item.detail}</span>}</button>
       </li>)}
-      {!matches.length && <li className={styles.muted}>ไม่พบ{label}ที่ตรงกับคำค้น</li>}
+      {!matches.length && <li className="text-sm text-muted-foreground">ไม่พบ{label}ที่ตรงกับคำค้น</li>}
     </ul>}
   </div>;
 }

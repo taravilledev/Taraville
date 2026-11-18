@@ -9,7 +9,6 @@ import { findTask, taskHref, taskLabels, type Task } from "@/lib/sales/tasks";
 import { formatMoney } from "@/lib/sales/money";
 import { bkpFlowStages, bkpWorkflow } from "@/lib/sales/bkp-workflow";
 import styles from "./bkp-progress.module.css";
-import shared from "../sales.module.css";
 import { buttonVariants } from "@/components/ui/button";
 
 type Props = { sale: SalesCase; finance: FinancialDetail; agreement: AgreementDetail; progress: ProjectProgress;
@@ -38,7 +37,7 @@ export function BkpProgress({ sale, finance, agreement, progress, step, tasks, a
       {item.done && documentHref && <Link className={styles.documentLink} href={documentHref} prefetch={false}>ดูเอกสาร</Link>}</li>;
   })}</ul>;
   return <section className={styles.card} aria-labelledby="project-progress">
-    <div className={styles.heading}><div><p className={shared.muted}>งานขายและรับชำระ · ช่วงที่ {progress.current + 1} จาก {progress.steps.length}</p>
+    <div className={styles.heading}><div><p className="text-sm text-muted-foreground">งานขายและรับชำระ · ช่วงที่ {progress.current + 1} จาก {progress.steps.length}</p>
       <h2 id="project-progress">{agreement.is_settled ? "ชำระครบทุกงวดแล้ว" : `สถานะโครงการ · ${progress.steps[progress.current]}`}</h2></div></div>
     <ol className={styles.stages} aria-label="ความคืบหน้างานขายและรับชำระ">{progress.steps.map((label, index) => {
       const done = index === 4 ? agreement.is_settled : checklist.milestones[index];
@@ -47,21 +46,21 @@ export function BkpProgress({ sale, finance, agreement, progress, step, tasks, a
           <small>{done ? "เสร็จแล้ว" : index === progress.current ? "กำลังดำเนินการ" : "รอดำเนินการ"}</small></span></li>;
     })}</ol>
     {step && <div className={styles.action}>
-      <div><p className={shared.muted}>{isCurrentTask ? "กำลังทำรายการนี้" : step.kind === "done" ? "สถานะล่าสุด" : "งานที่ต้องทำตอนนี้"}</p>
+      <div><p className="text-sm text-muted-foreground">{isCurrentTask ? "กำลังทำรายการนี้" : step.kind === "done" ? "สถานะล่าสุด" : "งานที่ต้องทำตอนนี้"}</p>
         <h3>{step.title}</h3>{step.hint && <p>{step.hint}</p>}
-        {!step.allowed && <p className={shared.muted}>รอผู้มีสิทธิ์ดำเนินการ บัญชีของคุณไม่มีสิทธิ์ทำรายการนี้</p>}</div>
+        {!step.allowed && <p className="text-sm text-muted-foreground">รอผู้มีสิทธิ์ดำเนินการ บัญชีของคุณไม่มีสิทธิ์ทำรายการนี้</p>}</div>
       {step.kind !== "done" && step.allowed && !isCurrentTask && <Link className={buttonVariants({ size: "auto" })} href={href} prefetch={false}>
         {step.task ? taskLabels[step.task] : step.title}</Link>}
     </div>}
     <div className={styles.body}>
       <div><h3>{isCollecting ? row ? `ติดตามงวด · ${row.label}` : "งวดชำระตามสัญญา" : "รายการงานก่อนรับชำระตามสัญญา"}</h3>
-        {isCollecting && row && <p className={shared.muted}>ยอดสุทธิ {formatMoney(row.net)} · คงเหลือ {formatMoney(row.outstanding)} บาท</p>}
-        {isCollecting ? row ? items(row.checks) : <p className={shared.muted}>ยังไม่มีข้อมูลงวดชำระ</p> : items(checklist.preparation)}
+        {isCollecting && row && <p className="text-sm text-muted-foreground">ยอดสุทธิ {formatMoney(row.net)} · คงเหลือ {formatMoney(row.outstanding)} บาท</p>}
+        {isCollecting ? row ? items(row.checks) : <p className="text-sm text-muted-foreground">ยังไม่มีข้อมูลงวดชำระ</p> : items(checklist.preparation)}
       </div>
       {isCollecting && checklist.rows.length > 0 && <details className={styles.details}>
         <summary>ดูทุกงวด · เสร็จ {checklist.rows.filter(item => item.done).length} จาก {checklist.rows.length} งวด</summary>
         <ol className={styles.rows}>{checklist.rows.map(item => <li key={item.id}><h4>{item.label}</h4>
-          <p className={shared.muted}>ยอดสุทธิ {formatMoney(item.net)} · คงเหลือ {formatMoney(item.outstanding)} บาท</p>{items(item.checks)}</li>)}</ol>
+          <p className="text-sm text-muted-foreground">ยอดสุทธิ {formatMoney(item.net)} · คงเหลือ {formatMoney(item.outstanding)} บาท</p>{items(item.checks)}</li>)}</ol>
       </details>}
     </div>
     <div className={styles.shortcuts}>

@@ -22,7 +22,7 @@ export function CaseHeader({ sale, summary, step, workflow, navigation, showProg
   const money = (value: string | null) => value === null ? "—" : `${formatMoney(value)} บาท`;
   return <>
     <div className={styles.header}>
-      <div><p className={styles.muted}>{brandLabels[sale.brand]}{sale.unit_label ? ` · ${sale.unit_label}` : ""}</p><h1>{sale.code} · {sale.customer_name}</h1></div>
+      <div><p className="text-sm text-muted-foreground">{brandLabels[sale.brand]}{sale.unit_label ? ` · ${sale.unit_label}` : ""}</p><h1>{sale.code} · {sale.customer_name}</h1></div>
       <div className="flex flex-wrap items-center gap-3"><span className={tagClass}>{caseStatusLabels[sale.status]}</span><Link className={buttonVariants({ variant: "outline", size: "auto" })} href="/dashboard" prefetch={false}>กลับแดชบอร์ด</Link></div>
     </div>
     {navigation}
@@ -40,11 +40,11 @@ export function CaseHeader({ sale, summary, step, workflow, navigation, showProg
 function NextStepCard({ sale, step }: { sale: SalesCase; step: NextStep | null }) {
   if (!step) return null;
   return <section className={styles.next} data-done={step.kind === "done"} aria-labelledby="next-step">
-    <p className={styles.muted}>{step.kind === "done" ? "สถานะ" : "ขั้นต่อไป"}</p>
+    <p className="text-sm text-muted-foreground">{step.kind === "done" ? "สถานะ" : "ขั้นต่อไป"}</p>
     <h2 id="next-step">{step.title}</h2>
-    {step.hint && <p className={styles.muted}>{step.hint}</p>}
+    {step.hint && <p className="text-sm text-muted-foreground">{step.hint}</p>}
     {step.kind !== "done" && step.allowed && <Link className={buttonVariants({ size: "auto" })} prefetch={false}
       href={step.task ? taskHref(sale.id, step.task, step.row) : `/sales/${sale.id}?tab=${step.tab}${step.anchor ? `#${step.anchor}` : ""}`}>{step.kind === "reserve" ? "ยืนยันจองแปลง" : "ไปทำขั้นนี้"}</Link>}
-    {!step.allowed && <p className={styles.muted}>รอผู้มีสิทธิ์ดำเนินการขั้นนี้ บัญชีของคุณไม่มีสิทธิ์</p>}
+    {!step.allowed && <p className="text-sm text-muted-foreground">รอผู้มีสิทธิ์ดำเนินการขั้นนี้ บัญชีของคุณไม่มีสิทธิ์</p>}
   </section>;
 }

@@ -65,7 +65,7 @@ export function ReleaseTask({ sale }: TaskData) {
 
 export function RequestRefundTask({ sale, finance }: TaskData) {
   return <ActionForm action={requestRefund.bind(null, idOf(sale))} label="ส่งคำขอคืนเงิน"><div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
-    <p className={`${styles.muted} col-span-full`}>คำขอและการอนุมัติยังไม่ใช่การจ่ายคืน ต้องมีผู้ใช้อีกคนอนุมัติและบันทึกการจ่ายจริงพร้อมหลักฐาน เงินที่เป็นเครดิตสัญญาแล้วต้องแก้ข้อตกลงเครดิตก่อนจ่ายคืน</p>
+    <p className="text-sm text-muted-foreground col-span-full">คำขอและการอนุมัติยังไม่ใช่การจ่ายคืน ต้องมีผู้ใช้อีกคนอนุมัติและบันทึกการจ่ายจริงพร้อมหลักฐาน เงินที่เป็นเครดิตสัญญาแล้วต้องแก้ข้อตกลงเครดิตก่อนจ่ายคืน</p>
     <label className={`${styles.field} col-span-full`}>คืนจากยอดรับ<select name="payment_id" required defaultValue="">
       <option value="" disabled>เลือกยอดรับ</option>
       {(finance?.payments ?? []).map(payment => <option key={payment.id} value={payment.id}>

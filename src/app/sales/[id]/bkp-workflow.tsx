@@ -33,7 +33,7 @@ export function BkpOverview({ data, step }: { data: SummaryData; step: NextStep 
     <WorkspaceHeading caseId={sale.id} title="ภาพรวมโครงการ" description="มูลค่า ความคืบหน้า และงานที่ต้องทำต่อของโครงการนี้" />
     {data.summary && <dl className={`${shared.summary} ${workspace.overviewTotals}`}>
       <div><dt>มูลค่าโครงการ (ราคาสุทธิ)</dt><dd>{projectValue === null ? "ยังไม่ระบุ" : `${formatMoney(projectValue)} บาท`}
-        {construction !== null && design !== null && <p className={shared.muted}>ค่าก่อสร้าง {formatMoney(construction)} + ค่าออกแบบ {formatMoney(design)} บาท</p>}</dd></div>
+        {construction !== null && design !== null && <p className="text-sm text-muted-foreground">ค่าก่อสร้าง {formatMoney(construction)} + ค่าออกแบบ {formatMoney(design)} บาท</p>}</dd></div>
       <div><dt>รับแล้วหลังหักคืนเงิน</dt><dd>{formatMoney(data.summary.received)} บาท</dd></div>
       <div><dt>{hasSeparateDesignFee && !data.closeout ? "ค้างชำระค่าก่อสร้าง" : "ค้างชำระ"}</dt><dd>{outstanding === null ? "ยังไม่ระบุ" : `${formatMoney(outstanding)} บาท`}</dd></div>
     </dl>}
@@ -48,8 +48,8 @@ export function BkpOverview({ data, step }: { data: SummaryData; step: NextStep 
     </section>}
     <section className={`${panelClass} ${styles.context}`}>
       <div><h2>งานถัดไป</h2><p>{step?.title ?? "ไม่มีงานถัดไปในขณะนี้"}</p>
-        {step?.hint && <p className={shared.muted}>{step.hint}</p>}
-        {step && !step.allowed && <p className={shared.muted}>รอผู้มีสิทธิ์ดำเนินการ</p>}
+        {step?.hint && <p className="text-sm text-muted-foreground">{step.hint}</p>}
+        {step && !step.allowed && <p className="text-sm text-muted-foreground">รอผู้มีสิทธิ์ดำเนินการ</p>}
       </div>
       {step?.allowed && step.kind !== "done" && (!step.task || task) && <Link className={buttonVariants({ size: "auto" })} prefetch={false}
         href={task && !isFinanceStep ? taskHref(sale.id, task.name, task.row) : `/sales/${sale.id}?tab=${step.tab}${step.anchor ? `#${step.anchor}` : ""}`}>

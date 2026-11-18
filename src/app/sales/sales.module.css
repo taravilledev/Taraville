@@ -21,13 +21,11 @@
 .managementList { grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); margin-top: var(--space-3); }
 .managementList li[data-close="true"] { grid-column: 1 / -1; }
 .managementLink { display: flex; width: 100%; height: 100%; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) var(--space-4); }
-.managementLink strong, .managementLink .muted { display: block; }
-.managementLink .muted { margin-top: var(--space-1); font-weight: 400; }
+.managementLink strong { display: block; }
 .managementLink:hover { border-color: var(--primary); background: var(--tint); }
 .managementList li[data-close="true"] strong { color: var(--danger-ink); }
 .case { display: grid; grid-template-columns: 1fr auto; gap: var(--space-3); align-items: center; padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--paper); }
 .case a { color: var(--ink); text-underline-offset: var(--space-1); font-weight: 700; }
-.muted { color: var(--muted-foreground); font-size: var(--text-sm); }
 .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
 .facts div { min-width: 0; overflow-wrap: anywhere; }
 .facts dt { color: var(--muted-foreground); font-size: var(--text-sm); }
@@ -58,7 +56,7 @@
 
 .houseBrief { display: grid; gap: var(--space-3); }
 .houseBriefHeader { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-3); }
-.houseBrief h2, .houseBrief p.muted, .houseBriefFacts { margin: 0; }
+.houseBrief h2, .houseBriefFacts { margin: 0; }
 .houseBriefFacts { grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); }
 .houseBriefFacts dd { white-space: pre-wrap; }
 .houseBriefGroup { min-width: 0; margin: 0; padding: 0; border: 0; }

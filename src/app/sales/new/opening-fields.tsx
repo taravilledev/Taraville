@@ -45,7 +45,7 @@ export function OpeningFields({ units, leadId, requestId }: { units: Unit[]; lea
       </table>
       <ul className={styles.unitCards}>{matches.map(item => <li key={item.id}>
         <button type="button" className={styles.unitCard} aria-haspopup="dialog" onClick={() => setUnit(item)}>
-          <strong>แปลง {item.code}</strong><span className={styles.muted}>{item.location}</span><span>{detail(item, "model")}</span>
+          <strong>แปลง {item.code}</strong><span className="text-sm text-muted-foreground">{item.location}</span><span>{detail(item, "model")}</span>
           <span className={styles.unitCardFooter}><strong>{price(item)}</strong><span>ดูรายละเอียด →</span></span>
         </button>
       </li>)}</ul>

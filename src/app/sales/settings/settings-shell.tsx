@@ -2,7 +2,6 @@ import type { ComponentProps, ReactNode } from "react";
 import Link from "next/link";
 import { AppShell } from "@/app/walkin/app-shell";
 import type { SalesBootstrap } from "@/lib/sales/models";
-import sales from "../sales.module.css";
 import styles from "./settings.module.css";
 
 const root = "/sales/settings";
@@ -40,7 +39,7 @@ export function SettingsShell({ staff, workspace, section, title, description, b
     </aside>
     <div className={styles.content}>
       <header className={styles.header}>
-        <Link className={sales.muted} href={returnLink.href} prefetch={false}>← {returnLink.label}</Link>
+        <Link className="text-sm text-muted-foreground" href={returnLink.href} prefetch={false}>← {returnLink.label}</Link>
         <div className={styles.titleRow}><div><h1>{title}</h1>{description && <p>{description}</p>}</div>{actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}</div>
       </header>
       {children}

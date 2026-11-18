@@ -28,7 +28,7 @@ export function HouseBriefPanel({ sale, task, tab }: { sale: SalesCase; task?: T
   const summary = filledFields.length > 0
     ? <dl className={`${styles.facts} ${styles.houseBriefFacts}`}>{filledFields.map(({ key, label }) =>
       <div key={key} className={key === "layout" ? "col-span-full" : undefined}><dt>{label}</dt><dd>{brief[key]}</dd></div>)}</dl>
-    : <p className={styles.muted}>ยังไม่ได้ระบุความต้องการบ้าน</p>;
+    : <p className="text-sm text-muted-foreground">ยังไม่ได้ระบุความต้องการบ้าน</p>;
 
   return <section className={`${panelClass} ${styles.houseBrief}`} aria-labelledby="house-brief">
     {canEdit ? <HouseBriefEditor key={`${sale.id}:${sale.version}`}

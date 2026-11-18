@@ -89,10 +89,10 @@ async function Workspace({ searchParams }: Props) {
     {executive && <p className={noticeClass} role="status">โหลดแดชบอร์ดผู้บริหารไม่ได้ รายการงานด้านล่างยังใช้งานได้</p>}
     <section className={panelClass} id="queue" aria-labelledby="queue-title"><h2 id="queue-title">งานรอทำ</h2>
       {!queue ? <p className={noticeClass} role="status">โหลดงานรอทำไม่ได้ ลองรีเฟรชหน้านี้ รายการทั้งหมดด้านล่างยังใช้ได้</p>
-        : !queue.length ? <p className={styles.muted}>ไม่มีงานที่รอคุณดำเนินการ</p>
+        : !queue.length ? <p className="text-sm text-muted-foreground">ไม่มีงานที่รอคุณดำเนินการ</p>
         : <ul className={styles.list}>{queue.map(item => <li key={`${item.case_id}:${item.kind}`} className={styles.case}>
           <div><Link href={`/sales/${item.case_id}?tab=money#${item.kind === "acceptance" ? "schedule" : item.kind === "payment_pending" ? "pending" : "refunds"}`} prefetch={false}>{item.code}{item.customer_name ? ` · ${item.customer_name}` : ""}</Link>
-            <p className={styles.muted}>{workQueueKinds[item.kind]} {item.count} รายการ · รอตั้งแต่ {new Date(item.since).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })}</p></div>
+            <p className="text-sm text-muted-foreground">{workQueueKinds[item.kind]} {item.count} รายการ · รอตั้งแต่ {new Date(item.since).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })}</p></div>
           <span className={tagClass}>{brandLabels[item.brand]}</span></li>)}</ul>}
     </section>
     <section className="grid gap-6" id="dashboard-projects" aria-labelledby="dashboard-projects-title">
@@ -104,16 +104,16 @@ async function Workspace({ searchParams }: Props) {
           </Link>)}
       </nav>}
       {filterForm}
-      <p className={styles.muted}>พบ {visibleCases.length} โครงการ{cases.length === 100 && " จากผลล่าสุด 100 รายการ"}</p>
+      <p className="text-sm text-muted-foreground">พบ {visibleCases.length} โครงการ{cases.length === 100 && " จากผลล่าสุด 100 รายการ"}</p>
       {visibleCases.length ? <ul className={styles.list}>{visibleCases.map(sale => <li key={sale.id} className={styles.case}>
         <div><Link href={`/sales/${sale.id}`} prefetch={false}>{sale.code} · {sale.customer_name}</Link>
-          <p className={styles.muted}>{brandLabels[sale.brand]}
+          <p className="text-sm text-muted-foreground">{brandLabels[sale.brand]}
             {!executive && (sale.responsible_id === staff.id ? " · ฉันดูแล" : " · คนอื่นดูแล")}
             {sale.detail && sale.detail !== sale.code ? ` · ${sale.detail}` : ""} · {sale.can_finance ? "ดูข้อมูลการเงินได้" : "ดูข้อมูลงาน"}
           </p></div>
         <span className={tagClass}>{caseStatusLabels[sale.status]}</span>
       </li>)}</ul> : ownership !== "all"
-        ? <p className={styles.muted}>{ownership === "mine" ? "ไม่พบโครงการที่คุณดูแลในรายการนี้" : "ไม่พบโครงการของคนอื่นที่คุณมีสิทธิ์ดูในรายการนี้"}</p>
+        ? <p className="text-sm text-muted-foreground">{ownership === "mine" ? "ไม่พบโครงการที่คุณดูแลในรายการนี้" : "ไม่พบโครงการของคนอื่นที่คุณมีสิทธิ์ดูในรายการนี้"}</p>
         : filtered ? <section className={panelClass}><h3>ไม่พบรายการตามตัวกรอง</h3><p>ลองเปลี่ยนคำค้นหรือเลือกสถานะทั้งหมด</p></section>
         : <section className={panelClass}><h3>ยังไม่มีรายการที่คุณดูได้</h3><p>เริ่มเปิดงานจาก Lead หรือให้ผู้บริหารตรวจสอบสิทธิ์ของคุณ</p><Link href="/leads" prefetch={false}>ไปที่รายการ Lead</Link></section>}
     </section>
