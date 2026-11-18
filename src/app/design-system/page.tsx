@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { salesBootstrap } from "@/lib/sales/queries";
 import { AppShell } from "@/app/walkin/app-shell";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
+import { Primitives } from "./primitives";
 
 export const metadata = { title: "Design system · Taraville Group", robots: { index: false, follow: false } };
 
@@ -27,7 +28,7 @@ async function DesignSystem() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-title font-bold">Design system</h1>
-        <p className="text-muted-foreground">ADR 0031. ส่วนประกอบใน <code>src/components/ui</code> จะแสดงที่นี่เมื่อเพิ่มในเฟส P1</p>
+        <p className="text-muted-foreground">ADR 0031. ส่วนประกอบใน <code>src/components/ui</code> แสดงที่นี่ทุกตัว</p>
       </header>
 
       <Section title="สี (semantic tokens)">
@@ -58,6 +59,8 @@ async function DesignSystem() {
           {radii.map(([name, radius]) => <li key={name} className={`${radius} flex h-16 w-28 items-center justify-center border bg-card text-sm`}>{name}</li>)}
         </ul>
       </Section>
+
+      <Primitives />
     </div>
   </AppShell>;
 }

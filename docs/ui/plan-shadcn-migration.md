@@ -8,7 +8,7 @@ Status: decided 2026-11-18 (ADR 0031, git-ignored; this file is the tracked copy
 - Print documents (`*-paper.*`, `src/app/sales/documents/[id]/`) stay CSS modules and never import `src/components/ui/`.
 - Radix primitives. No dark mode. Look stays identical: existing token values mapped onto shadcn variables.
 - `.dense` density stays. `ui/` components use `h-(--control-h)` and app text tokens, never fixed `h-9` / `h-8` / `size-9` / `text-sm` from shadcn's source.
-- `NativeSelect` for short lists, Combobox for search, Radix Select only for rich options. Native `<dialog>` wrapped as `ui/dialog.tsx`. Forms: `Field` + Server Actions + zod, no `react-hook-form`.
+- `NativeSelect` for short lists, Combobox (Popover + Command) for search, Radix Select only for rich options. Native `<dialog>` wrapped as `ui/dialog.tsx`. Forms: `Field` + Server Actions + zod, no `react-hook-form`.
 - Composites in `src/components/` only on their second real use. Admin-only `/design-system` catalogue from P0.
 - Approved dependencies: `clsx`, `tailwind-merge`, `class-variance-authority`, `radix-ui`, `tw-animate-css`, `cmdk`.
 - One element, one system: never `styles.x` and utilities in the same `className`.
@@ -52,11 +52,11 @@ Spacing / radius: see the table in ADR 0031 (`--space-5` = `6`, `--space-6` = `8
 Done when: `node src/lib/design-tokens.check.mts`, `tsc`, `lint` pass; screenshots of `/walkin`, `/leads`, `/sales`, `/summary` at 1280/1024/768 are identical to before (the renames are the main risk).
 
 ### P1 — Primitives
-Add and adapt to density: `button`, `input`, `textarea`, `native-select`, `combobox` (replaces `src/app/sales/new/search-picker.tsx`), `select` (rich options only), `table`, `badge`, `field`/`label`, `checkbox`, `radio-group`, `dialog` (native wrapper), `sonner` (existing toasts), `tooltip`/`dropdown-menu`/`popover` where used. Each listed on `/design-system`.
+Add and adapt to density: `button`, `input`, `textarea`, `native-select`, `combobox` built on Popover + Command (Radix + `cmdk`), not the registry item, which is Base UI; it replaces `src/app/sales/new/search-picker.tsx` and carries `name`/`required` through a hidden input, `select` (rich options only), `table`, `badge`, `field`/`label`, `checkbox`, `radio-group`, `dialog` (native wrapper), `sonner` (existing toasts), `tooltip`/`dropdown-menu`/`popover` where used. Each listed on `/design-system`.
 
 Replace raw elements app-wide where the element's own styling is the only thing on it. Where an element also carries a layout class from a module, leave it for P2/P3 (one-system rule).
 
-Done when: every primitive is on `/design-system` in both touch and mouse density; no `ui/` file contains `h-9`, `h-8`, `size-9`, `text-sm` from shadcn's source; touch inputs render at 17px (no iOS zoom).
+Done when: every primitive is on `/design-system` in both touch and mouse density; no `ui/` file contains fixed `h-8/9/10`, `size-8/9/10` or `md:text-*` (enforced by `design-system.check.mts`; `text-sm` is fine because our theme makes it density-aware); touch inputs render at 17px (no iOS zoom).
 
 ### P2 — Split shared stylesheets
 `src/app/sales/sales.module.css` (56 importers) and `src/app/walkin/walkin.module.css` (16 importers outside `/walkin`) are component libraries in disguise. List their classes by importer count; every class used in two or more routes becomes a composite in `src/components/` (expected: panel/section, page header, field row, dialog body, status/brand pill, money text, data table). Replace usages; remove the moved classes from the two files.

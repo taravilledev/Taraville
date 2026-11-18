@@ -23,6 +23,16 @@ for (const file of sources) {
 }
 assert.deepEqual(colourOffences, [], `Use semantic colour tokens (bg-primary, text-muted-foreground, bg-brand-tv…):\n${colourOffences.join("\n")}`);
 
+// 1b. Primitives must follow density (.dense): control sizes come from --control-h / --tap-min and text from the app scale.
+const fixedSize = /\b(?:h|size)-(?:8|9|10)\b|\bmd:text-/;
+const sizeOffences: string[] = [];
+for (const file of sources.filter(file => file.startsWith("components/ui/"))) {
+  readFileSync(join(srcRoot, file), "utf8").split("\n").forEach((line, index) => {
+    if (fixedSize.test(line)) sizeOffences.push(`${file}:${index + 1} fixed control size: ${line.trim()}`);
+  });
+}
+assert.deepEqual(sizeOffences, [], `Use h-(--control-h) / h-(--tap-min) and text-md in ui/ (ADR 0031):\n${sizeOffences.join("\n")}`);
+
 // 2. CSS modules: print documents stay forever; the migration allowlist only ever loses entries (plan-shadcn-migration P3/P4).
 const PRINT_MODULES = new Set([
   "leads/report/report.module.css",
