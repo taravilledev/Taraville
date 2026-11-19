@@ -78,6 +78,12 @@ Walk-in split: shared cards, text, shell, feedback and native dialog styles are 
 1. `/walkin` (+ real-iPad check) — layout migration prepared, real-device verification pending
 2. `/leads` (incl. `[id]`, report)
 3. `/sales` (case, tasks, settings, new) — largest; may split by sub-route
+   Slices (one commit each, smallest first; census 2026-11-19: 14 screen modules, 54 files, `sales.module.css` still used by 11 files):
+   1. `executive-dashboard.tsx` (rendered by `/dashboard`; `/sales` itself only redirects) — done
+   2. `new`, `evidence-upload`, `settings` (`settings.module.css`, the `unit*` rules of `sales.module.css`)
+   3. `[id]` case workspace (`workspace-section`, `bkp-*`, `document-library`, `finance-collection`, `quotation-section`, `design-billing-panel`, the rest of `sales.module.css`)
+   4. `[id]/tasks` (`task-header`, `contract-wizard`, `quotation-acceptance`, `quotation-editor` with the paper exception)
+   Print modules (`*-paper`, `document`) stay. `sales.module.css` is deleted with slice 3.
 4. `/summary` + `/dashboard`, login, shell (`layout.tsx`, `AppShell`)
 
 Per page: move module classes to utilities/composites, delete the module file, remove it from `MODULE_ALLOWLIST`.

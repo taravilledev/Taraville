@@ -55,7 +55,6 @@ const MIGRATION_ALLOWLIST = new Set([
   "sales/[id]/tasks/task-header.module.css",
   "sales/[id]/workspace-section.module.css",
   "sales/evidence-upload.module.css",
-  "sales/executive-dashboard.module.css",
   "sales/sales.module.css",
   "sales/settings/settings.module.css",
   "summary/summary.module.css",
