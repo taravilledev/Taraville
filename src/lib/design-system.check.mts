@@ -43,17 +43,10 @@ const PRINT_MODULES = new Set([
 const MIGRATION_ALLOWLIST = new Set([
   "dashboard/overview.module.css",
   "login/auth.module.css",
-  "sales/[id]/bkp-progress.module.css",
-  "sales/[id]/bkp-workflow.module.css",
-  "sales/[id]/design-billing-panel.module.css",
-  "sales/[id]/document-library.module.css",
-  "sales/[id]/finance-collection.module.css",
-  "sales/[id]/quotation-section.module.css",
   "sales/[id]/tasks/contract-wizard.module.css",
   "sales/[id]/tasks/quotation-acceptance.module.css",
   "sales/[id]/tasks/quotation-editor.module.css",
   "sales/[id]/tasks/task-header.module.css",
-  "sales/[id]/workspace-section.module.css",
   "summary/summary.module.css",
 ]);
 const modules = all.filter(file => file.startsWith("app/") && file.endsWith(".module.css")).map(file => file.slice(4));

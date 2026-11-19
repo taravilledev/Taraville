@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { CollectionRow } from "@/lib/sales/finance-collection";
 import { formatMoney } from "@/lib/sales/money";
 import { formatDate } from "@/lib/sales/date";
-import styles from "./finance-collection.module.css";
+import * as styles from "./finance-collection-styles";
 import { buttonVariants } from "@/components/ui/button";
 
 const filters = [

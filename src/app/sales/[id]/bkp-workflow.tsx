@@ -3,12 +3,11 @@ import { bkpOverviewStage, bkpOverviewStages, bkpWorkflow } from "@/lib/sales/bk
 import type { NextStep } from "@/lib/sales/case-progress";
 import { findTask, taskHref } from "@/lib/sales/tasks";
 import type { SummaryData } from "./summary-sections";
-import styles from "./bkp-workflow.module.css";
+import * as styles from "./bkp-workflow-styles";
 import { QuotationSection } from "./quotation-section";
 import { ContractSection } from "./contract-section";
 import { WorkspaceHeading } from "./workspace-heading";
 import { formatMoney } from "@/lib/sales/money";
-import workspace from "./workspace-section.module.css";
 import { panelClass } from "@/components/panel";
 import { buttonVariants } from "@/components/ui/button";
 import { statCardsClass } from "@/components/stat-cards";
@@ -32,7 +31,7 @@ export function BkpOverview({ data, step }: { data: SummaryData; step: NextStep 
   const task = step?.task ? findTask(data.tasks, step.task, step.row) : null;
   return <>
     <WorkspaceHeading caseId={sale.id} title="ภาพรวมโครงการ" description="มูลค่า ความคืบหน้า และงานที่ต้องทำต่อของโครงการนี้" />
-    {data.summary && <dl className={cn(statCardsClass, workspace.overviewTotals)}>
+    {data.summary && <dl className={statCardsClass}>
       <div><dt>มูลค่าโครงการ (ราคาสุทธิ)</dt><dd>{projectValue === null ? "ยังไม่ระบุ" : `${formatMoney(projectValue)} บาท`}
         {construction !== null && design !== null && <p className="text-sm text-muted-foreground">ค่าก่อสร้าง {formatMoney(construction)} + ค่าออกแบบ {formatMoney(design)} บาท</p>}</dd></div>
       <div><dt>รับแล้วหลังหักคืนเงิน</dt><dd>{formatMoney(data.summary.received)} บาท</dd></div>
@@ -47,7 +46,7 @@ export function BkpOverview({ data, step }: { data: SummaryData; step: NextStep 
         </li>;
       })}</ol>
     </section>}
-    <section className={`${panelClass} ${styles.context}`}>
+    <section className={cn(panelClass, styles.context)}>
       <div><h2>งานถัดไป</h2><p>{step?.title ?? "ไม่มีงานถัดไปในขณะนี้"}</p>
         {step?.hint && <p className="text-sm text-muted-foreground">{step.hint}</p>}
         {step && !step.allowed && <p className="text-sm text-muted-foreground">รอผู้มีสิทธิ์ดำเนินการ</p>}

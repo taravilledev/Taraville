@@ -12,7 +12,7 @@ import { BkpMoneySection } from "./bkp-money-section";
 import { PendingPayments } from "./pending-payments";
 export { PendingPayments } from "./pending-payments";
 import { factsClass } from "@/components/facts";
-import workspace from "./workspace-section.module.css";
+import * as ws from "./workspace-styles";
 import { panelClass } from "@/components/panel";
 import { noticeClass } from "@/components/notice";
 import { buttonVariants } from "@/components/ui/button";
@@ -64,11 +64,11 @@ export function OverviewSection({ data, houseBrief }: { data: SummaryData; house
     </dl><p><Link href={`/leads/${sale.lead_id}`} prefetch={false}>เปิด Lead ต้นทาง</Link>{" "}<TaskLink data={data} name="edit-case" /></p></section>
     {houseBrief}
     {!sale.can_finance && <p className={noticeClass}>คุณดูข้อมูลงานได้ แต่ไม่มีสิทธิ์ดูเอกสารและข้อมูลการเงินของรายการนี้ ให้ผู้บริหารตรวจสอบสิทธิ์หากจำเป็นต้องใช้</p>}
-    {work.length > 0 && <section className={panelClass}><h2>ตรวจรับงานก่อสร้าง</h2><ul className={sale.brand === "BAAN_KUNAPAP" ? workspace.rows : "grid gap-3"}>
-      {work.map(item => sale.brand === "BAAN_KUNAPAP" ? <li key={item.id} className={workspace.card}>
-        <div className={workspace.rowHeading}><strong>งวดที่ {item.position}{item.progress_percent == null ? "" : ` · ความคืบหน้า ${item.progress_percent}%`}</strong>
-          <span className={workspace.status} data-done={item.accepted}>{item.accepted ? "ตรวจรับแล้ว" : "รอตรวจรับ"}</span></div>
-        <div className={workspace.actions}><TaskLink data={data} name="acceptance" row={item.id} /></div>
+    {work.length > 0 && <section className={panelClass}><h2>ตรวจรับงานก่อสร้าง</h2><ul className={sale.brand === "BAAN_KUNAPAP" ? ws.rows : "grid gap-3"}>
+      {work.map(item => sale.brand === "BAAN_KUNAPAP" ? <li key={item.id} className={ws.card}>
+        <div className={ws.rowHeading}><strong>งวดที่ {item.position}{item.progress_percent == null ? "" : ` · ความคืบหน้า ${item.progress_percent}%`}</strong>
+          <span className={ws.status} data-done={item.accepted}>{item.accepted ? "ตรวจรับแล้ว" : "รอตรวจรับ"}</span></div>
+        <div className={ws.actions}><TaskLink data={data} name="acceptance" row={item.id} /></div>
       </li> : <li key={item.id}>งวดที่ {item.position}{item.progress_percent == null ? "" : ` · ความคืบหน้า ${item.progress_percent}%`} · {item.accepted ? "ตรวจรับแล้ว" : "รอตรวจรับ"}{" "}
         <TaskLink data={data} name="acceptance" row={item.id} /></li>)}</ul></section>}
     {managementTasks.length > 0 && <section className={panelClass} id="manage" aria-labelledby="manage-title">
