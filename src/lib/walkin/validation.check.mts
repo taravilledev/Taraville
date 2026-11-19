@@ -21,8 +21,10 @@ assert.equal(dialablePhone("000-000-0000"), "0000000000");
 for (const invalid of ["abc", "123456", "0812345678 ext 1", "1".repeat(16)]) {
   assert.equal(dialablePhone(invalid), null);
 }
+const errorMap = loadSource("../errors/error-map.ts");
 const validation = loadSource("./validation.ts", (name) => {
   if (name === "zod") return nodeRequire("zod");
+  if (name === "@/lib/errors/error-map") return errorMap;
   if (name === "./survey-questions") return catalog;
   throw new Error(`Unexpected validation dependency: ${name}`);
 }) as typeof import("./validation");

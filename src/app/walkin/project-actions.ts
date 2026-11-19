@@ -20,7 +20,7 @@ export async function openProject(context: StatusMutation, _state: ActionState, 
     const result = await salesMutation(session, "sales_create_case", {
       p_lead_id: input.id, p_project_id: project.id, p_unit_id: null, p_customer_id: null, p_request_id: input.requestId,
     }, "case", "design");
-    return { error: `เปิดโครงการ ${project.code} แล้ว แต่ยังไปขั้นกำหนดค่าออกแบบไม่ได้ · ${result.error}` };
+    return { error: `เปิดโครงการ ${project.code} แล้ว แต่ยังไปขั้นกำหนดค่าออกแบบไม่ได้ · ${result.error}`, fix: result.fix };
   });
 }
 
@@ -32,5 +32,5 @@ export async function cancelProject(context: ProjectCancelContext, _state: Actio
   catch { return { error: "กรุณาระบุเหตุผลการยกเลิก (ไม่เกิน 500 ตัวอักษร) และยืนยัน" }; }
   return finishMutation(input.leadId, projectSchema, () => supabase.rpc("walkin_cancel_project", {
     p_project_id: input.id, p_expected_version: input.version, p_request_id: input.requestId, p_reason: input.reason,
-  }).single());
+  }).single(), undefined, { caseId: input.caseId, isExecutive: true });
 }

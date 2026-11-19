@@ -20,6 +20,9 @@ import { TaskView } from "./tasks/task-view";
 import { usesFocusedTaskHeader } from "./tasks/task-header";
 import { tabLinksClass } from "@/components/tab-links";
 import { noticeClass } from "@/components/notice";
+import { FixNotice } from "@/components/fix-notice";
+import { guidance } from "@/lib/errors/error-map";
+import { missingContractPrerequisite } from "@/lib/sales/contract-template";
 import { cn } from "@/lib/utils";
 
 export const metadata = { title: "ข้อมูลงานและรายการขาย · Taraville Group", robots: { index: false, follow: false } };
@@ -43,6 +46,7 @@ async function CaseDetail({ params, searchParams }: Props) {
   if (name && !task) redirect(`/sales/${sale.id}?notice=task`);
 
   const isBkp = sale.brand === "BAAN_KUNAPAP";
+  const isExecutive = staff.role === "executive";
   const hasBkpWorkspace = isBkp && sale.can_finance;
   const tabs: readonly CaseTab[] = sale.can_finance ? isBkp ? bkpCaseTabs : ["overview", "documents", "money"] : ["overview"];
   const tab = resolveCaseTab(hasBkpWorkspace ? [...tabs, "documents"] : tabs, one(query.tab), one(query.flow));
@@ -50,29 +54,35 @@ async function CaseDetail({ params, searchParams }: Props) {
   const houseBrief = <HouseBriefPanel sale={sale} task={task} tab={tab} />;
   const isDesignBillingTask = !!task && ["issue-design-invoice", "prepare-design-payment", "cancel-design-invoice"].includes(task.name);
   let contractTemplate: { contract_text: string; contract_text_approved?: boolean; contractor_name?: string; contractor_address?: string; is_synthetic?: boolean } | undefined;
-  if (task && ["prepare-contract", "edit-contract", "lock-contract"].includes(task.name)) {
+  const isContractTask = !!task && ["prepare-contract", "edit-contract", "lock-contract"].includes(task.name);
+  // The header notice only needs the template while a BKP case can still be drafted; a failed read there just hides the notice.
+  if (isContractTask || (hasBkpWorkspace && sale.status === "draft")) {
     const template = await supabase.rpc("sales_contract_template", { p_case_id: sale.id });
-    if (template.error) throw new Error("โหลดแม่แบบสัญญาไม่ได้ กรุณาลองใหม่");
-    contractTemplate = z.object({ contract_text: z.string(), contract_text_approved: z.boolean().optional(),
-      contractor_name: z.string().optional(), contractor_address: z.string().optional(), is_synthetic: z.boolean().optional() }).parse(template.data);
+    if (template.error && isContractTask) throw new Error("โหลดแม่แบบสัญญาไม่ได้ กรุณาลองใหม่");
+    const parsed = z.object({ contract_text: z.string(), contract_text_approved: z.boolean().optional(),
+      contractor_name: z.string().optional(), contractor_address: z.string().optional(), is_synthetic: z.boolean().optional() }).safeParse(template.data);
+    if (parsed.success) contractTemplate = parsed.data;
+    else if (isContractTask) throw new Error("โหลดแม่แบบสัญญาไม่ได้ กรุณาลองใหม่");
   }
+  const missingPrerequisite = hasBkpWorkspace && sale.status === "draft" ? missingContractPrerequisite(contractTemplate) : null;
   const isFocusedTask = !!task && usesFocusedTaskHeader(task.name, isBkp);
   const isShowingNextStep = task && step?.task === task.name && step.row === task.row;
   const navigation = !task && tabs.length > 1 ? <nav className={cn(tabLinksClass, isBkp && "grid grid-cols-5 gap-0 max-[680px]:grid-cols-3 [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-2 [&_a]:text-center")} aria-label="หมวดข้อมูลงาน">{tabs.map(item => <Link key={item} href={`/sales/${sale.id}?tab=${item}`} prefetch={false}
     aria-current={item === tab ? "page" : undefined}>{!isBkp && item === "documents" ? "เอกสาร" : !isBkp && item === "money" ? "รับเงิน" : tabLabels[item]}{item === "money" && pending > 0 ? ` (${pending})` : ""}</Link>)}</nav> : null;
   return <AppShell staff={staff} wide><div className="grid gap-6">
-    {!isFocusedTask && <CaseHeader sale={sale} summary={!isBkp ? summary : null} step={isShowingNextStep ? null : step}
+    {!isFocusedTask && <CaseHeader isExecutive={isExecutive} sale={sale} summary={!isBkp ? summary : null} step={isShowingNextStep ? null : step}
       showProgress={!isBkp || !!task}
       navigation={isBkp ? navigation : undefined}
       workflow={sale.brand === "BAAN_KUNAPAP" && finance && agreement && progress ?
-        <BkpProgress sale={sale} finance={finance} agreement={agreement} progress={progress} step={step} tasks={tasks} activeTask={task} compact={(!task && tab === "documents") || isFocusedTask || isDesignBillingTask} /> : undefined} />}
+        <BkpProgress isExecutive={isExecutive} sale={sale} finance={finance} agreement={agreement} progress={progress} step={step} tasks={tasks} activeTask={task} compact={(!task && tab === "documents") || isFocusedTask || isDesignBillingTask} /> : undefined} />}
+    {missingPrerequisite && !isFocusedTask && <FixNotice {...guidance(missingPrerequisite, { brand: sale.brand, isExecutive })} />}
     {!isDesignBillingTask && !isFocusedTask && task?.name !== "accept-quotation" && (task || (!isBkp && tab !== "overview")) && houseBrief}
     {one(query.notice) === "task" && <p className={noticeClass} role="status">งานที่เปิดไม่ได้แล้ว เพราะสถานะหรือสิทธิ์เปลี่ยน กรุณาเลือกจากหน้านี้ใหม่</p>}
     {task ? <TaskView task={task} context={task.name === "design" ? houseBrief : undefined}
-      data={{ sale, finance, agreement, staffId: staff.id, reservation, refunds, owners, contractTemplate, work }} /> : <>
+      data={{ sale, finance, agreement, staffId: staff.id, isExecutive, reservation, refunds, owners, contractTemplate, work }} /> : <>
       {!isBkp && navigation}
       {tab === "overview" && <>
-        {hasBkpWorkspace && <BkpOverview data={data} step={step} />}
+        {hasBkpWorkspace && <BkpOverview data={data} step={step} isExecutive={isExecutive} />}
         <OverviewSection data={data} houseBrief={houseBrief} />
       </>}
       {tab === "design" && finance && <DesignBillingPanel sale={sale} finance={finance} tasks={tasks} />}

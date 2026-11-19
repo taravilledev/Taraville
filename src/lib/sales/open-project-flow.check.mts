@@ -16,7 +16,7 @@ const mocks: Record<string, unknown> = {
   "server-only": {},
   "next/cache": { revalidatePath: () => {} },
   "next/navigation": { redirect: (path: string) => { throw new Error(path); } },
-  "@/lib/supabase/staff": { requireStaff: async () => ({ supabase: {
+  "@/lib/supabase/staff": { requireStaff: async () => ({ staff: { role: "sale" }, supabase: {
     rpc: (name: string, input: Record<string, unknown>) => {
       calls.push({ name, input });
       return name === "walkin_open_project"

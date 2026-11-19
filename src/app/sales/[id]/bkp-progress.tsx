@@ -10,11 +10,12 @@ import { formatMoney } from "@/lib/sales/money";
 import { bkpFlowStages, bkpWorkflow } from "@/lib/sales/bkp-workflow";
 import * as styles from "./bkp-progress-styles";
 import { buttonVariants } from "@/components/ui/button";
+import { StepBlockedNotice } from "./step-blocked-notice";
 
 type Props = { sale: SalesCase; finance: FinancialDetail; agreement: AgreementDetail; progress: ProjectProgress;
-  step: NextStep | null; tasks: Task[]; activeTask?: Task; compact?: boolean };
+  step: NextStep | null; tasks: Task[]; activeTask?: Task; compact?: boolean; isExecutive?: boolean };
 
-export function BkpProgress({ sale, finance, agreement, progress, step, tasks, activeTask, compact }: Props) {
+export function BkpProgress({ sale, finance, agreement, progress, step, tasks, activeTask, compact, isExecutive = false }: Props) {
   const checklist = bkpChecklist({ hasDesignPlan: !!finance.design_plan, documents: agreement.documents, instalments: agreement.instalments });
   const row = checklist.currentRow;
   const isCollecting = progress.current === 4;
@@ -48,7 +49,7 @@ export function BkpProgress({ sale, finance, agreement, progress, step, tasks, a
     {step && <div className={styles.action}>
       <div><p className="text-sm text-muted-foreground">{isCurrentTask ? "กำลังทำรายการนี้" : step.kind === "done" ? "สถานะล่าสุด" : "งานที่ต้องทำตอนนี้"}</p>
         <h3>{step.title}</h3>{step.hint && <p>{step.hint}</p>}
-        {!step.allowed && <p className="text-sm text-muted-foreground">รอผู้มีสิทธิ์ดำเนินการ บัญชีของคุณไม่มีสิทธิ์ทำรายการนี้</p>}</div>
+        {!step.allowed && <StepBlockedNotice isExecutive={isExecutive} />}</div>
       {step.kind !== "done" && step.allowed && !isCurrentTask && <Link className={buttonVariants({ size: "auto" })} href={href} prefetch={false}>
         {step.task ? taskLabels[step.task] : step.title}</Link>}
     </div>}

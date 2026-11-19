@@ -5,7 +5,7 @@ import type { Refund } from "@/lib/sales/refund-models";
 
 /** What a task view receives. Finance reads are null for readers without financial access. */
 export type TaskData = {
-  sale: SalesCase; finance: FinancialDetail | null; agreement: AgreementDetail | null; staffId: string;
+  sale: SalesCase; finance: FinancialDetail | null; agreement: AgreementDetail | null; staffId: string; isExecutive?: boolean;
   reservation: { active: boolean; options: { id: string; label: string }[] } | null; refunds: Refund[];
   contractTemplate?: { contract_text: string; contract_text_approved?: boolean; contractor_name?: string; contractor_address?: string; is_synthetic?: boolean };
   owners: { id: string; full_name: string }[]; row?: string;
