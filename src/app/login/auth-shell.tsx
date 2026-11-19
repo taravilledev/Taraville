@@ -6,7 +6,7 @@ import { COMPANIES } from "@/lib/walkin/companies";
 import { formCardClass } from "@/components/form-card";
 import { cn } from "@/lib/utils";
 
-const BRAND_CAPTIONS = [["TARAVILLE", "ธาราวิล · บ้านจัดสรร"], ["BAAN_KUNAPAP", "บ้านคุณภาพ · รับสร้างบ้าน"]] as const;
+const BRAND_CAPTIONS = [["TARAVILLE", "ธาราวิลล์ · บ้านจัดสรร"], ["BAAN_KUNAPAP", "บ้านคุณภาพ · รับสร้างบ้าน"]] as const;
 const styles = {
   main: "mx-auto grid w-[min(100%-32px,460px)] flex-1 place-items-center py-8",
   card: cn(formCardClass, "m-0 w-full [&>header+h1]:text-lg [&_button[type=submit]]:w-full [&_ol]:list-decimal [&_ol]:pl-[1.5em]"),
@@ -38,7 +38,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
         {children}
       </section>
     </main>
-    <footer className={shellFooterClass}>Taraville Group · ธาราวิล · บ้านคุณภาพ © 2026</footer>
+    <footer className={shellFooterClass}>Taraville Group · ธาราวิลล์ · บ้านคุณภาพ © 2026</footer>
   </div>;
 }
 

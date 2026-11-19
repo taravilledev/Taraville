@@ -13,7 +13,7 @@ const GROUP_NAME = <strong className="text-sm font-bold [font-family:var(--font-
 // No staff: signed-out pages. focus: a single task (walk-in form) without navigation. Otherwise: sidebar + content.
 export function AppShell({ children, staff, wide, focus }: { children: ReactNode; staff?: Staff; wide?: boolean; focus?: boolean }) {
   const main = <main id="main-content" tabIndex={-1} className={wide ? `${shellMainClass} min-[1024px]:w-[min(100%-80px,1280px)] min-[1180px]:w-[min(100%-80px,1280px)]` : shellMainClass}>{children}</main>;
-  const footer = <footer className={shellFooterClass}>Taraville Group · ธาราวิล · บ้านคุณภาพ © 2026</footer>;
+  const footer = <footer className={shellFooterClass}>Taraville Group · ธาราวิลล์ · บ้านคุณภาพ © 2026</footer>;
   if (staff && !focus) return <div data-slot="app-shell" className={`${shellClass} md:flex-row dense`} lang="th">
     {SKIP_LINK}
     <AppSidebar items={navItems(staff.role)} staff={staff} />
@@ -25,7 +25,7 @@ export function AppShell({ children, staff, wide, focus }: { children: ReactNode
       {focus && staff ? <><CloseFocusLink formId={LEAD_FORM_ID} />{GROUP_NAME}</>
         : <a href="/dashboard" className="inline-flex min-h-(--tap-min) items-center gap-3 text-foreground no-underline">
           <span className="grid size-9 shrink-0 place-items-center rounded-sm bg-primary text-primary-foreground" aria-hidden="true"><Building2 size={18} /></span>
-          <span className="flex flex-col leading-[1.25] [&_strong]:font-bold [&_strong]:text-sm/[normal] [&_strong]:[font-family:var(--font-utility)] [&_small]:text-xs/[1.25] [&_small]:text-muted-foreground max-[640px]:[&_small]:hidden"><strong>Taraville Group</strong><small>ธาราวิล · บ้านคุณภาพ</small></span>
+          <span className="flex flex-col leading-[1.25] [&_strong]:font-bold [&_strong]:text-sm/[normal] [&_strong]:[font-family:var(--font-utility)] [&_small]:text-xs/[1.25] [&_small]:text-muted-foreground max-[640px]:[&_small]:hidden"><strong>Taraville Group</strong><small>ธาราวิลล์ · บ้านคุณภาพ</small></span>
         </a>}
     </header>
     {main}{footer}

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { stageSchema } from "./lead-stage";
 
-export const REPORT_BRAND_LABELS = { TARAVILLE: "ธาราวิล", BAAN_KUNAPAP: "บ้านคุณภาพ" } as const;
+export const REPORT_BRAND_LABELS = { TARAVILLE: "ธาราวิลล์", BAAN_KUNAPAP: "บ้านคุณภาพ" } as const;
 
 const brandSchema = z.enum(["BAAN_KUNAPAP", "TARAVILLE"]);
 

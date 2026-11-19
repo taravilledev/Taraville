@@ -7,7 +7,7 @@ type Counts = { all: number; taraville: number; baanKunapap: number };
 export function BrandTiles({ filters, counts }: { filters: LeadFilters; counts: Counts }) {
   const tiles = [
     { brand: undefined, label: "ทั้งหมด", count: counts.all },
-    { brand: "TARAVILLE", label: "ธาราวิล", count: counts.taraville },
+    { brand: "TARAVILLE", label: "ธาราวิลล์", count: counts.taraville },
     { brand: "BAAN_KUNAPAP", label: "บ้านคุณภาพ", count: counts.baanKunapap },
   ] as const;
   return <nav className="flex flex-wrap gap-2" aria-label="กรองตามแบรนด์">
