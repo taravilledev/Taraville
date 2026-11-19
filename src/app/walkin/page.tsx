@@ -1,3 +1,4 @@
+import { formErrorClass } from "@/components/form-feedback";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { randomUUID } from "node:crypto";
@@ -12,7 +13,8 @@ import { ChangeBrandLink } from "./change-brand-link";
 import { FormHeader } from "./form-header";
 import { NoticeLink } from "./notice-dialog";
 import { LEAD_FORM_ID, LeadForm } from "./lead-form";
-import styles from "./walkin.module.css";
+import { formHintClass } from "@/components/form-card";
+import { walkinTitleClass } from "./walkin-form-styles";
 
 export const metadata: Metadata = {
   title: "รับลูกค้า Walk-in · Taraville Group", robots: { index: false, follow: false },
@@ -29,11 +31,11 @@ async function WalkinContent({ searchParams }: WalkinProps) {
   const { supabase, staff } = await requireStaff();
   const { brand: brandParam } = await searchParams;
   const brand: Brand | null = brandParam === "TARAVILLE" || brandParam === "BAAN_KUNAPAP" ? brandParam : null;
-  if (!brand) return <AppShell staff={staff}><h1 className={styles.pageTitle}>รับลูกค้า Walk-in</h1>
-    <p className={styles.hint}>เลือกแบรนด์ที่ลูกค้าสนใจก่อนเริ่มกรอก</p>
-    <nav className={styles.brandGrid} aria-label="เลือกแบรนด์">
-      {BRAND_CHOICES.map(({ brand: value, summary }) => <a key={value} className={styles.brandCard} href={`/walkin?brand=${value}`}>
-        <span className={styles.brandLogo}><Image src={COMPANIES[value].logo} alt="" fill sizes="(min-width: 640px) 440px, 100vw" priority
+  if (!brand) return <AppShell staff={staff}><h1 className={walkinTitleClass}>รับลูกค้า Walk-in</h1>
+    <p className={formHintClass}>เลือกแบรนด์ที่ลูกค้าสนใจก่อนเริ่มกรอก</p>
+    <nav className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1" aria-label="เลือกแบรนด์">
+      {BRAND_CHOICES.map(({ brand: value, summary }) => <a key={value} className="flex flex-col items-center gap-2 rounded-lg border bg-card px-6 pt-6 pb-8 text-center text-foreground no-underline active:border-primary active:bg-muted hover:border-primary hover:shadow-[var(--shadow-hover)] [&_strong]:text-lg [&_small]:text-sm [&_small]:text-muted-foreground" href={`/walkin?brand=${value}`}>
+        <span className="relative mb-3 aspect-[2/1] w-full [&_img]:object-cover"><Image src={COMPANIES[value].logo} alt="" fill sizes="(min-width: 640px) 440px, 100vw" priority
           style={{ objectPosition: COMPANIES[value].logoFocus }} /></span>
         <strong>{COMPANIES[value].brandName}</strong><small>{summary}</small></a>)}
     </nav></AppShell>;
@@ -44,7 +46,7 @@ async function WalkinContent({ searchParams }: WalkinProps) {
   return <AppShell staff={staff}>
     <FormHeader brand={brand} title="แบบฟอร์มรับลูกค้า" action={<ChangeBrandLink formId={LEAD_FORM_ID} />}
       note={<>แจ้งประกาศก่อนกรอก · <NoticeLink /></>} />
-    {staff.role === "executive" && !roster.length && <p className={styles.error}>ยังไม่มีบัญชีฝ่ายขายที่ใช้งานได้ กรุณาเตรียมบัญชีก่อนบันทึก</p>}
+    {staff.role === "executive" && !roster.length && <p className={formErrorClass}>ยังไม่มีบัญชีฝ่ายขายที่ใช้งานได้ กรุณาเตรียมบัญชีก่อนบันทึก</p>}
     <LeadForm key={brand} brand={brand} staff={staff} owners={roster} requestId={randomUUID()} />
   </AppShell>;
 }

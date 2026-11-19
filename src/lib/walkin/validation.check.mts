@@ -15,6 +15,12 @@ function loadSource(name: string, requireModule?: (name: string) => unknown) {
   return exports;
 }
 const catalog = loadSource("./survey-questions.ts");
+const { dialablePhone } = loadSource("./phone.ts") as typeof import("./phone");
+assert.equal(dialablePhone("+66 81-234-5678"), "+66812345678");
+assert.equal(dialablePhone("000-000-0000"), "0000000000");
+for (const invalid of ["abc", "123456", "0812345678 ext 1", "1".repeat(16)]) {
+  assert.equal(dialablePhone(invalid), null);
+}
 const validation = loadSource("./validation.ts", (name) => {
   if (name === "zod") return nodeRequire("zod");
   if (name === "./survey-questions") return catalog;

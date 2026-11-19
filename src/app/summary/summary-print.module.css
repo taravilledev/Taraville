@@ -1,0 +1,22 @@
+/* Paper output of /summary (the ?print view and the selection-dialog portal): A4 landscape page and fixed print sizes. */
+.printReport { width: min(100% - 2rem, 82rem); margin: var(--space-5) auto; }
+.printReport h1 { margin-block: var(--space-4); font-size: var(--text-lg); }
+.printControls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.selectionPrint { display: none; }
+
+@media screen and (max-width: 850px) {
+  .printReport div:has(> table) { overflow-x: auto; }
+  .printReport table { min-width: 46rem; }
+}
+
+@media print {
+  @page projectSummary { size: A4 landscape; margin: 12mm; }
+  .printReport { page: projectSummary; width: 100%; margin: 0; color: black; }
+  .printControls { display: none; }
+  .printReport div:has(> table) { border: 0; }
+  .printReport table { font-size: 9pt; }
+  .printReport :is(th, td) { padding: 5pt; }
+  .printReport tr { break-inside: avoid; }
+  :global(body):has(> .selectionPrint) > :not(.selectionPrint) { display: none !important; }
+  .selectionPrint { display: block; }
+}
