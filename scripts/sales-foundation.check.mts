@@ -66,7 +66,7 @@ async function actor(name: string, role: "sale" | "executive") {
   login.set("username", `salesdev_${name}`); login.set("password", password);
   const loginResponse = await callAction("/login", "src/app/login/actions.ts", "login", [{ error: "" }, login]);
   await loginResponse.text();
-  assert.ok(loginResponse.headers.get("x-action-redirect")?.startsWith("/walkin"), "Actual username Login action must succeed");
+  assert.ok(loginResponse.headers.get("x-action-redirect")?.startsWith("/dashboard"), "Actual username Login action must succeed");
   assert.ok(loginResponse.headers.getSetCookie().some(value => value.startsWith("sb-")), "Login must persist the local session");
   return { id, token: session.data.session.access_token, refreshToken: session.data.session.refresh_token };
 }

@@ -20,7 +20,7 @@ export async function login(_state: ActionState, form: FormData): Promise<Action
     await supabase.auth.signOut({ scope: "local" });
     return { error: "บัญชีนี้ยังไม่มีสิทธิ์ใช้งาน กรุณาติดต่อผู้ดูแล" };
   }
-  redirect("/walkin");
+  redirect("/dashboard");
 }
 
 export async function logout() {
