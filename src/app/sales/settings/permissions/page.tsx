@@ -7,7 +7,8 @@ import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { ActionForm } from "@/app/walkin/action-form";
 import { setCapability } from "../../actions";
 import { SettingsLinks, SettingsShell, type SettingsPageProps } from "../settings-shell";
-import styles from "../settings.module.css";
+import { cn } from "@/lib/utils";
+import * as ui from "../settings-styles";
 import { panelClass } from "@/components/panel";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -39,26 +40,26 @@ async function Permissions({ searchParams }: SettingsPageProps) {
   </SettingsShell>;
 
   return <SettingsShell {...shell} title={user.full_name} description={roleLabel(user.role)} back={{ href: base, label: "จัดสิทธิ์งานและการเงิน" }}>
-    <aside className={styles.permissionHelp} aria-label="วิธีตั้งสิทธิ์">
+    <aside className={ui.permissionHelpClass} aria-label="วิธีตั้งสิทธิ์">
       <p>เลือกการเข้าถึงและขอบเขต แล้วกด <strong>บันทึกสิทธิ์</strong> ในแถวที่แก้ไข</p>
       <p><strong>เฉพาะของตน</strong> ยึดผู้รับผิดชอบโครงการสำหรับการดู แก้ไข และตรวจรับงาน ส่วนการเปิดโครงการและสิทธิ์ด้านสัญญาหรือการเงินยึดเจ้าของ Lead ปัจจุบัน</p>
       <p>ผู้ขอคืนเงินอนุมัติคำขอของตนเองไม่ได้</p>
     </aside>
-    {Object.entries(groups).map(([title, prefixes]) => <section key={title} className={`${panelClass} ${styles.group}`}>
-      <h2>{title}</h2>
+    {Object.entries(groups).map(([title, prefixes]) => <section key={title} className={cn(panelClass, ui.permissionGroupClass)}>
+      <h2 className="m-0 mb-3">{title}</h2>
       {(Object.keys(capabilityLabels) as Capability[]).filter(action => prefixes.includes(action.split(".")[0])).map(action => {
         const override = user.capabilities.find(item => item.action === action);
         const ownDefault = ["case.view", "case.create", "case.edit", "financial.view"].includes(action);
         const enabled = override?.enabled ?? (user.role === "executive" || (ownDefault && (user.role === "sale" || action === "financial.view")));
         const scope = override?.scope ?? (user.role === "executive" ? "all" : "own");
-        return <section key={action} className={styles.permissionRow} aria-labelledby={action}>
-          <div className={styles.permissionTitle}>
+        return <section key={action} className={ui.permissionRowClass} aria-labelledby={action}>
+          <div className={ui.permissionTitleClass}>
             <h3 id={action}>{capabilityLabels[action]}</h3>
-            <small className={styles.permissionSource} data-custom={Boolean(override)}>{override ? "ตั้งค่าเฉพาะคน" : "ค่าเริ่มต้นตามบทบาท"}</small>
+            <small className={ui.permissionSourceClass} data-custom={Boolean(override)}>{override ? "ตั้งค่าเฉพาะคน" : "ค่าเริ่มต้นตามบทบาท"}</small>
           </div>
           <ActionForm action={setCapability} label="บันทึกสิทธิ์" inline>
             <input type="hidden" name="staff_id" value={user.id} /><input type="hidden" name="capability" value={action} /><input type="hidden" name="request_id" value={randomUUID()} />
-            <div className={styles.permissionFields}>
+            <div className={ui.permissionFieldsClass}>
               <Field><FieldLabel htmlFor={`perm-${user.id}-${action}-enabled`}>การเข้าถึง</FieldLabel><NativeSelect id={`perm-${user.id}-${action}-enabled`} name="enabled" defaultValue={String(enabled)}><option value="true">อนุญาต</option><option value="false">ไม่อนุญาต</option></NativeSelect></Field>
               <Field><FieldLabel htmlFor={`perm-${user.id}-${action}-scope`}>ขอบเขต</FieldLabel><NativeSelect id={`perm-${user.id}-${action}-scope`} name="scope" defaultValue={action === "catalog.manage" ? "all" : scope}>{action !== "catalog.manage" && <option value="own">เฉพาะของตน</option>}<option value="all">ทุกรายการ</option></NativeSelect></Field>
             </div>

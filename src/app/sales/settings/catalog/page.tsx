@@ -12,7 +12,8 @@ import { catalogPage, matchesQuery, unitStatus } from "./catalog-list";
 import { setUnitActivity } from "./unit-activity";
 import { UnitForm } from "./unit-form";
 import { checkRowClass } from "@/components/check-row";
-import styles from "../settings.module.css";
+import { cn } from "@/lib/utils";
+import * as ui from "../settings-styles";
 import { panelClass } from "@/components/panel";
 import { buttonVariants } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -54,7 +55,7 @@ async function Catalog({ searchParams }: SettingsPageProps) {
     const title = development ? "แก้ไขโครงการหมู่บ้าน" : "เพิ่มโครงการหมู่บ้าน";
     return <SettingsShell {...shell} title={title} description={development?.name}
       back={{ href: backHref, label: development ? "ทะเบียนบ้านและแปลง" : "โครงการหมู่บ้าน" }}>
-      <section className={`${panelClass} ${styles.editor}`}>
+      <section className={cn(panelClass, ui.editorClass)}>
         <DevelopmentForm development={development} backHref={backHref} />
       </section>
     </SettingsShell>;
@@ -62,7 +63,7 @@ async function Catalog({ searchParams }: SettingsPageProps) {
   if (canEdit && development && (mode === "unit" && unit || mode === "new-unit" && development.is_active)) {
     return <SettingsShell {...shell} title={mode === "unit" && unit ? "แก้ไขบ้าน/แปลง " + unit.code : "เพิ่มบ้าน/แปลง"}
       description={development.name} back={{ href: backHref, label: "ทะเบียนบ้านและแปลง" }}>
-      <section className={`${panelClass} ${styles.editor}`}>
+      <section className={cn(panelClass, ui.editorClass)}>
         <UnitForm developmentId={development.id} unit={mode === "unit" ? unit : undefined}
           requestId={randomUUID()} backHref={backHref} />
       </section>
@@ -89,7 +90,7 @@ async function Catalog({ searchParams }: SettingsPageProps) {
       <Link href={editHref("project")} className={buttonVariants({ variant: "outline", size: "auto" })} prefetch={false}>แก้ไขโครงการ</Link>
       {development.is_active && <Link href={editHref("new-unit")} className={buttonVariants({ size: "auto" })} prefetch={false}>เพิ่มบ้าน/แปลง</Link>}
     </> : <Link href={editHref("new-project")} className={buttonVariants({ size: "auto" })} prefetch={false}>เพิ่มโครงการ</Link>)}>
-    <form className={`${panelClass} ${styles.filters}`} action={base} role="search">
+    <form className={cn(panelClass, ui.filtersClass)} action={base} role="search">
       {development && <input type="hidden" name="project" value={development.id} />}
       <Field><FieldLabel htmlFor="catalog-q">{development ? "ค้นหาบ้าน/แปลง" : "ค้นหาโครงการ"}</FieldLabel><Input id="catalog-q" type="search" name="q" maxLength={200} defaultValue={q} placeholder={development ? "เลขแปลงหรือแบบบ้าน" : "ชื่อโครงการหรือที่ตั้ง"} /></Field>
       <Field><FieldLabel htmlFor="catalog-status">สถานะ</FieldLabel><NativeSelect id="catalog-status" name="status" defaultValue={status}>
@@ -100,17 +101,17 @@ async function Catalog({ searchParams }: SettingsPageProps) {
       {(q || status) && <Link href={project} className={buttonVariants({ variant: "outline", size: "auto" })} prefetch={false}>ล้างตัวกรอง</Link>}
     </form>
     {!page.rows.length ? <p className={panelClass}>{q || status ? "ไม่พบรายการตามตัวกรอง" : development ? "โครงการนี้ยังไม่มีบ้าน/แปลง" : "ยังไม่มีโครงการที่คุณดูได้"}</p>
-      : <div className={styles.tableWrap} tabIndex={0} role="region" aria-label={development ? "ทะเบียนบ้านและแปลง" : "รายการโครงการหมู่บ้าน"}>
-        {development ? <table className={styles.table}>
-          <thead><tr><th scope="col">บ้าน/แปลง</th><th scope="col">แบบบ้าน</th><th scope="col" className={styles.amount}>ราคาทะเบียน (บาท)</th><th scope="col">สถานะ</th>{canEdit && <th scope="col">ดำเนินการ</th>}</tr></thead>
+      : <div className={ui.tableWrapClass} tabIndex={0} role="region" aria-label={development ? "ทะเบียนบ้านและแปลง" : "รายการโครงการหมู่บ้าน"}>
+        {development ? <table className={ui.tableClass}>
+          <thead><tr><th scope="col">บ้าน/แปลง</th><th scope="col">แบบบ้าน</th><th scope="col" className={ui.amountClass}>ราคาทะเบียน (บาท)</th><th scope="col">สถานะ</th>{canEdit && <th scope="col">ดำเนินการ</th>}</tr></thead>
           <tbody>{unitPage.rows.map(item => {
             const state = unitStatus(development.is_active, item);
             const detail = [item.details.layout, item.details.build_status].filter(value => typeof value === "string" && value).join(" · ");
             return <tr key={item.id}><th scope="row">{item.code}</th>
               <td>{typeof item.details.model === "string" && item.details.model || "—"}{detail && <small>{detail}</small>}</td>
-              <td className={styles.amount}>{item.list_price_cents != null ? formatMoney(item.list_price_cents) : "—"}</td>
-              <td className={styles.status}><span className={styles[state]}>{statusLabels[state]}</span></td>
-              {canEdit && <td><div className={styles.rowActions} role="group" aria-label={`จัดการบ้าน/แปลง ${item.code}`}>
+              <td className={ui.amountClass}>{item.list_price_cents != null ? formatMoney(item.list_price_cents) : "—"}</td>
+              <td className={ui.statusCellClass}><span className={ui.unitStateClass[state]}>{statusLabels[state]}</span></td>
+              {canEdit && <td><div className={ui.rowActionsClass} role="group" aria-label={`จัดการบ้าน/แปลง ${item.code}`}>
                 <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={editHref("unit", item.id)} prefetch={false} aria-label={"แก้ไขบ้าน/แปลง " + item.code}>แก้ไข</Link>
                 {development.is_active && <ActionForm inline action={setUnitActivity.bind(null, {
                   projectId: development.id, unitId: item.id, version: item.version, requestId: randomUUID(),
@@ -119,16 +120,16 @@ async function Catalog({ searchParams }: SettingsPageProps) {
               </div></td>}
             </tr>;
           })}</tbody>
-        </table> : <table className={styles.table}>
+        </table> : <table className={ui.tableClass}>
           <thead><tr><th scope="col">โครงการหมู่บ้าน</th><th scope="col">บ้าน/แปลง</th><th scope="col">สถานะ</th><th scope="col">ดำเนินการ</th></tr></thead>
           <tbody>{developmentPage.rows.map(item => <tr key={item.id}>
             <th scope="row">{item.name}{item.address && <small>{item.address}</small>}</th>
-            <td>{item.units.length} แปลง</td><td className={styles.status}>{item.is_active ? "เปิดใช้งาน" : "ปิดใช้งาน"}</td>
+            <td>{item.units.length} แปลง</td><td className={ui.statusCellClass}>{item.is_active ? "เปิดใช้งาน" : "ปิดใช้งาน"}</td>
             <td><Link className={buttonVariants({ variant: "outline", size: "auto" })} href={base + "?project=" + item.id} prefetch={false} aria-label={"เปิดทะเบียน " + item.name}>เปิดทะเบียน</Link></td>
           </tr>)}</tbody>
         </table>}
       </div>}
-    <footer className={styles.footer}>
+    <footer className={ui.footerClass}>
       <p className="text-sm text-muted-foreground">{development ? units?.length : developments.length} รายการ{page.pages > 1 && ` · หน้า ${page.page} จาก ${page.pages}`}</p>
       {page.pages > 1 && <nav className="flex flex-wrap items-center gap-3" aria-label="หน้ารายการ">
         {page.page > 1 && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={listHref(page.page - 1)} prefetch={false}>ก่อนหน้า</Link>}

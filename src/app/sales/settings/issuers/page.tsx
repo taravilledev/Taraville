@@ -9,7 +9,8 @@ import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { saveIssuer } from "../../money-actions";
 import { SettingsLinks, SettingsShell, type SettingsPageProps } from "../settings-shell";
 import { checkRowClass } from "@/components/check-row";
-import settings from "../settings.module.css";
+import { cn } from "@/lib/utils";
+import { editorClass } from "../settings-styles";
 import { panelClass } from "@/components/panel";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -37,7 +38,7 @@ async function Issuers({ searchParams }: SettingsPageProps) {
   const issuer = issuerSchema.array().parse(result.data).find(item => item.brand === brand);
   return <SettingsShell {...shell} title={brandLabels[brand]} description="ข้อมูลผู้ออกเอกสารสำหรับเอกสารที่ออกใหม่"
     back={{ href: base, label: "บริษัทผู้ออกเอกสาร" }}>
-    <section className={`${panelClass} ${settings.editor}`}>
+    <section className={cn(panelClass, editorClass)}>
       <ActionForm action={saveIssuer.bind(null, { brand, version: issuer?.version ?? 0, requestId: randomUUID() })} label="บันทึกบริษัทผู้ออกเอกสาร" secondaryAction={{ label: "ยกเลิก", href: base }}><div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
           <Field><FieldLabel htmlFor="issuer-legal_name">ชื่อนิติบุคคล / ผู้ออกเอกสาร</FieldLabel><Input id="issuer-legal_name" name="legal_name" maxLength={300} required defaultValue={issuer?.legal_name} /></Field>
           <Field><FieldLabel htmlFor="issuer-tax_id">เลขประจำตัวผู้เสียภาษี</FieldLabel><Input id="issuer-tax_id" name="tax_id" maxLength={40} defaultValue={issuer?.tax_id} /></Field>

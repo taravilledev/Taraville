@@ -33,38 +33,6 @@
 .houseBriefGroup + .houseBriefGroup { margin-top: var(--space-5); }
 .houseBriefGroup legend { padding: 0; margin-bottom: var(--space-2); font-weight: 700; }
 
-.unitBrowser { display: grid; gap: var(--space-5); }
-.unitBrowser h2 { margin: 0; }
-.unitTable { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: var(--text-sm); }
-.unitTable th { color: var(--muted-foreground); text-align: start; font-weight: 500; background: var(--tint); }
-.unitTable th, .unitTable td { padding: var(--space-3); border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
-.unitTable th:first-child { width: 10%; }
-.unitTable th:nth-child(2) { width: 23%; }
-.unitTable th:nth-child(4) { width: 12%; }
-.unitTable th:nth-child(5) { width: 19%; }
-.unitTable th:last-child { width: 18%; }
-.unitTable tbody tr { cursor: pointer; }
-.unitTable tbody tr:hover, .unitTable tbody tr:focus-within { background: var(--tint); }
-.unitPrice { font-variant-numeric: tabular-nums; }
-.unitCards { display: none; margin: 0; padding: 0; list-style: none; }
-.unitCard { display: grid; gap: var(--space-2); width: 100%; padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--paper); color: var(--ink); font: inherit; text-align: start; overflow-wrap: anywhere; cursor: pointer; }
-.unitCard:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.unitCardFooter { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2); }
-.unitCardFooter > span { color: var(--primary); font-size: var(--text-sm); }
-.unitEmpty { padding: var(--space-5); text-align: center; border-radius: var(--radius-md); background: var(--tint); }
-.unitEmpty p { margin-bottom: 0; color: var(--muted-foreground); }
-.unitBrowser .unitDialogHeader h2 { font-size: var(--text-title); font-weight: 700; overflow-wrap: anywhere; }
-.unitDialogHeader h2 span { display: block; margin-top: var(--space-1); color: var(--muted-foreground); font-size: var(--text-md); font-weight: 500; }
-.unitDialogHeader button { flex-shrink: 0; }
-.unitModalPrice { margin: 0 0 var(--space-4); }
-.unitModalPrice dt { color: var(--muted-foreground); font-size: var(--text-sm); }
-.unitModalPrice dd { margin: var(--space-1) 0 0; font-size: var(--text-lg); font-weight: 700; }
-.unitPrimaryFacts { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
-.unitSecondaryFacts { margin: var(--space-4) 0 0; padding-top: var(--space-4); border-top: 1px solid var(--line); }
-.unitSecondaryFacts dd { font-weight: 400; }
-.unitDraftNote { margin: 0; padding: var(--space-4) var(--space-5) 0; border-top: 1px solid var(--line); color: var(--ink); font-size: var(--text-sm); }
-.unitBrowser dialog form > div:last-child { margin-top: var(--space-2); padding: 0 var(--space-5) var(--space-5); }
-@media (max-width: 767px) { .unitTable { display: none; } .unitCards { display: grid; gap: var(--space-3); } }
 
 .designPackages { display: grid; gap: var(--space-4); }
 .designPackages p { margin: 0; }
