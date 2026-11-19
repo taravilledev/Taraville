@@ -1,3 +1,5 @@
+import { primaryActionClass, secondaryActionClass } from "@/components/action-link-styles";
+import { accountMenuClass } from "@/components/app-shell-styles";
 import { Suspense } from "react";
 import Link from "next/link";
 import { dialablePhone } from "@/lib/walkin/phone";
@@ -12,7 +14,7 @@ import { ContactRecord, formatDate } from "@/app/walkin/privacy-controls";
 import { CustomerWork } from "./customer-work";
 import { OpenProject } from "@/app/walkin/project-controls";
 import { OpenProjectDialog } from "./open-project-dialog";
-import styles from "@/app/walkin/walkin.module.css";
+import { formCardClass } from "@/components/form-card";
 import layout from "./lead-detail.module.css";
 
 export const metadata = { title: "รายละเอียดผู้สนใจ · Taraville Group", robots: { index: false, follow: false } };
@@ -38,19 +40,19 @@ async function Detail({ params, searchParams }: Props) {
       <Link href="/leads" className={layout.back} prefetch={false}><span aria-hidden="true">←</span> กลับรายการผู้สนใจ</Link>
       <div className={layout.identity}>
         <div>
-          <p className={styles.pills}>
-            <span className={`${styles.pill} ${lead.brand === "TARAVILLE" ? styles.pillTv : styles.pillBk}`}>{COMPANIES[lead.brand].brandName}</span>
-            {lead.privacy_mode === "synthetic" && <span className={styles.pill}>ข้อมูลสมมติสำหรับทดสอบ</span>}
-            {lead.closed_at && <span className={styles.pill}>ปิดรายการแล้ว</span>}
+          <p className={layout.pills}>
+            <span className={`${layout.pill} ${lead.brand === "TARAVILLE" ? layout.pillTv : layout.pillBk}`}>{COMPANIES[lead.brand].brandName}</span>
+            {lead.privacy_mode === "synthetic" && <span className={layout.pill}>ข้อมูลสมมติสำหรับทดสอบ</span>}
+            {lead.closed_at && <span className={layout.pill}>ปิดรายการแล้ว</span>}
           </p>
           <h1>{lead.name_title} {lead.first_name} {lead.last_name}</h1>
         </div>
         <div className={`${layout.actions} ${layout.headerActions}`}>
-          {saved && <Link className={styles.secondaryLink} href="/walkin" prefetch={false}>รับลูกค้ารายถัดไป</Link>}
-          {canEdit && <Link href={`/leads/${lead.id}/edit`} className={styles.secondaryLink} prefetch={false}>แก้ไขข้อมูล</Link>}
+          {saved && <Link className={secondaryActionClass} href="/walkin" prefetch={false}>รับลูกค้ารายถัดไป</Link>}
+          {canEdit && <Link href={`/leads/${lead.id}/edit`} className={secondaryActionClass} prefetch={false}>แก้ไขข้อมูล</Link>}
           <details className={layout.options}>
-            <summary className={styles.secondaryLink}>ตัวเลือก <span aria-hidden="true">▾</span></summary>
-            <div className={styles.accountMenu}>
+            <summary className={secondaryActionClass}>ตัวเลือก <span aria-hidden="true">▾</span></summary>
+            <div className={accountMenuClass}>
               <Link href={`/leads/${lead.id}/manage`} prefetch={false}>{canEdit ? "จัดการสถานะและข้อมูล" : "ดูสถานะและความยินยอม"}</Link>
               <Link href={`/leads/${lead.id}/history`} prefetch={false}>ประวัติหลักฐาน</Link>
             </div>
@@ -62,11 +64,11 @@ async function Detail({ params, searchParams }: Props) {
     <div className={layout.workspace}>
       <CustomerWork lead={lead} projects={projects} names={names} work={work} action={
         canOpenBkp ? <OpenProjectDialog key={lead.version}><OpenProject lead={lead} /></OpenProjectDialog>
-          : work?.canCreate && <Link href={`/sales/new?lead=${lead.id}`} prefetch={false} className={styles.primaryLink}>เปิดโครงการ</Link>
+          : work?.canCreate && <Link href={`/sales/new?lead=${lead.id}`} prefetch={false} className={primaryActionClass}>เปิดโครงการ</Link>
       } />
-      <section className={styles.card}>
+      <section className={formCardClass}>
         <h2>ข้อมูลติดต่อและผู้ดูแล</h2>
-        <dl className={`${styles.details} ${layout.contact}`}>
+        <dl className={`${layout.details} ${layout.contact}`}>
           <dt>เบอร์โทร</dt><dd>{lead.phone}</dd>
           <dt>LINE ID</dt><dd>{lead.line_id || "ไม่ได้ระบุ"}</dd>
           <dt>ผู้ดูแล</dt><dd>{currentOwner}</dd>
@@ -74,14 +76,14 @@ async function Detail({ params, searchParams }: Props) {
           <dt>ติดต่อล่าสุด</dt><dd>{lead.last_contact_at ? formatDate(lead.last_contact_at) : "ยังไม่มีวันที่ติดต่อ"}</dd>
         </dl>
         {(phone || canEdit) && <div className={layout.actions}>
-          {phone && <a href={`tel:${phone}`} className={styles.secondaryLink}>โทร</a>}
+          {phone && <a href={`tel:${phone}`} className={secondaryActionClass}>โทร</a>}
           {canEdit && <ContactRecord lead={lead} />}
         </div>}
       </section>
     </div>
-    <section className={`${styles.card} ${layout.survey}`}>
+    <section className={`${formCardClass} ${layout.survey}`}>
       <h2>คำตอบแบบสอบถาม</h2>
-      <dl className={`${styles.answers} ${styles.answersGrid} ${layout.answers}`}>
+      <dl className={`${layout.answers} ${layout.answersGrid}`}>
         {SURVEY_QUESTIONS[lead.brand].filter(question => !question.legacy || lead.survey[question.key]).map(question => {
           const value = lead.survey[question.key];
           const answer = Array.isArray(value) ? value.join(" · ") : value;

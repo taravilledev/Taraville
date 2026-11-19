@@ -61,7 +61,6 @@ const MIGRATION_ALLOWLIST = new Set([
   "sales/sales.module.css",
   "sales/settings/settings.module.css",
   "summary/summary.module.css",
-  "walkin/walkin.module.css",
 ]);
 const modules = all.filter(file => file.startsWith("app/") && file.endsWith(".module.css")).map(file => file.slice(4));
 const unknown = modules.filter(file => !PRINT_MODULES.has(file) && !MIGRATION_ALLOWLIST.has(file));

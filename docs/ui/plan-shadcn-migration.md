@@ -63,6 +63,8 @@ Done when: every primitive is on `/design-system` in both touch and mouse densit
 
 Done when: no file outside `src/app/walkin/` imports `walkin.module.css`; `sales.module.css` keeps only classes used by one route; composites are on `/design-system`.
 
+Walk-in split: shared cards, text, shell, feedback and native dialog styles are consumed from their owning components or shared utility classes. External routes no longer import `walkin.module.css`. The login, password and Lead management fields use ADR 0053 markup. The Lead list and report fields follow with the Leads P3 slice.
+
 #### P2 field decision (tracked copy of ADR 0053, 2026-11-18)
 - `.field` from `sales.module.css` (109 uses, 24 files) becomes shadcn markup: `<Field><FieldLabel htmlFor={id}>…</FieldLabel><Input id={id}/></Field>` with `Input` / `Textarea` / `NativeSelect`; no wrapper component. Layout classes move to `Field`; hidden labels use `FieldLabel className="sr-only"`.
 - Ids: `useId()` where hooks are allowed (client and sync server components), `${id}-<name>` per field; async pages use fixed `<page>-<name>`; `.map()` fields append the key.
@@ -73,7 +75,7 @@ Done when: no file outside `src/app/walkin/` imports `walkin.module.css`; `sales
 - Rejected: composite class over raw controls, label wrapping primitives without ids, fixed ids everywhere, a `<LabeledField>` wrapper, restoring the old look exactly.
 
 ### P3 — Page layouts (one PR each)
-1. `/walkin` (+ real-iPad check)
+1. `/walkin` (+ real-iPad check) — layout migration prepared, real-device verification pending
 2. `/leads` (incl. `[id]`, report)
 3. `/sales` (case, tasks, settings, new) — largest; may split by sub-route
 4. `/summary` + `/dashboard`, login, shell (`layout.tsx`, `AppShell`)

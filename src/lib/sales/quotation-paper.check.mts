@@ -48,20 +48,27 @@ const sheet = load("../../app/sales/[id]/tasks/quotation-sheet.tsx", {
   "../../documents/[id]/quotation-content": content, "../../documents/[id]/quotation-pages": pages,
   "../../documents/[id]/document.module.css": css, "./quotation-editor.module.css": css,
 }) as typeof import("../../app/sales/[id]/tasks/quotation-sheet");
-const fields = load("../../app/sales/[id]/tasks/quotation-paper-fields.tsx", { "../../sales.module.css": css });
-const { ActionForm } = load("../../app/walkin/action-form.tsx", { "./walkin.module.css": css }) as typeof import("../../app/walkin/action-form");
+const fields = load("../../app/sales/[id]/tasks/quotation-paper-fields.tsx", { "./quotation-editor.module.css": css });
+const { ActionForm } = load("../../app/walkin/action-form.tsx", {
+  "@/components/form-feedback": load("../../components/form-feedback.ts"),
+  "@/components/action-link-styles": load("../../components/action-link-styles.ts"),
+}) as typeof import("../../app/walkin/action-form");
 const reviewActionProps = { action: async () => ({ error: "" }), children: "Preview",
   label: "บันทึกเป็นฉบับใหม่", secondaryAction: { label: "กลับไปแก้บนเอกสาร", onClick: () => {} } };
 const reviewActions = renderToStaticMarkup(createElement(ActionForm, reviewActionProps));
-assert.match(reviewActions, /<div><button[^>]*type="button"[^>]*>กลับไปแก้บนเอกสาร<\/button><button[^>]*type="submit"[^>]*>บันทึกเป็นฉบับใหม่<\/button><\/div>/,
+assert.match(reviewActions, /<div[^>]*><button[^>]*type="button"[^>]*>กลับไปแก้บนเอกสาร<\/button><button[^>]*type="submit"[^>]*>บันทึกเป็นฉบับใหม่<\/button><\/div>/,
   "Review navigation and submit share a footer, with submit last");
 const lockActions = renderToStaticMarkup(createElement(ActionForm, { ...reviewActionProps, label: "ล็อกและออกเลขสัญญา",
   secondaryAction: { label: "กลับไปแก้ร่าง", href: "/sales/case?task=edit-contract&row=draft" } }));
-assert.match(lockActions, /<div><a[^>]*href="\/sales\/case\?task=edit-contract&amp;row=draft"[^>]*>กลับไปแก้ร่าง<\/a><button[^>]*type="submit"[^>]*>ล็อกและออกเลขสัญญา<\/button><\/div>/,
+assert.match(lockActions, /<div[^>]*><a[^>]*href="\/sales\/case\?task=edit-contract&amp;row=draft"[^>]*>กลับไปแก้ร่าง<\/a><button[^>]*type="submit"[^>]*>ล็อกและออกเลขสัญญา<\/button><\/div>/,
   "Draft navigation is a link in the same footer as the lock submit");
-const taskHeader = load("../../app/sales/[id]/tasks/task-header.tsx", { "../../sales.module.css": css, "./task-header.module.css": css });
+const button = load("../../components/ui/button.tsx", { "@/lib/utils": load("../utils.ts") });
+const taskHeader = load("../../app/sales/[id]/tasks/task-header.tsx", {
+  "./task-header.module.css": css, "@/components/ui/button": button,
+});
 const { QuotationEditor } = load("../../app/sales/[id]/tasks/quotation-editor.tsx", {
   "@/app/walkin/action-form": { ActionForm: () => null }, "@/lib/sales/money": money,
+  "@/components/ui/button": button, "@/components/check-row": load("../../components/check-row.tsx"),
   "./task-header": taskHeader,
   "../../sales.module.css": css, "./quotation-editor.module.css": css,
   "@/lib/sales/agreement-inputs": { quotationPaperSchema }, "./quotation-paper-fields": fields, "./quotation-sheet": sheet,

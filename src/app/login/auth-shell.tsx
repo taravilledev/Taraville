@@ -1,16 +1,18 @@
+import { shellClass, shellFooterClass } from "@/components/app-shell-styles";
+import { skeletonClass, skeletonBlockClass, skeletonTitleClass, skeletonCardClass } from "@/components/page-skeleton-styles";
 import type { ReactNode } from "react";
 import Image from "next/image";
 import { COMPANIES } from "@/lib/walkin/companies";
-import walkin from "@/app/walkin/walkin.module.css";
+import { formCardClass } from "@/components/form-card";
 import styles from "./auth.module.css";
 
 const BRAND_CAPTIONS = [["TARAVILLE", "ธาราวิล · บ้านจัดสรร"], ["BAAN_KUNAPAP", "บ้านคุณภาพ · รับสร้างบ้าน"]] as const;
 
 // Signed-out pages carry the group identity themselves, so they skip the AppShell header.
 export function AuthShell({ children }: { children: ReactNode }) {
-  return <div className={`${walkin.shell} dense`} lang="th">
+  return <div data-slot="app-shell" className={`${shellClass} dense`} lang="th">
     <main className={styles.main}>
-      <section className={`${walkin.card} ${styles.card}`}>
+      <section className={`${formCardClass} ${styles.card}`}>
         <header className={styles.brand}>
           <p className={styles.badge}>สำหรับพนักงานเท่านั้น</p>
           <p className={styles.group}>Taraville Group</p>
@@ -26,14 +28,14 @@ export function AuthShell({ children }: { children: ReactNode }) {
         {children}
       </section>
     </main>
-    <footer className={walkin.siteFooter}>Taraville Group · ธาราวิล · บ้านคุณภาพ © 2026</footer>
+    <footer className={shellFooterClass}>Taraville Group · ธาราวิล · บ้านคุณภาพ © 2026</footer>
   </div>;
 }
 
 export function AuthSkeleton() {
-  return <AuthShell><div className={walkin.skeleton} role="status">
-    <span className={walkin.srOnly}>กำลังโหลด…</span>
-    <div className={`${walkin.skeletonBlock} ${walkin.skeletonTitle}`} />
-    <div className={`${walkin.skeletonBlock} ${walkin.skeletonCard}`} />
+  return <AuthShell><div className={skeletonClass} role="status">
+    <span className="sr-only">กำลังโหลด…</span>
+    <div className={`${skeletonBlockClass} ${skeletonTitleClass}`} />
+    <div className={`${skeletonBlockClass} ${skeletonCardClass}`} />
   </div></AuthShell>;
 }

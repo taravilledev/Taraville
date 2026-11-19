@@ -1,5 +1,6 @@
 "use client";
 
+import { nativeDialogClass, nativeDialogHeaderClass, nativeDialogBodyClass } from "@/components/native-dialog-styles";
 import { useEffect, useId, useRef, useState } from "react";
 import { ActionForm } from "@/app/walkin/action-form";
 import { formatMoney } from "@/lib/sales/money";
@@ -7,7 +8,6 @@ import { createCase } from "../actions";
 import styles from "../sales.module.css";
 import { factsClass } from "@/components/facts";
 import { pageHeaderClass } from "@/components/page-header";
-import dialogStyles from "@/app/walkin/walkin.module.css";
 import { buttonVariants } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
@@ -66,15 +66,15 @@ export function OpeningFields({ units, leadId, requestId }: { units: Unit[]; lea
         </button>
       </li>)}</ul>
     </>}
-    <dialog ref={dialog} className={dialogStyles.dialog} aria-labelledby="plot-dialog-title" onClose={() => setUnit(null)} onCancel={event => {
+    <dialog ref={dialog} className={nativeDialogClass} aria-labelledby="plot-dialog-title" onClose={() => setUnit(null)} onCancel={event => {
       if (dialog.current?.querySelector("fieldset")?.disabled) event.preventDefault();
     }}>
       {unit && <ActionForm key={unit.id} action={createCase} label="เปิดโครงการด้วยแปลงนี้">
-        <div className={`${dialogStyles.dialogBar} ${styles.unitDialogHeader}`}>
+        <div className={`${nativeDialogHeaderClass} ${styles.unitDialogHeader}`}>
           <h2 id="plot-dialog-title">แปลง {unit.code}<span>โครงการ {unit.location}</span></h2>
           <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} onClick={() => dialog.current?.close()}>ปิด</button>
         </div>
-        <div className={dialogStyles.dialogBody}>
+        <div className={nativeDialogBodyClass}>
           <dl className={styles.unitModalPrice}><dt>ราคาทะเบียน</dt><dd>{price(unit)}</dd></dl>
           <dl className={`${factsClass} ${styles.unitPrimaryFacts}`}>
             {[["model", "แบบบ้าน"], ["land_area", "เนื้อที่ดิน (ตร.ว.)"], ["usable_area", "พื้นที่ใช้สอย (ตร.ม.)"], ["build_status", "สถานะก่อสร้าง"]].map(([key, label]) =>

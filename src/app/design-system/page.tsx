@@ -28,7 +28,7 @@ async function DesignSystem() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-title font-bold">Design system</h1>
-        <p className="text-muted-foreground">ADR 0031. ส่วนประกอบใน <code>src/components/ui</code> แสดงที่นี่ทุกตัว</p>
+        <p className="text-muted-foreground">ADR 0031. ส่วนประกอบพื้นฐานและส่วนประกอบร่วมของแอป</p>
       </header>
 
       <Section title="สี (semantic tokens)">

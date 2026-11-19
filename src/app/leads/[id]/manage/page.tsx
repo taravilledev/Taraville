@@ -1,3 +1,5 @@
+import { NativeSelect } from "@/components/ui/native-select";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Suspense } from "react";
 import Link from "next/link";
 import { closeInfo, leadDetail, leadProjects, saleOwners } from "@/lib/walkin/queries";
@@ -10,7 +12,7 @@ import { reassignLead } from "@/app/walkin/actions";
 import { LeadStatus } from "@/app/walkin/status-controls";
 import { CancelProject } from "@/app/walkin/project-controls";
 import { SurveyChoice } from "@/app/walkin/privacy-controls";
-import styles from "@/app/walkin/walkin.module.css";
+import { formCardClass, formHintClass } from "@/components/form-card";
 
 export const metadata = { title: "จัดการผู้สนใจ · Taraville Group", robots: { index: false, follow: false } };
 type Props = { params: Promise<{ id: string }> };
@@ -33,12 +35,16 @@ async function Manage({ params }: Props) {
     <LeadStatus lead={lead} info={info} hasActiveProject={Boolean(activeProject)} canEdit={canEdit} openWorkCount={openWorkCount} />
     {isExecutive && activeProject && <CancelProject lead={lead} project={activeProject} />}
     <SurveyChoice lead={lead} events={events} canEdit={canEdit} />
-    {isExecutive && <section className={styles.card}><h2>เปลี่ยนฝ่ายขายผู้ดูแล</h2>
+    {isExecutive && <section className={formCardClass}><h2>เปลี่ยนฝ่ายขายผู้ดูแล</h2>
       <ActionForm action={reassignLead.bind(null, lead.id, lead.version)} label="เปลี่ยนผู้ดูแล">
-        <label className={styles.field}><span>ฝ่ายขายผู้ดูแล<RequiredMark /></span><select name="owner_id" defaultValue={owners.some(owner => owner.id === lead.owner_id) ? lead.owner_id : ""} required>
-          <option value="">เลือกฝ่ายขาย</option>{owners.map(owner => <option key={owner.id} value={owner.id}>{owner.full_name}</option>)}
-        </select></label>
-        <p className={styles.hint}>ผู้ดูแลคนใหม่จะแก้ไขรายการนี้ได้ ผู้ดูแลเดิมยังดูข้อมูลได้</p>
+        <Field>
+          <FieldLabel htmlFor="lead-manage-owner">ฝ่ายขายผู้ดูแล<RequiredMark /></FieldLabel>
+          <NativeSelect id="lead-manage-owner" name="owner_id" defaultValue={owners.some(owner => owner.id === lead.owner_id) ? lead.owner_id : ""} required>
+            <option value="">เลือกฝ่ายขาย</option>
+            {owners.map(owner => <option key={owner.id} value={owner.id}>{owner.full_name}</option>)}
+          </NativeSelect>
+        </Field>
+        <p className={formHintClass}>ผู้ดูแลคนใหม่จะแก้ไขรายการนี้ได้ ผู้ดูแลเดิมยังดูข้อมูลได้</p>
       </ActionForm>
     </section>}
   </AppShell>;

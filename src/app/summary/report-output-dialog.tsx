@@ -1,9 +1,9 @@
 "use client";
 
+import { nativeDialogClass, nativeDialogHeaderClass, nativeDialogBodyClass } from "@/components/native-dialog-styles";
 import { useId, useRef, useState } from "react";
 import { createPortal, flushSync } from "react-dom";
 import { toast } from "sonner";
-import walkinStyles from "@/app/walkin/walkin.module.css";
 import { ProjectTable } from "./project-table";
 import {
   amountState, collectionFilters, displayAmount, filterSummaryReportRows, selectSummaryReport, summaryCsv,
@@ -61,12 +61,12 @@ export function ReportOutputDialog({ report, title, today }: { report: SummaryRe
       disabled={!report.rows.length} onClick={() => open("csv")}>ส่งออก CSV</button>
     <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} aria-haspopup="dialog" aria-controls="summary-output"
       disabled={!report.rows.length} onClick={() => open("print")}>พิมพ์ / PDF</button>
-    <dialog ref={dialog} id="summary-output" className={`${walkinStyles.dialog} ${styles.selectionDialog}`} aria-labelledby="summary-output-title">
-      <div className={walkinStyles.dialogBar}>
+    <dialog ref={dialog} id="summary-output" className={`${nativeDialogClass} ${styles.selectionDialog}`} aria-labelledby="summary-output-title">
+      <div className={nativeDialogHeaderClass}>
         <h2 id="summary-output-title">{mode === "print" ? "เลือกโครงการสำหรับพิมพ์ / PDF" : "เลือกโครงการสำหรับส่งออก CSV"}</h2>
         <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} onClick={() => dialog.current?.close()}>ปิด</button>
       </div>
-      <div className={`${walkinStyles.dialogBody} ${styles.selectionBody}`}>
+      <div className={`${nativeDialogBodyClass} ${styles.selectionBody}`}>
         <p className={styles.selectionCount} aria-live="polite">เลือก {count.toLocaleString("th-TH")} จาก {report.rows.length.toLocaleString("th-TH")} โครงการ</p>
         <dl className={styles.selectionTotals} aria-label="ยอดรวมโครงการที่เลือก (บาท)">
           {chosen.columns.map(column => <div key={column.key}>
