@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const cardClass = "relative grid grid-cols-[minmax(0,1.4fr)_minmax(0,.85fr)_minmax(0,1.6fr)_auto] items-start gap-4 border-t p-4 [overflow-wrap:anywhere] first:rounded-t-lg first:border-t-0 last:rounded-b-lg hover:bg-tint @max-[850px]/lead-list:grid-cols-2 @max-[510px]/lead-list:grid-cols-1 @max-[510px]/lead-list:gap-3";
+const cardClass = "relative grid grid-cols-[minmax(0,1.4fr)_minmax(0,.85fr)_minmax(0,1.6fr)_auto] items-start gap-4 border-t p-4 [overflow-wrap:anywhere] first:rounded-t-lg first:border-t-0 last:rounded-b-lg hover:bg-accent @max-[850px]/lead-list:grid-cols-2 @max-[510px]/lead-list:grid-cols-1 @max-[510px]/lead-list:gap-3";
 const stackClass = "grid min-w-0 justify-items-start gap-2";
 const tagClass = "rounded-sm px-2 py-0 font-semibold text-muted-foreground";
 

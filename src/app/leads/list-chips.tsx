@@ -2,7 +2,7 @@ import Link from "next/link";
 import { hidesClosed, listHref, type LeadFilters } from "@/lib/walkin/lead-list";
 import { STAGE_LABELS } from "@/lib/walkin/lead-stage";
 
-const chipClass = "inline-flex min-h-(--tap-min) items-center rounded-full border border-line-strong bg-tint px-4 text-sm no-underline";
+const chipClass = "inline-flex min-h-(--tap-min) items-center rounded-full border border-line-strong bg-accent px-4 text-sm no-underline";
 
 export function ListChips({ filters, ownerName }: { filters: LeadFilters; ownerName: Map<string, string> }) {
   const chips = [

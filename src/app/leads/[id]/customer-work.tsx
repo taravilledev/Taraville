@@ -43,7 +43,7 @@ function WorkCard({ code, status, item, href, children }: {
     {children}
     {href && <span className="flex items-center justify-between text-sm font-bold text-primary">ดูรายละเอียด <span aria-hidden="true">→</span></span>}
   </>;
-  return href ? <Link href={href} prefetch={false} className={cn(workCardClass, "border-line-strong hover:border-primary hover:bg-tint active:border-primary active:bg-tint")} aria-label={`เปิดโครงการ ${code}`}>{content}</Link>
+  return href ? <Link href={href} prefetch={false} className={cn(workCardClass, "border-line-strong hover:border-primary hover:bg-accent active:border-primary active:bg-accent")} aria-label={`เปิดโครงการ ${code}`}>{content}</Link>
     : <div className={workCardClass}>{content}</div>;
 }
 
