@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import styles from "../sales.module.css";
 import { buttonVariants } from "@/components/ui/button";
 
 export function HouseBriefEditor({ label, summary, children }: {
@@ -18,7 +17,7 @@ export function HouseBriefEditor({ label, summary, children }: {
   }, [isEditing]);
 
   return <>
-    <div className={styles.houseBriefHeader}>
+    <div className="flex flex-wrap items-center justify-between gap-3">
       <h2 id="house-brief">ความต้องการบ้าน</h2>
       <button ref={toggle} type="button" className={buttonVariants({ variant: "outline", size: "auto" })} aria-expanded={isEditing}
         aria-controls="house-brief-content" onClick={() => {

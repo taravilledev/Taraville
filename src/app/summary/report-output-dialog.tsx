@@ -1,15 +1,16 @@
 "use client";
 
+import { nativeDialogClass, nativeDialogHeaderClass, nativeDialogBodyClass } from "@/components/native-dialog-styles";
 import { useId, useRef, useState } from "react";
 import { createPortal, flushSync } from "react-dom";
 import { toast } from "sonner";
-import walkinStyles from "@/app/walkin/walkin.module.css";
 import { ProjectTable } from "./project-table";
 import {
   amountState, collectionFilters, displayAmount, filterSummaryReportRows, selectSummaryReport, summaryCsv,
   summaryStages, updateSummarySelection, type SummaryReport,
 } from "./summary-model";
-import styles from "./summary.module.css";
+import * as styles from "./summary-styles";
+import paper from "./summary-print.module.css";
 import { buttonVariants } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -61,12 +62,12 @@ export function ReportOutputDialog({ report, title, today }: { report: SummaryRe
       disabled={!report.rows.length} onClick={() => open("csv")}>ส่งออก CSV</button>
     <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} aria-haspopup="dialog" aria-controls="summary-output"
       disabled={!report.rows.length} onClick={() => open("print")}>พิมพ์ / PDF</button>
-    <dialog ref={dialog} id="summary-output" className={`${walkinStyles.dialog} ${styles.selectionDialog}`} aria-labelledby="summary-output-title">
-      <div className={walkinStyles.dialogBar}>
+    <dialog ref={dialog} id="summary-output" className={`${nativeDialogClass} ${styles.selectionDialog}`} aria-labelledby="summary-output-title">
+      <div className={nativeDialogHeaderClass}>
         <h2 id="summary-output-title">{mode === "print" ? "เลือกโครงการสำหรับพิมพ์ / PDF" : "เลือกโครงการสำหรับส่งออก CSV"}</h2>
         <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} onClick={() => dialog.current?.close()}>ปิด</button>
       </div>
-      <div className={`${walkinStyles.dialogBody} ${styles.selectionBody}`}>
+      <div className={`${nativeDialogBodyClass} ${styles.selectionBody}`}>
         <p className={styles.selectionCount} aria-live="polite">เลือก {count.toLocaleString("th-TH")} จาก {report.rows.length.toLocaleString("th-TH")} โครงการ</p>
         <dl className={styles.selectionTotals} aria-label="ยอดรวมโครงการที่เลือก (บาท)">
           {chosen.columns.map(column => <div key={column.key}>
@@ -130,7 +131,7 @@ export function ReportOutputDialog({ report, title, today }: { report: SummaryRe
         </button>
       </div>
     </dialog>
-    {printReport && createPortal(<main className={`${styles.printReport} ${styles.selectionPrint}`}>
+    {printReport && createPortal(<main className={`${paper.printReport} ${paper.selectionPrint}`}>
       <h1>{title} · บ้านคุณภาพ</h1>
       <p>หน่วยบาท{printReport.periodLabel && ` · รับและคืนเงิน ${printReport.periodLabel}`}
         {printReport.rows.some(row => row.hasUnknownBalance || row.amounts.value === null) && " · รวมเฉพาะยอดที่ระบุได้"}</p>

@@ -4,10 +4,19 @@ import { ArrowUpRight, ClipboardCheck, Clock, FileCheck, FileSignature, Receipt,
 import { formatDate } from "@/lib/sales/date";
 import type { ExecutiveWork } from "@/lib/sales/executive";
 import { brandLabels } from "@/lib/sales/models";
-import dashboard from "./executive-dashboard.module.css";
 import { tagClass } from "@/components/tag";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
+const focusRing = "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary";
+const metricClass = (compact: boolean) => cn(
+  "relative grid min-w-0 gap-3 rounded-md border bg-card p-4 text-foreground no-underline hover:border-primary hover:bg-accent aria-[current]:border-primary aria-[current]:bg-accent max-[440px]:p-3",
+  "[&_strong]:text-title [&_strong]:tabular-nums [&_small]:text-sm [&_small]:font-medium", focusRing,
+  compact && "inline-flex min-h-(--tap-min) items-center gap-2 px-3 py-2 [&_strong]:text-sm [&_small]:hidden",
+);
+const tableClass = "w-full min-w-[43rem] border-collapse text-start text-sm [&_a]:underline-offset-4 [&_small]:block [&_small]:font-normal [&_small]:text-muted-foreground " +
+  "[&_tbody_th_span]:block [&_tbody_th_span]:font-normal [&_tbody_th_span]:text-muted-foreground [&_tbody_tr:hover]:bg-accent " +
+  "[&_td]:border-t [&_td]:px-4 [&_td]:py-3 [&_td]:text-start [&_th]:border-t [&_th]:px-4 [&_th]:py-3 [&_th]:text-start [&_thead]:bg-accent [&_thead]:text-muted-foreground";
 const priorities = [
   { key: "pending", label: "เงินรอยืนยัน", Icon: Receipt, anchor: "pending" },
   { key: "overdue", label: "ใบแจ้งชำระเกินกำหนด", Icon: Clock, anchor: "collection-title" },
@@ -37,27 +46,27 @@ export function ExecutiveDashboard({ rows, filters, filterForm, compact = false 
     return `/dashboard${params.size ? `?${params}` : ""}`;
   }
   return <>
-    <section aria-labelledby="queue-title" id="queue" className={dashboard.priorities} data-compact={compact || undefined}>
-      <h2 id="queue-title">{compact ? "กรองตารางโครงการตามงาน" : "งานที่ต้องติดตาม"}</h2>
-      <div className={dashboard.cards}>
+    <section aria-labelledby="queue-title" id="queue" className="min-w-0">
+      <h2 id="queue-title" className="m-0 text-lg">{compact ? "กรองตารางโครงการตามงาน" : "งานที่ต้องติดตาม"}</h2>
+      <div className={cn("mt-3 grid grid-cols-4 gap-3 max-[900px]:grid-cols-2", compact && "flex flex-wrap gap-2")}>
         {(compact ? priorities : priorities.slice(0, 4)).map(({ key, label, Icon }) => <Link key={key} href={href(active?.key === key ? "" : key)} prefetch={false}
-          className={dashboard.metric} aria-current={active?.key === key ? "true" : undefined}>
-          <span className={dashboard.metricLabel}><Icon size={18} aria-hidden="true" />{label}</span>
+          className={metricClass(compact)} aria-current={active?.key === key ? "true" : undefined}>
+          <span className={cn("flex items-center gap-2 pr-4 text-muted-foreground max-[440px]:pr-0 [&_svg]:flex-none [&_svg]:text-primary", compact && "p-0")}><Icon size={18} aria-hidden="true" />{label}</span>
           <strong>{rows.reduce((total, row) => total + row[key], 0).toLocaleString("th-TH")} <small>{key === "quotation" || key === "signature" ? "โครงการ" : "รายการ"}</small></strong>
-          <ArrowUpRight className={dashboard.arrow} size={16} aria-hidden="true" />
+          <ArrowUpRight className={cn("absolute top-4 right-3 text-primary max-[440px]:hidden", compact && "hidden")} size={16} aria-hidden="true" />
         </Link>)}
       </div>
     </section>
     {filterForm}
-    <section aria-labelledby="projects-title" className={dashboard.projects}>
-      <div className={dashboard.bar}>
-        <div><h2 id="projects-title">ติดตามโครงการ</h2><p className="text-sm text-muted-foreground">
+    <section aria-labelledby="projects-title" className="min-w-0 rounded-lg border bg-card">
+      <div className="flex items-center justify-between gap-3 p-4">
+        <div><h2 id="projects-title" className="m-0 text-lg">ติดตามโครงการ</h2><p className="mt-1 mb-0 text-sm text-muted-foreground">
           {active ? `${active.label} · ` : ""}{matches.length.toLocaleString("th-TH")} โครงการ
         </p></div>
         {active && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={href("")} prefetch={false}>ดูทุกโครงการ</Link>}
       </div>
-      {matches.length ? <div className={dashboard.tableScroll} role="region" aria-label="ตารางติดตามโครงการ" tabIndex={0}>
-        <table className={dashboard.table}>
+      {matches.length ? <div className={cn("overflow-x-auto", focusRing)} role="region" aria-label="ตารางติดตามโครงการ" tabIndex={0}>
+        <table className={tableClass}>
           <thead><tr><th scope="col">โครงการ / ลูกค้า</th><th scope="col">ผู้รับผิดชอบ</th><th scope="col">ขั้นปัจจุบัน</th>
             <th scope="col">รอตั้งแต่ / อัปเดต</th><th scope="col">งานถัดไป</th></tr></thead>
           <tbody>{matches.slice(first, first + pageSize).map(row => {
@@ -73,12 +82,12 @@ export function ExecutiveDashboard({ rows, filters, filterForm, compact = false 
               <td>{row.owner}</td><td><span className={tagClass}>{row.stage}</span></td>
               <td>{row.waiting_since ? <><small>รอตั้งแต่</small>{localDate(row.waiting_since)}</>
                 : <><small>อัปเดต</small>{localDate(row.updated_at)}</>}</td>
-              <td>{action ? <Link href={action.href} prefetch={false} className={dashboard.action}>{action.title}<ArrowUpRight size={15} aria-hidden="true" /></Link> : "—"}</td>
+              <td>{action ? <Link href={action.href} prefetch={false} className={cn("inline-flex min-h-(--tap-min) items-center gap-1 font-semibold text-primary [&_svg]:flex-none", focusRing)}>{action.title}<ArrowUpRight size={15} aria-hidden="true" /></Link> : "—"}</td>
             </tr>;
           })}</tbody>
         </table>
-      </div> : <p className={dashboard.empty}>ไม่พบโครงการตามตัวกรอง</p>}
-      {pages > 1 && <nav aria-label="หน้าตารางโครงการ" className={dashboard.pager}>
+      </div> : <p className="m-0 p-4 text-muted-foreground">ไม่พบโครงการตามตัวกรอง</p>}
+      {pages > 1 && <nav aria-label="หน้าตารางโครงการ" className="flex items-center justify-end gap-3 border-t p-4">
         {page > 1 && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={href(active?.key, page - 1)} prefetch={false}>ก่อนหน้า</Link>}
         <span>หน้า {page} / {pages}</span>
         {page < pages && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={href(active?.key, page + 1)} prefetch={false}>ถัดไป</Link>}

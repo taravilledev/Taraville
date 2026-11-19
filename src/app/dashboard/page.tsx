@@ -9,7 +9,6 @@ import { dashboardFollowUps, dashboardOverview } from "@/lib/sales/dashboard-dat
 import { ExecutiveDashboard } from "../sales/executive-dashboard";
 import { DashboardOverview } from "./overview";
 import { groupDashboardProjects, projectOwnershipLabels, type ProjectOwnership } from "./project-ownership";
-import styles from "../sales/sales.module.css";
 import { tabLinksClass } from "@/components/tab-links";
 import { pageHeaderClass } from "@/components/page-header";
 import { noticeClass } from "@/components/notice";
@@ -19,6 +18,9 @@ import { buttonVariants } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
+import { cn } from "@/lib/utils";
+
+const caseRowClass = "grid grid-cols-[1fr_auto] items-center gap-3 rounded-md border bg-card p-4 max-[640px]:grid-cols-1 [&_a]:font-bold [&_a]:text-foreground [&_a]:underline-offset-4";
 
 export const metadata = { title: "แดชบอร์ด · Taraville Group", robots: { index: false, follow: false } };
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -39,7 +41,7 @@ async function Workspace({ searchParams }: Props) {
     ? rawOwnership as ProjectOwnership : "all";
   const filtered = status !== "active" || brand !== "" || query !== "" || attention !== "";
   const brands = [{ value: "", label: "ทั้งสองแบรนด์" }, ...Object.entries(brandLabels).map(([value, label]) => ({ value, label }))];
-  const filterForm = <form className={`${styles.filters} ${executive ? styles.dashboardFilters : ""}`} method="get" role="search">
+  const filterForm = <form className={cn("grid grid-cols-[minmax(0,2fr)_repeat(2,minmax(0,1fr))_auto_auto] items-end gap-3 max-[640px]:grid-cols-1", executive && "min-[641px]:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto_auto]")} method="get" role="search">
       <Field><FieldLabel htmlFor="dashboard-q">ค้นหาชื่อลูกค้าหรือรหัส</FieldLabel><Input id="dashboard-q" type="search" name="q" defaultValue={query} maxLength={100} /></Field>
       {executive ? <input type="hidden" name="brand" value={brand} />
         : <Field><FieldLabel htmlFor="dashboard-brand">แบรนด์</FieldLabel><NativeSelect id="dashboard-brand" name="brand" defaultValue={brand}>
@@ -95,7 +97,7 @@ async function Workspace({ searchParams }: Props) {
     <section className={panelClass} id="queue" aria-labelledby="queue-title"><h2 id="queue-title">งานรอทำ</h2>
       {!queue ? <p className={noticeClass} role="status">โหลดงานรอทำไม่ได้ ลองรีเฟรชหน้านี้ รายการทั้งหมดด้านล่างยังใช้ได้</p>
         : !queue.length ? <p className="text-sm text-muted-foreground">ไม่มีงานที่รอคุณดำเนินการ</p>
-        : <ul className="grid gap-3">{queue.map(item => <li key={`${item.case_id}:${item.kind}`} className={styles.case}>
+        : <ul className="grid gap-3">{queue.map(item => <li key={`${item.case_id}:${item.kind}`} className={caseRowClass}>
           <div><Link href={`/sales/${item.case_id}?tab=money#${item.kind === "acceptance" ? "schedule" : item.kind === "payment_pending" ? "pending" : "refunds"}`} prefetch={false}>{item.code}{item.customer_name ? ` · ${item.customer_name}` : ""}</Link>
             <p className="text-sm text-muted-foreground">{workQueueKinds[item.kind]} {item.count} รายการ · รอตั้งแต่ {new Date(item.since).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })}</p></div>
           <span className={tagClass}>{brandLabels[item.brand]}</span></li>)}</ul>}
@@ -110,7 +112,7 @@ async function Workspace({ searchParams }: Props) {
       </nav>}
       {filterForm}
       <p className="text-sm text-muted-foreground">พบ {visibleCases.length} โครงการ{cases.length === 100 && " จากผลล่าสุด 100 รายการ"}</p>
-      {visibleCases.length ? <ul className="grid gap-3">{visibleCases.map(sale => <li key={sale.id} className={styles.case}>
+      {visibleCases.length ? <ul className="grid gap-3">{visibleCases.map(sale => <li key={sale.id} className={caseRowClass}>
         <div><Link href={`/sales/${sale.id}`} prefetch={false}>{sale.code} · {sale.customer_name}</Link>
           <p className="text-sm text-muted-foreground">{brandLabels[sale.brand]}
             {!executive && (sale.responsible_id === staff.id ? " · ฉันดูแล" : " · คนอื่นดูแล")}

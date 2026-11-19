@@ -16,7 +16,7 @@ import { checkRowClass } from "@/components/check-row";
 import { idOf, type TaskData } from "./task-data";
 import { DesignPackages } from "./design-packages";
 import { formatMoney } from "@/lib/sales/money";
-import acceptance from "./quotation-acceptance.module.css";
+import * as acceptance from "./quotation-acceptance-styles";
 import { noticeClass } from "@/components/notice";
 import { buttonVariants } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";

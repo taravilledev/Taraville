@@ -1,5 +1,5 @@
 import { AuthShell } from "../auth-shell";
-import styles from "@/app/walkin/walkin.module.css";
+import { Button } from "@/components/ui/button";
 
 export const metadata = { title: "ลืมรหัสผ่าน · Taraville Group", robots: { index: false, follow: false } };
 export default function PasswordHelpPage() {
@@ -14,6 +14,8 @@ export default function PasswordHelpPage() {
     </ol>
     <p>ไม่ต้องแจ้งรหัสเดิมหรือรหัสใหม่ให้ผู้ดูแล และไม่ส่งรหัสผ่านในแชตหรือกลุ่มงาน</p>
     <p>ระบบนี้ยังไม่ส่งลิงก์กู้คืนทางอีเมล หากไม่มีผู้ดูแลที่ได้รับมอบหมาย ให้ติดต่อผู้รับผิดชอบระบบของบริษัทก่อน</p>
-    <a className={styles.primaryLink} href="/login">กลับหน้าเข้าสู่ระบบ</a>
+    <Button asChild size="auto" className="min-h-(--control-h) px-6 text-sm font-bold no-underline">
+      <a href="/login">กลับหน้าเข้าสู่ระบบ</a>
+    </Button>
   </AuthShell>;
 }

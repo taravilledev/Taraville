@@ -4,7 +4,7 @@ import type { DashboardOverviewData } from "@/lib/sales/dashboard-data";
 import { formatDate } from "@/lib/sales/date";
 import { brandLabels } from "@/lib/sales/models";
 import { displayAmount } from "../summary/summary-model";
-import styles from "./overview.module.css";
+import * as styles from "./overview-styles";
 
 type FollowUp = {
   label: string;
@@ -62,7 +62,7 @@ export function DashboardOverview({ data, groups, brand }: { data: DashboardOver
             {groups.map(({ label, count, project, href }) => <li key={label} className={styles.group}>
               <Link href={href} prefetch={false} className={styles.groupLink}><span>{label}</span><span>{number.format(count)} โครงการ <ArrowUpRight size={14} aria-hidden="true" /></span></Link>
               {project ? <div className={styles.itemText}>
-                <Link href={project.href} className={styles.itemTitle} prefetch={false}>{project.code} · {project.customer}</Link>
+                <Link href={project.href} className={styles.groupTitle} prefetch={false}>{project.code} · {project.customer}</Link>
                 <p className={styles.meta}>{project.owner || "—"} · {project.waitingSince ? `รอตั้งแต่ ${dateOf(project.waitingSince)}` : "ยังไม่มีวันที่เริ่มรอ"}</p>
               </div> : <p className={styles.meta}>ไม่มีโครงการในกลุ่มนี้</p>}
             </li>)}
@@ -77,7 +77,7 @@ export function DashboardOverview({ data, groups, brand }: { data: DashboardOver
           {data.due.length > 0 ? <ul className={styles.items}>
             {data.due.map(item => <li className={styles.dueRow} key={`${item.group}:${item.id}`}>
               <span className={styles.dueBadge} data-overdue={item.due_date < today}>{dueLabel(item.due_date, today)}</span>
-              <div className={styles.itemText}>
+              <div className={styles.dueText}>
                 <p className={styles.itemTitle}>{item.code} · {item.customer}</p>
                 <p className={styles.meta}>{item.label} · {brandLabels[item.brand]}</p>
                 <p className={styles.meta}>ครบกำหนด {formatDate(item.due_date)}</p>
@@ -94,14 +94,14 @@ export function DashboardOverview({ data, groups, brand }: { data: DashboardOver
         </section>
       </div>
 
-      <section className={`${styles.panel} ${styles.leads}`} aria-labelledby="dashboard-leads">
+      <section className={styles.panel} aria-labelledby="dashboard-leads">
         <div className={styles.sectionHeader}>
           <h2 id="dashboard-leads">ลูกค้า Walk-in ล่าสุด</h2>
           <Link className={styles.action} href={leadsHref} prefetch={false}>ดูทั้งหมด<ArrowUpRight size={15} aria-hidden="true" /></Link>
         </div>
         {data.leads.length > 0 ? <ul className={styles.items}>{data.leads.map(lead => <li className={styles.leadRow} key={lead.id}>
-          <div className={styles.itemText}>
-            <Link href={`/leads/${lead.id}`} className={styles.itemTitle} prefetch={false}>{lead.customer}</Link>
+          <div className={styles.leadText}>
+            <Link href={`/leads/${lead.id}`} className={styles.leadTitle} prefetch={false}>{lead.customer}</Link>
             <p className={styles.meta}>รับเมื่อ {dateOf(lead.created_at)}</p>
             <p className={styles.meta}>ผู้ดูแล {lead.owner || "—"}</p>
           </div>

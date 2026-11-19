@@ -3,7 +3,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { designAreaPattern, designPackages, designTierForArea, sumDesignInstalments } from "@/lib/sales/design-fees";
 import { formatMoney, parseMoney } from "@/lib/sales/money";
-import styles from "../../sales.module.css";
 import { checkRowClass } from "@/components/check-row";
 import { cn } from "@/lib/utils";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
@@ -12,6 +11,11 @@ import { Textarea } from "@/components/ui/textarea";
 
 const milestones = ["ส่งมอบแบบแปลน", "ส่งมอบ 3D", "ส่งมอบครบ"];
 const number = new Intl.NumberFormat("th-TH");
+
+const packageClass = "relative grid cursor-pointer content-start gap-2 rounded-md border border-line-strong p-4 has-[:checked]:border-primary has-[:checked]:bg-accent has-[:checked]:shadow-[inset_0_0_0_1px_var(--primary)] " +
+  "has-[:disabled]:cursor-default has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[3px] has-[:focus-visible]:outline-primary [&>strong]:text-lg " +
+  "[&_dl]:mt-1 [&_dl]:grid [&_dl]:gap-1 [&_dl]:border-t [&_dl]:pt-2 [&_dl]:text-sm [&_dl_div]:flex [&_dl_div]:flex-wrap [&_dl_div]:justify-between [&_dl_div]:gap-2 " +
+  "[&_dd]:m-0 [&_dd]:font-semibold [&_dd_input]:relative [&_dd_input]:z-10 [&_dd_input]:w-32 [&_dd_input]:max-w-full [&_dd_input]:text-end";
 
 export function DesignPackages({ initialArea, plan }: {
   initialArea: string;
@@ -61,19 +65,19 @@ export function DesignPackages({ initialArea, plan }: {
     return fieldId ? <Input id={fieldId} {...props} /> : <input {...props} />;
   }
 
-  return <div className={styles.designPackages}>
-    <fieldset className={styles.designChoices}>
+  return <div className="grid gap-4 [&_p]:m-0">
+    <fieldset className="m-0 min-w-0 border-0 p-0 [&>p]:mb-3 [&_legend]:mb-3 [&_legend]:font-bold">
       <legend>เลือกแพ็กเกจค่าออกแบบ</legend>
       <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">{designPackages.map(item => {
         const isSelected = tier === item.id;
         const isEditing = isSelected && override;
-        return <div key={item.id} className={styles.designPackage}>
-          <label className={styles.designPackageHeading}>
+        return <div key={item.id} className={packageClass}>
+          <label className="flex items-center gap-2 font-semibold has-[input:enabled]:after:absolute has-[input:enabled]:after:inset-0 has-[input:enabled]:after:cursor-pointer has-[input:enabled]:after:content-[''] [&_input]:accent-primary">
             <input type="radio" name="design_package" value={item.id} checked={isSelected} disabled={!!areaTier} required={!areaTier} onChange={() => setChoice(item.id)} />
             {item.range}
           </label>
           <strong>{isEditing && target !== standardTotal && target !== null ? formatMoney(String(target)) : number.format(item.total)} บาท</strong>
-          {isSelected && <label className={styles.designOverride}>
+          {isSelected && <label className="relative z-10 flex min-h-(--tap-min) cursor-pointer items-center gap-2">
             <input type="checkbox" checked={override} onChange={event => setOverride(event.target.checked)} />
             ปรับยอดงวด
           </label>}
@@ -82,7 +86,7 @@ export function DesignPackages({ initialArea, plan }: {
             <dd>{isEditing ? amountInput(index) : `${number.format(amount)} บาท`}</dd>
           </div>)}</dl>
           {isEditing && enteredTotal && <p className="text-sm text-muted-foreground">รวมยอดงวด {enteredTotal} บาท</p>}
-          {isEditing && error && <p className={styles.designError} role="alert">{error}</p>}
+          {isEditing && error && <p className="text-sm text-warn-ink" role="alert">{error}</p>}
           {item.id !== "under150" && <small className="text-sm text-muted-foreground">รวมรายการคำนวณวิศวกร</small>}
         </div>;
       })}</div>

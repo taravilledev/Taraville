@@ -18,9 +18,9 @@ import { DesignBillingPanel } from "./design-billing-panel";
 import { DocumentsSection, MoneySection, OverviewSection } from "./summary-sections";
 import { TaskView } from "./tasks/task-view";
 import { usesFocusedTaskHeader } from "./tasks/task-header";
-import styles from "../sales.module.css";
 import { tabLinksClass } from "@/components/tab-links";
 import { noticeClass } from "@/components/notice";
+import { cn } from "@/lib/utils";
 
 export const metadata = { title: "ข้อมูลงานและรายการขาย · Taraville Group", robots: { index: false, follow: false } };
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -58,7 +58,7 @@ async function CaseDetail({ params, searchParams }: Props) {
   }
   const isFocusedTask = !!task && usesFocusedTaskHeader(task.name, isBkp);
   const isShowingNextStep = task && step?.task === task.name && step.row === task.row;
-  const navigation = !task && tabs.length > 1 ? <nav className={`${tabLinksClass} ${isBkp ? styles.caseTabs : ""}`} aria-label="หมวดข้อมูลงาน">{tabs.map(item => <Link key={item} href={`/sales/${sale.id}?tab=${item}`} prefetch={false}
+  const navigation = !task && tabs.length > 1 ? <nav className={cn(tabLinksClass, isBkp && "grid grid-cols-5 gap-0 max-[680px]:grid-cols-3 [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-2 [&_a]:text-center")} aria-label="หมวดข้อมูลงาน">{tabs.map(item => <Link key={item} href={`/sales/${sale.id}?tab=${item}`} prefetch={false}
     aria-current={item === tab ? "page" : undefined}>{!isBkp && item === "documents" ? "เอกสาร" : !isBkp && item === "money" ? "รับเงิน" : tabLabels[item]}{item === "money" && pending > 0 ? ` (${pending})` : ""}</Link>)}</nav> : null;
   return <AppShell staff={staff} wide><div className="grid gap-6">
     {!isFocusedTask && <CaseHeader sale={sale} summary={!isBkp ? summary : null} step={isShowingNextStep ? null : step}

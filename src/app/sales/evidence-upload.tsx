@@ -3,7 +3,6 @@
 import { useId, useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { supabaseConfig } from "@/lib/supabase/config";
-import local from "./evidence-upload.module.css";
 import { noticeClass } from "@/components/notice";
 import { buttonVariants } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -33,19 +32,19 @@ export function EvidenceUpload({ caseId, category = "payment", className, title 
   const picker = <Field><FieldLabel htmlFor={`${id}-file`}>{isGrouped ? "1. เลือกไฟล์หลักฐาน" : "หลักฐาน (PDF / รูปภาพ ไม่เกิน 10 MB)"}</FieldLabel>
     <Input id={`${id}-file`} type="file" accept="application/pdf,image/jpeg,image/png,image/webp" disabled={isPending}
       onChange={event => { setFile(event.target.files?.[0] ?? null); setPath(""); setError(""); }} /></Field>;
-  const uploadButton = <button type="button" className={isGrouped ? local.upload : buttonVariants({ variant: "outline", size: "auto" })} onClick={upload} disabled={isPending || !file || !!path}>
+  const uploadButton = <button type="button" className={isGrouped ? cn(buttonVariants({ variant: "outline" }), "border-primary font-bold text-primary") : buttonVariants({ variant: "outline", size: "auto" })} onClick={upload} disabled={isPending || !file || !!path}>
     {isPending ? "กำลังอัปโหลด…" : path ? "อัปโหลดสำเร็จแล้ว" : isGrouped ? "2. อัปโหลดไฟล์ที่เลือก" : "อัปโหลดหลักฐาน"}</button>;
   return <div className={cn("flex min-w-0 flex-col gap-2", className)}>
     <input type="hidden" name="proof_path" value={path} />
     {isGrouped ? <>
-      <div className={local.heading}><strong>{title}</strong><small>PDF / รูปภาพ · ไม่เกิน 10 MB</small></div>
-      <div className={local.steps}>
-        <div className={local.selection}>{picker}
-          <p className={local.selectionHint}>{path ? "เลือกไฟล์ใหม่จะต้องอัปโหลดใหม่อีกครั้ง" : isPending ? "รอให้อัปโหลดเสร็จก่อนบันทึกรายการ" : "การเลือกไฟล์ยังไม่ส่งข้อมูล ต้องกดอัปโหลดในขั้นที่ 2"}</p>
-          {file && !path && !isPending && <p className={local.waiting} role="status">เลือก {file.name} แล้ว · ยังไม่ได้อัปโหลด</p>}
+      <div className="flex flex-wrap items-baseline justify-between gap-2 [&_small]:text-muted-foreground"><strong>{title}</strong><small>PDF / รูปภาพ · ไม่เกิน 10 MB</small></div>
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(180px,auto)] items-start gap-4 rounded-sm bg-accent p-4 max-[640px]:grid-cols-1">
+        <div className="min-w-0">{picker}
+          <p className="mt-2 mb-0 text-sm text-muted-foreground">{path ? "เลือกไฟล์ใหม่จะต้องอัปโหลดใหม่อีกครั้ง" : isPending ? "รอให้อัปโหลดเสร็จก่อนบันทึกรายการ" : "การเลือกไฟล์ยังไม่ส่งข้อมูล ต้องกดอัปโหลดในขั้นที่ 2"}</p>
+          {file && !path && !isPending && <p className="mt-2 rounded-sm border border-warn-line bg-warn-tint px-3 py-2 text-sm text-warn-ink [overflow-wrap:anywhere]" role="status">เลือก {file.name} แล้ว · ยังไม่ได้อัปโหลด</p>}
         </div>
-        <div className={local.transfer}>{path ? <div className={local.success} role="status"><strong>✓ อัปโหลดสำเร็จ</strong>
-          <span className={local.fileName}>{file?.name}</span><small>พร้อมบันทึกรายการ</small></div> : uploadButton}</div>
+        <div className="grid content-start pt-[calc(var(--text-md)+1rem)] max-[640px]:pt-0">{path ? <div className="grid max-w-[280px] gap-1 text-primary [&_small]:text-muted-foreground" role="status"><strong>✓ อัปโหลดสำเร็จ</strong>
+          <span className="text-sm [overflow-wrap:anywhere]">{file?.name}</span><small>พร้อมบันทึกรายการ</small></div> : uploadButton}</div>
       </div>
     </> : <>{picker}
       {file && !path && !isPending && <small className="text-sm text-muted-foreground">ยังไม่ได้อัปโหลด · กด “อัปโหลดหลักฐาน” เพื่อส่งไฟล์ {file.name}</small>}

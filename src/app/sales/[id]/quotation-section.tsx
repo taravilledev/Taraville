@@ -3,7 +3,7 @@ import { formatMoney } from "@/lib/sales/money";
 import { findTask, taskHref } from "@/lib/sales/tasks";
 import type { AgreementDetail } from "@/lib/sales/agreement-models";
 import type { SummaryData } from "./summary-sections";
-import styles from "./quotation-section.module.css";
+import * as styles from "./quotation-section-styles";
 import { WorkspaceHeading } from "./workspace-heading";
 import { buttonVariants } from "@/components/ui/button";
 

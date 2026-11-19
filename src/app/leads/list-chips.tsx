@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { hidesClosed, listHref, type LeadFilters } from "@/lib/walkin/lead-list";
 import { STAGE_LABELS } from "@/lib/walkin/lead-stage";
-import styles from "./leads.module.css";
+
+const chipClass = "inline-flex min-h-(--tap-min) items-center rounded-full border border-line-strong bg-accent px-4 text-sm no-underline";
 
 export function ListChips({ filters, ownerName }: { filters: LeadFilters; ownerName: Map<string, string> }) {
   const chips = [
@@ -12,11 +13,11 @@ export function ListChips({ filters, ownerName }: { filters: LeadFilters; ownerN
   ].filter(chip => chip !== undefined && chip !== "") as { key: keyof LeadFilters; label: string }[];
   const isHidingClosed = hidesClosed(filters);
   if (!chips.length && !isHidingClosed) return null;
-  return <div className={styles.chips}>
-    {chips.map(chip => <Link key={chip.key} className={styles.chip} prefetch={false} href={listHref(filters, { [chip.key]: undefined, page: undefined })}
+  return <div className="flex flex-wrap items-center gap-2">
+    {chips.map(chip => <Link key={chip.key} className={chipClass} prefetch={false} href={listHref(filters, { [chip.key]: undefined, page: undefined })}
       aria-label={`ลบตัวกรอง ${chip.label}`}>{chip.label} ×</Link>)}
-    {isHidingClosed && <Link className={styles.chip} prefetch={false} href={listHref(filters, { closed: "show", page: undefined })}
+    {isHidingClosed && <Link className={chipClass} prefetch={false} href={listHref(filters, { closed: "show", page: undefined })}
       aria-label="แสดงรายการที่ปิดแล้วด้วย">ไม่รวมที่ปิดแล้ว ×</Link>}
-    {chips.length > 0 && <Link className={styles.clearAll} prefetch={false} href="/leads">ล้างทั้งหมด</Link>}
+    {chips.length > 0 && <Link className="inline-flex min-h-(--tap-min) items-center px-2 text-sm text-primary" prefetch={false} href="/leads">ล้างทั้งหมด</Link>}
   </div>;
 }

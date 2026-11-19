@@ -7,7 +7,6 @@ import { AppShell } from "@/app/walkin/app-shell";
 import { FormHeader } from "@/app/walkin/form-header";
 import { LeadForm } from "@/app/walkin/lead-form";
 import { surveyChoice } from "@/lib/walkin/privacy";
-import styles from "@/app/walkin/walkin.module.css";
 
 export const metadata = { title: "แก้ไขผู้สนใจ · Taraville Group", robots: { index: false, follow: false } };
 export default function EditPage({ params }: { params: Promise<{ id: string }> }) {
@@ -17,7 +16,15 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
   const { lead, staff, events } = await leadDetail((await params).id);
   if (staff.role !== "executive" && lead.owner_id !== staff.id) notFound();
   return <AppShell staff={staff}>
-    <FormHeader brand={lead.brand} title="แก้ไขข้อมูล" action={<a className={styles.noticeLink} href={`/leads/${lead.id}`}>← กลับไปรายละเอียด</a>} />
+    <FormHeader
+      brand={lead.brand}
+      title="แก้ไขข้อมูล"
+      action={
+        <a className="inline-flex min-h-(--tap-min) items-center text-primary underline-offset-4" href={`/leads/${lead.id}`}>
+          ← กลับไปรายละเอียด
+        </a>
+      }
+    />
     <LeadForm brand={lead.brand} staff={staff} owners={[]} lead={lead} choice={surveyChoice(events)} requestId={randomUUID()} />
   </AppShell>;
 }

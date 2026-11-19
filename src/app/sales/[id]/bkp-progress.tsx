@@ -8,7 +8,7 @@ import { bkpChecklist, type ChecklistItem } from "@/lib/sales/bkp-checklist";
 import { findTask, taskHref, taskLabels, type Task } from "@/lib/sales/tasks";
 import { formatMoney } from "@/lib/sales/money";
 import { bkpFlowStages, bkpWorkflow } from "@/lib/sales/bkp-workflow";
-import styles from "./bkp-progress.module.css";
+import * as styles from "./bkp-progress-styles";
 import { buttonVariants } from "@/components/ui/button";
 
 type Props = { sale: SalesCase; finance: FinancialDetail; agreement: AgreementDetail; progress: ProjectProgress;

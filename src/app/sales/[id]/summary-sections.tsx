@@ -11,12 +11,14 @@ import { BkpDocuments } from "./bkp-documents";
 import { BkpMoneySection } from "./bkp-money-section";
 import { PendingPayments } from "./pending-payments";
 export { PendingPayments } from "./pending-payments";
-import styles from "../sales.module.css";
 import { factsClass } from "@/components/facts";
-import workspace from "./workspace-section.module.css";
+import * as ws from "./workspace-styles";
 import { panelClass } from "@/components/panel";
 import { noticeClass } from "@/components/notice";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+const moneyDisclosureClass = cn(panelClass, "[&>summary]:min-h-11 [&>summary]:cursor-pointer [&>summary]:py-2 [&>summary]:text-md [&>summary]:font-semibold [&>summary:focus-visible]:outline-2 [&>summary:focus-visible]:outline-offset-2 [&>summary:focus-visible]:outline-primary [&[open]>summary]:mb-3");
 
 export type Closeout = { document_id: string; retained_cents: string; received_cents: string; remaining_cents: string; refund_due_cents: string } | null;
 export type SummaryData = {
@@ -62,19 +64,19 @@ export function OverviewSection({ data, houseBrief }: { data: SummaryData; house
     </dl><p><Link href={`/leads/${sale.lead_id}`} prefetch={false}>เปิด Lead ต้นทาง</Link>{" "}<TaskLink data={data} name="edit-case" /></p></section>
     {houseBrief}
     {!sale.can_finance && <p className={noticeClass}>คุณดูข้อมูลงานได้ แต่ไม่มีสิทธิ์ดูเอกสารและข้อมูลการเงินของรายการนี้ ให้ผู้บริหารตรวจสอบสิทธิ์หากจำเป็นต้องใช้</p>}
-    {work.length > 0 && <section className={panelClass}><h2>ตรวจรับงานก่อสร้าง</h2><ul className={sale.brand === "BAAN_KUNAPAP" ? workspace.rows : "grid gap-3"}>
-      {work.map(item => sale.brand === "BAAN_KUNAPAP" ? <li key={item.id} className={workspace.card}>
-        <div className={workspace.rowHeading}><strong>งวดที่ {item.position}{item.progress_percent == null ? "" : ` · ความคืบหน้า ${item.progress_percent}%`}</strong>
-          <span className={workspace.status} data-done={item.accepted}>{item.accepted ? "ตรวจรับแล้ว" : "รอตรวจรับ"}</span></div>
-        <div className={workspace.actions}><TaskLink data={data} name="acceptance" row={item.id} /></div>
+    {work.length > 0 && <section className={panelClass}><h2>ตรวจรับงานก่อสร้าง</h2><ul className={sale.brand === "BAAN_KUNAPAP" ? ws.rows : "grid gap-3"}>
+      {work.map(item => sale.brand === "BAAN_KUNAPAP" ? <li key={item.id} className={ws.card}>
+        <div className={ws.rowHeading}><strong>งวดที่ {item.position}{item.progress_percent == null ? "" : ` · ความคืบหน้า ${item.progress_percent}%`}</strong>
+          <span className={ws.status} data-done={item.accepted}>{item.accepted ? "ตรวจรับแล้ว" : "รอตรวจรับ"}</span></div>
+        <div className={ws.actions}><TaskLink data={data} name="acceptance" row={item.id} /></div>
       </li> : <li key={item.id}>งวดที่ {item.position}{item.progress_percent == null ? "" : ` · ความคืบหน้า ${item.progress_percent}%`} · {item.accepted ? "ตรวจรับแล้ว" : "รอตรวจรับ"}{" "}
         <TaskLink data={data} name="acceptance" row={item.id} /></li>)}</ul></section>}
     {managementTasks.length > 0 && <section className={panelClass} id="manage" aria-labelledby="manage-title">
       <h2 id="manage-title">{sale.brand === "BAAN_KUNAPAP" ? "จัดการโครงการ" : "จัดการรายการขาย"}</h2>
-      <ul className={`grid gap-3 ${styles.managementList}`}>{managementTasks.map(task => {
+      <ul className="mt-3 grid grid-cols-[repeat(auto-fit,minmax(min(100%,15rem),1fr))] gap-3 [&_li[data-close=true]]:col-span-full [&_li[data-close=true]_strong]:text-danger-ink">{managementTasks.map(task => {
         const action = managementActions[task.name];
         return <li key={task.name} data-close={task.name === "close"}>
-          <Link className={`${buttonVariants({ variant: "outline", size: "auto" })} ${styles.managementLink}`} href={taskHref(sale.id, task.name)} prefetch={false}>
+          <Link className={cn(buttonVariants({ variant: "outline", size: "auto" }), "flex h-full w-full justify-between gap-3 px-4 py-3 hover:border-primary hover:bg-accent [&_strong]:block")} href={taskHref(sale.id, task.name)} prefetch={false}>
             <span><strong>{action?.title ?? task.label}</strong>
               {action && <span className="block mt-1 text-sm font-normal text-muted-foreground">{action.description}</span>}
             </span>
@@ -124,7 +126,7 @@ export function MoneySection({ data }: { data: SummaryData }) {
       {sale.status === "contracted" && agreement.is_settled && <p className={noticeClass}>ชำระครบทุกงวดตามสัญญาแล้ว</p>}
     </section>}
     {findTask(data.tasks, "prepare-payment", undefined) && <section className={panelClass} id="prepare"><h2>บันทึกเงินเข้า</h2><p><TaskLink data={data} name="prepare-payment" /></p></section>}
-    <details className={`${panelClass} ${styles.moneyDisclosure}`} open><summary>ประวัติใบเสร็จรับเงิน ({receiptCount})</summary>
+    <details className={moneyDisclosureClass} open><summary>ประวัติใบเสร็จรับเงิน ({receiptCount})</summary>
       {!finance.documents.some(doc => doc.kind === "receipt") && <p className="text-sm text-muted-foreground">ยังไม่มีใบเสร็จ</p>}
       <ul className="grid gap-3">{finance.documents.filter(doc => doc.kind === "receipt").map(doc => <li key={doc.id}>
         <Link href={`/sales/documents/${doc.id}`} prefetch={false}>{doc.number} · {formatDate(doc.document_date)} · {doc.amount_cents ? `${formatMoney(doc.amount_cents)} บาท` : "—"}{doc.state === "cancelled" ? " · ยกเลิก" : ""}</Link>{" "}
@@ -139,7 +141,7 @@ export function MoneySection({ data }: { data: SummaryData }) {
       </dl>
       <Link href={`/sales/documents/${closeout.document_id}`} prefetch={false}>เปิดข้อตกลงปิดงาน</Link>
     </section>}
-    {(finance.payments.length > 0 || refunds.length > 0) && <details className={`${panelClass} ${styles.moneyDisclosure}`} id="refunds" open><summary>คืนเงินจริง ({refunds.length})</summary>
+    {(finance.payments.length > 0 || refunds.length > 0) && <details className={moneyDisclosureClass} id="refunds" open><summary>คืนเงินจริง ({refunds.length})</summary>
       {!refunds.length && <p className="text-sm text-muted-foreground">ยังไม่มีคำขอคืนเงิน</p>}
       <ul className="grid gap-3">{refunds.map(refund => <li key={refund.id}>
         <p>{formatMoney(refund.amount_cents)} บาท · {refundStates[refund.state]} · {refund.requested_by_name}</p>

@@ -5,8 +5,9 @@ import Link from "next/link";
 import { documentGroups, type LibraryDocument } from "@/lib/sales/document-library";
 import { formatMoney } from "@/lib/sales/money";
 import { formatDate } from "@/lib/sales/date";
-import styles from "./document-library.module.css";
-import workspace from "./workspace-section.module.css";
+import * as styles from "./document-library-styles";
+import * as ws from "./workspace-styles";
+import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -22,8 +23,8 @@ export function DocumentLibrary({ documents, actions }: { documents: LibraryDocu
   useEffect(() => { if (selected) dialog.current?.showModal(); }, [selected]);
   const search = query.trim().toLocaleLowerCase();
   const matches = documents.filter(doc => (!group || doc.group === group) && `${doc.title} ${doc.number ?? ""} ${doc.status} ${doc.note}`.toLocaleLowerCase().includes(search));
-  const renderRows = (rows: LibraryDocument[]) => <ul className={styles.list}>{rows.map(doc => <li key={doc.id} data-cancelled={doc.state === "cancelled"}>
-    <div className={styles.info}><div className={styles.rowHeading}><strong>{doc.number ?? "ยังไม่ออกเลข"}</strong><span className={styles.badge}>{doc.status}</span></div>
+  const renderRows = (rows: LibraryDocument[]) => <ul className={styles.list}>{rows.map(doc => <li key={doc.id} className="group/doc" data-cancelled={doc.state === "cancelled"}>
+    <div className={styles.info}><div className={styles.rowHeading}><strong>{doc.number ?? "ยังไม่ออกเลข"}</strong><Badge variant="outline" className={styles.badge}>{doc.status}</Badge></div>
       <p>{doc.title}{doc.revision != null ? ` · ฉบับ ${doc.revision}` : ""} · {doc.date ? formatDate(doc.date) : "ยังไม่มีวันที่"}</p>
       {doc.note && <p className={styles.binding}>{doc.note}</p>}
       <p className={styles.amount}>{doc.amount == null ? "ยังไม่ระบุยอด" : `${formatMoney(doc.amount)} บาท`}</p>
@@ -33,7 +34,7 @@ export function DocumentLibrary({ documents, actions }: { documents: LibraryDocu
     <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} aria-haspopup="dialog" aria-label={`เปิดอ่าน ${doc.title} ${doc.number ?? "ร่าง"} ฉบับ ${doc.revision ?? ""}`} onClick={() => setSelected(doc)}>เปิดอ่าน</button>
   </li>)}</ul>;
   return <section className={styles.library} id="contract" aria-labelledby="document-library-title">
-    <div className={workspace.header}><div><h2 id="document-library-title">เอกสารทั้งหมด</h2><p>ค้นหาและเปิดอ่านฉบับที่ใช้อยู่ พร้อมประวัติฉบับก่อนและฉบับยกเลิก</p></div>
+    <div className={ws.header}><div><h2 id="document-library-title">เอกสารทั้งหมด</h2><p>ค้นหาและเปิดอ่านฉบับที่ใช้อยู่ พร้อมประวัติฉบับก่อนและฉบับยกเลิก</p></div>
       <div className={styles.actions}>{actions.filter(action => !action.documentId).map(action => <Link className={buttonVariants({ variant: "outline", size: "auto" })} key={action.href} href={action.href} prefetch={false}>{action.label}</Link>)}</div></div>
     <div className={styles.filters}>
       <Field><FieldLabel htmlFor={`${id}-query`}>ค้นหาเอกสาร</FieldLabel><Input id={`${id}-query`} type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="เลขที่ ประเภท หรือสถานะเอกสาร" /></Field>

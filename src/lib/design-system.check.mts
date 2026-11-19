@@ -37,32 +37,12 @@ const PRINT_MODULES = new Set([
   "leads/report/report.module.css",
   "sales/[id]/tasks/contract-paper.module.css",
   "sales/[id]/tasks/payment-paper.module.css",
+  "sales/[id]/tasks/quotation-editor.module.css",
   "sales/documents/[id]/document.module.css",
   "sales/documents/[id]/receipt-paper.module.css",
+  "summary/summary-print.module.css",
 ]);
-const MIGRATION_ALLOWLIST = new Set([
-  "dashboard/overview.module.css",
-  "leads/[id]/lead-detail.module.css",
-  "leads/leads.module.css",
-  "login/auth.module.css",
-  "sales/[id]/bkp-progress.module.css",
-  "sales/[id]/bkp-workflow.module.css",
-  "sales/[id]/design-billing-panel.module.css",
-  "sales/[id]/document-library.module.css",
-  "sales/[id]/finance-collection.module.css",
-  "sales/[id]/quotation-section.module.css",
-  "sales/[id]/tasks/contract-wizard.module.css",
-  "sales/[id]/tasks/quotation-acceptance.module.css",
-  "sales/[id]/tasks/quotation-editor.module.css",
-  "sales/[id]/tasks/task-header.module.css",
-  "sales/[id]/workspace-section.module.css",
-  "sales/evidence-upload.module.css",
-  "sales/executive-dashboard.module.css",
-  "sales/sales.module.css",
-  "sales/settings/settings.module.css",
-  "summary/summary.module.css",
-  "walkin/walkin.module.css",
-]);
+const MIGRATION_ALLOWLIST = new Set<string>([]);
 const modules = all.filter(file => file.startsWith("app/") && file.endsWith(".module.css")).map(file => file.slice(4));
 const unknown = modules.filter(file => !PRINT_MODULES.has(file) && !MIGRATION_ALLOWLIST.has(file));
 assert.deepEqual(unknown, [], `New CSS modules are not allowed (ADR 0031); build with ui/ components and utilities:\n${unknown.join("\n")}`);

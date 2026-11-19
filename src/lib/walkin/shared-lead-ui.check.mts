@@ -255,7 +255,7 @@ let hookIndex = 0;
 mocks.react = { useState: () => {
   const index = hookIndex++;
   return [fieldState[index], (value: unknown) => { fieldState[index] = value; }];
-}, useRef: () => ({ current: null }), useEffect: noop };
+}, useId: () => "opening-check", useRef: () => ({ current: null }), useEffect: noop };
 const Fields = load(fieldFile).OpeningFields as (props: { units: typeof fieldUnits; leadId: string; requestId: string }) => ReactNode;
 delete mocks.react;
 const fieldUnits = [
@@ -269,11 +269,15 @@ async function renderBrowser() {
   return new Response(stream).text();
 }
 const allUnits = await renderBrowser();
+assert.match(allUnits, /<label[^>]*for="opening-check-development"[^>]*>โครงการ<\/label>/);
+assert.match(allUnits, /<button(?=[^>]*id="opening-check-development")(?=[^>]*role="combobox")[^>]*>/);
 assert.ok(allUnits.includes("Model one") && allUnits.includes("Model two"), "Unfiltered table includes every eligible plot");
 fieldState[1] = "d2";
 const filteredUnits = await renderBrowser();
 assert.ok(!filteredUnits.includes("Model one") && filteredUnits.includes("Model two"), "Project filter uses UUID despite duplicate plot code");
-fieldState[0] = "  ONE  "; fieldState[1] = "";
+fieldState[1] = "";
+assert.ok((await renderBrowser()).includes("Model one"), "Clearing the project filter restores other projects");
+fieldState[0] = "  ONE  ";
 const searchedUnits = await renderBrowser();
 assert.ok(searchedUnits.includes("Model one") && !searchedUnits.includes("Model two"), "Search trims and ignores case");
 fieldState[0] = "not-a-plot";

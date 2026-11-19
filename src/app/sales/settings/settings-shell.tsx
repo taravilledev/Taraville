@@ -2,7 +2,8 @@ import type { ComponentProps, ReactNode } from "react";
 import Link from "next/link";
 import { AppShell } from "@/app/walkin/app-shell";
 import type { SalesBootstrap } from "@/lib/sales/models";
-import styles from "./settings.module.css";
+import { cn } from "@/lib/utils";
+import * as ui from "./settings-styles";
 
 const root = "/sales/settings";
 export const settingsSections = [
@@ -30,17 +31,17 @@ export function SettingsShell({ staff, workspace, section, title, description, b
 }) {
   const sections = visibleSettings(workspace);
   const returnLink = back ?? (section ? { href: root, label: "ตั้งค่างานขาย" } : { href: "/dashboard", label: "แดชบอร์ด" });
-  return <AppShell staff={staff} wide><div className={styles.workspace}>
-    <aside className={styles.sidebar}>
-      <nav aria-label="ตั้งค่างานขาย">
-        <Link href={root} prefetch={false} aria-current={!section ? "page" : undefined}>ตั้งค่างานขาย</Link>
-        {sections.map(item => <Link key={item.id} href={item.href} prefetch={false} aria-current={section === item.id ? (back ? "location" : "page") : undefined}>{item.title}</Link>)}
+  return <AppShell staff={staff} wide><div className={ui.workspaceClass}>
+    <aside className={ui.sidebarClass}>
+      <nav className={ui.sidebarNavClass} aria-label="ตั้งค่างานขาย">
+        <Link href={root} prefetch={false} className={cn(ui.sidebarLinkClass, "font-bold text-foreground")} aria-current={!section ? "page" : undefined}>ตั้งค่างานขาย</Link>
+        {sections.map(item => <Link key={item.id} href={item.href} prefetch={false} className={ui.sidebarLinkClass} aria-current={section === item.id ? (back ? "location" : "page") : undefined}>{item.title}</Link>)}
       </nav>
     </aside>
-    <div className={styles.content}>
-      <header className={styles.header}>
-        <Link className="text-sm text-muted-foreground" href={returnLink.href} prefetch={false}>← {returnLink.label}</Link>
-        <div className={styles.titleRow}><div><h1>{title}</h1>{description && <p>{description}</p>}</div>{actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}</div>
+    <div className={ui.contentClass}>
+      <header className={ui.headerClass}>
+        <Link className={cn("justify-self-start text-sm text-muted-foreground underline-offset-[.2em]", ui.focusRingClass)} href={returnLink.href} prefetch={false}>← {returnLink.label}</Link>
+        <div className={ui.titleRowClass}><div><h1 className="m-0 text-title/[1.3] font-bold">{title}</h1>{description && <p className="mt-2 mb-0 text-muted-foreground">{description}</p>}</div>{actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}</div>
       </header>
       {children}
     </div>
@@ -48,7 +49,7 @@ export function SettingsShell({ staff, workspace, section, title, description, b
 }
 
 export function SettingsLinks({ items }: { items: { href: string; title: string; description: string }[] }) {
-  return <ul className={styles.cards}>{items.map(item => <li key={item.href}>
-    <Link href={item.href} prefetch={false}><strong>{item.title}</strong><span>{item.description}</span></Link>
+  return <ul className={ui.cardListClass}>{items.map(item => <li key={item.href}>
+    <Link href={item.href} prefetch={false} className={ui.cardLinkClass}><strong>{item.title}</strong><span>{item.description}</span></Link>
   </li>)}</ul>;
 }

@@ -5,6 +5,7 @@ import { Slot } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { nativeDialogClass } from "@/components/native-dialog-styles"
 
 // Native <dialog> (focus trap, ESC and top layer come from the browser) with a shadcn-like API (ADR 0031).
 const DialogContext = React.createContext<{ ref: React.RefObject<HTMLDialogElement | null>; id: string } | null>(null)
@@ -59,10 +60,7 @@ function DialogContent({
       aria-describedby={description ? `${id}-description` : undefined}
       // Click on the backdrop (the dialog element itself, not its children) closes it.
       onClick={event => { if (event.target === event.currentTarget) event.currentTarget.close() }}
-      className={cn(
-        "m-auto max-h-[85dvh] w-[min(100%-2rem,45rem)] overflow-auto overscroll-contain rounded-lg border bg-card p-0 text-card-foreground backdrop:bg-backdrop",
-        className
-      )}
+      className={cn(nativeDialogClass, className)}
       {...props}
     >
       <div className="sticky top-0 flex items-center justify-between gap-4 border-b bg-card px-5 py-3">

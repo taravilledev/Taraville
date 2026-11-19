@@ -143,3 +143,8 @@ body {
 @media print {
   [data-sonner-toaster] { display: none !important; }
 }
+
+/* Preserve native control typography and focus across the page shells. */
+[data-slot="app-shell"] * { box-sizing: border-box; }
+[data-slot="app-shell"] :is(input, select, button, a, summary):focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
+[data-slot="app-shell"] :is(input, select):not(:is([data-slot="walkin-field"] *, [data-slot="survey-other"] *)) { font: inherit; }

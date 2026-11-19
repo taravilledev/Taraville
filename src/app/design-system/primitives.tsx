@@ -1,3 +1,11 @@
+import { checkRowClass } from "@/components/check-row";
+import { factsClass } from "@/components/facts";
+import { formCardClass, formHintClass } from "@/components/form-card";
+import { Notice } from "@/components/notice";
+import { pageHeaderClass } from "@/components/page-header";
+import { Panel } from "@/components/panel";
+import { tabLinksClass } from "@/components/tab-links";
+import { Tag } from "@/components/tag";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -115,6 +123,49 @@ export function Primitives() {
           <p>เนื้อหาในหน้าต่าง</p>
         </DialogContent>
       </Dialog>
+    </Block>
+
+    <Block title="Panel · Page header · Tag · Facts">
+      <Panel>
+        <header className={pageHeaderClass}>
+          <div>
+            <h3 className="text-title font-bold">โครงการตัวอย่าง</h3>
+            <p>สรุปข้อมูลสำหรับฝ่ายขาย</p>
+          </div>
+          <Tag>ร่าง</Tag>
+        </header>
+        <dl className={factsClass}>
+          <div>
+            <dt>แปลง</dt>
+            <dd>A1</dd>
+          </div>
+          <div>
+            <dt>แบรนด์</dt>
+            <dd>ธาราวิล</dd>
+          </div>
+        </dl>
+      </Panel>
+    </Block>
+
+    <Block title="Form card · Hint">
+      <div className={formCardClass}>
+        <p className={formHintClass}>กรอกข้อมูลติดต่อของผู้สนใจก่อนบันทึก</p>
+      </div>
+    </Block>
+
+    <Block title="Notice · Check row">
+      <Notice>โปรดตรวจสอบข้อมูลก่อนส่งใบเสนอราคา</Notice>
+      <label className={checkRowClass}>
+        <input type="checkbox" />
+        ตรวจสอบข้อมูลแล้ว
+      </label>
+    </Block>
+
+    <Block title="Tab links">
+      <nav className={tabLinksClass} aria-label="ตัวอย่างลิงก์แท็บ">
+        <a href="/design-system" aria-current="page">Design system</a>
+        <a href="/dashboard">แดชบอร์ด</a>
+      </nav>
     </Block>
   </>;
 }
