@@ -43,13 +43,16 @@ async function Permissions({ searchParams }: SettingsPageProps) {
     <aside className={ui.permissionHelpClass} aria-label="วิธีตั้งสิทธิ์">
       <p>เลือกการเข้าถึงและขอบเขต แล้วกด <strong>บันทึกสิทธิ์</strong> ในแถวที่แก้ไข</p>
       <p><strong>เฉพาะของตน</strong> ยึดผู้รับผิดชอบโครงการสำหรับการดู แก้ไข และตรวจรับงาน ส่วนการเปิดโครงการและสิทธิ์ด้านสัญญาหรือการเงินยึดเจ้าของ Lead ปัจจุบัน</p>
+      <p>ค่าเริ่มต้นของฝ่ายขายทำงานของตนได้ครบตั้งแต่เปิดโครงการจนยืนยันรับเงินและออกใบเสร็จ ส่วนแก้ใบเสร็จ คืนเงิน แก้สัญญา ปิดงาน และแคตตาล็อก ต้องตั้งเฉพาะคน</p>
       <p>ผู้ขอคืนเงินอนุมัติคำขอของตนเองไม่ได้</p>
     </aside>
     {Object.entries(groups).map(([title, prefixes]) => <section key={title} className={cn(panelClass, ui.permissionGroupClass)}>
       <h2 className="m-0 mb-3">{title}</h2>
       {(Object.keys(capabilityLabels) as Capability[]).filter(action => prefixes.includes(action.split(".")[0])).map(action => {
         const override = user.capabilities.find(item => item.action === action);
-        const ownDefault = ["case.view", "case.create", "case.edit", "financial.view"].includes(action);
+        // Mirrors private.sales_allowed (ADR 0054): Sales run the whole loop on their own work.
+        const ownDefault = ["case.view", "case.create", "case.edit", "financial.view", "financial.prepare", "billing.issue",
+          "acceptance.record", "contract.sign", "financial.confirm", "receipt.issue"].includes(action);
         const enabled = override?.enabled ?? (user.role === "executive" || (ownDefault && (user.role === "sale" || action === "financial.view")));
         const scope = override?.scope ?? (user.role === "executive" ? "all" : "own");
         return <section key={action} className={ui.permissionRowClass} aria-labelledby={action}>
