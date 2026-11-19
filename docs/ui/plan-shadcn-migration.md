@@ -83,6 +83,7 @@ Walk-in split: shared cards, text, shell, feedback and native dialog styles are 
    2. `new`, `evidence-upload`, `settings` (`settings.module.css`, the `unit*` rules of `sales.module.css`) — done
    3. `[id]` case workspace (`workspace-section`, `bkp-*`, `document-library`, `finance-collection`, `quotation-section`, `design-billing-panel`, the rest of `sales.module.css`)
    4. `[id]/tasks` (`task-header`, `contract-wizard`, `quotation-acceptance`, `quotation-editor` with the paper exception)
+   `tasks/quotation-editor.module.css` (the A4 quotation paper editor) is reclassified as a paper module like `contract-paper` and `payment-paper`: it stays a CSS module and never imports `ui/` (ADR 0031, ADR 0053 decision 6). Slice 4 is done.
    Print modules (`*-paper`, `document`) stay. `sales.module.css` is deleted with slice 3.
 4. `/summary` + `/dashboard`, login, shell (`layout.tsx`, `AppShell`)
 

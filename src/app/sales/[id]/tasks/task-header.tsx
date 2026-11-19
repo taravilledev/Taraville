@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import type { SalesCase } from "@/lib/sales/models";
 import type { CaseTab } from "@/lib/sales/case-progress";
 import type { TaskName } from "@/lib/sales/tasks";
-import styles from "./task-header.module.css";
+import * as styles from "./task-header-styles";
 import { buttonVariants } from "@/components/ui/button";
 
 export const focusedDocumentTasks: readonly TaskName[] = ["contract-addendum", "issue-quotation", "prepare-contract", "edit-contract",

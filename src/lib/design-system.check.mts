@@ -37,16 +37,13 @@ const PRINT_MODULES = new Set([
   "leads/report/report.module.css",
   "sales/[id]/tasks/contract-paper.module.css",
   "sales/[id]/tasks/payment-paper.module.css",
+  "sales/[id]/tasks/quotation-editor.module.css",
   "sales/documents/[id]/document.module.css",
   "sales/documents/[id]/receipt-paper.module.css",
 ]);
 const MIGRATION_ALLOWLIST = new Set([
   "dashboard/overview.module.css",
   "login/auth.module.css",
-  "sales/[id]/tasks/contract-wizard.module.css",
-  "sales/[id]/tasks/quotation-acceptance.module.css",
-  "sales/[id]/tasks/quotation-editor.module.css",
-  "sales/[id]/tasks/task-header.module.css",
   "summary/summary.module.css",
 ]);
 const modules = all.filter(file => file.startsWith("app/") && file.endsWith(".module.css")).map(file => file.slice(4));
