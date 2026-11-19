@@ -91,7 +91,8 @@ Walk-in split: shared cards, text, shell, feedback and native dialog styles are 
 Per page: move module classes to utilities/composites, delete the module file, remove it from `MODULE_ALLOWLIST`.
 
 ### P4 — Cleanup
-Delete remaining non-print modules, `--space-*`, old radius/text duplicates and the old module token rule; `MODULE_ALLOWLIST` holds only print files; update ADR 0031 status.
+Done 2026-11-19. Removed the unused `--radius-pill` / `--radius-round` and the stale document-library exception in `design-tokens.check.mts`; `MIGRATION_ALLOWLIST` is empty and only `PRINT_MODULES` remain.
+Decision (developer, 2026-11-19): `--space-*` stays as the spacing token of the print modules (199 uses across the 7 paper files), instead of rewriting paper documents that cannot be print-verified here. The module token rule in `design-tokens.check.mts` stays because it guards those print modules. Screens use Tailwind spacing only.
 
 ## Verification (every phase)
 - `node src/lib/design-tokens.check.mts`, related `*.check.mts`, `tsc`, `lint`. Never `next build` while `next dev` runs.
