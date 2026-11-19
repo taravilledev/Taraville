@@ -9,7 +9,6 @@ export const history =
   "[&_ul]:m-0 [&_ul]:mt-3 [&_ul]:list-none [&_ul]:p-0 [&_li]:flex [&_li]:flex-wrap [&_li]:items-center [&_li]:justify-between [&_li]:gap-3 [&_li]:border-t [&_li]:py-4 " +
   "[&_h3]:text-md [&_p]:mt-2 [&_p]:text-muted-foreground"
 export const eyebrow = "mb-2! text-sm text-muted-foreground"
-export const status = "rounded-sm bg-accent px-3 py-2 text-sm text-muted-foreground data-[accepted=true]:text-primary"
 export const facts = "m-0 grid grid-cols-3 gap-4 max-[640px]:grid-cols-1 [&_dd]:m-0 [&_dt]:mb-2 [&_dt]:text-sm [&_dt]:text-muted-foreground"
 export const amount = "text-lg font-bold"
 export const next = "grid gap-3 border-t pt-4"

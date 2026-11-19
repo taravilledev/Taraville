@@ -13,12 +13,12 @@ export const panel = `${card} [&_h2]:m-0 [&_h2]:text-lg`
 export const metricHeader = `${header} max-[480px]:flex-col-reverse max-[480px]:gap-1`
 export const sectionHeader = header
 export const icon =
-  "grid flex-none place-items-center rounded-md bg-brand-tv-tint p-2 text-primary " +
-  "group-data-[tone=blue]/metric:bg-brand-bk-tint group-data-[tone=blue]/metric:text-brand-bk " +
+  "grid flex-none place-items-center rounded-md bg-success-tint p-2 text-success-ink " +
+  "group-data-[tone=blue]/metric:bg-primary-tint group-data-[tone=blue]/metric:text-primary " +
   "group-data-[tone=warning]/metric:bg-warn-tint group-data-[tone=warning]/metric:text-warn-ink"
 export const metricAmount =
   "m-0 mt-3 text-title/[1.35] font-extrabold tabular-nums [overflow-wrap:anywhere] [&_small]:text-sm [&_small]:font-semibold " +
-  "group-data-[tone=positive]/metric:text-primary group-data-[tone=warning]/metric:text-warn-ink"
+  "group-data-[tone=positive]/metric:text-success-ink group-data-[tone=warning]/metric:text-warn-ink"
 export const action =
   `inline-flex min-h-(--tap-min) items-center gap-1 text-sm font-bold text-primary no-underline underline-offset-4 hover:underline ${linkFocus} [&_svg]:flex-none`
 export const columns = "grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-stretch gap-4 max-[820px]:grid-cols-[minmax(0,1fr)]"
@@ -41,8 +41,7 @@ export const leadTitle = tapTitle
 export const meta = "m-0 text-sm text-muted-foreground [ul+&]:mt-3"
 export const leadRow = `${row} flex flex-wrap items-start justify-between gap-3`
 export const dueRow = `${row} flex flex-wrap items-center gap-3`
-export const brandBadge = `${badge} bg-brand-bk-tint text-brand-bk data-[brand=TARAVILLE]:bg-brand-tv-tint data-[brand=TARAVILLE]:text-brand-tv`
-export const dueBadge = `${badge} bg-brand-bk-tint text-brand-bk data-[overdue=true]:bg-danger-tint data-[overdue=true]:text-danger-ink`
+export const dueBadge = `${badge} bg-primary-tint text-primary data-[overdue=true]:bg-danger-tint data-[overdue=true]:text-danger-ink`
 export const duePayment =
   "ml-auto grid justify-items-end tabular-nums [overflow-wrap:anywhere] " +
   "max-[480px]:w-full max-[480px]:grid-cols-[minmax(0,1fr)_auto] max-[480px]:items-center max-[480px]:justify-items-start max-[480px]:gap-2"

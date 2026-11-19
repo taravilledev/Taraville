@@ -1,11 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { brandLabels, caseStatusLabels, type SalesCase } from "@/lib/sales/models";
+import { brandLabels, caseStatusLabels, caseStatusTones, type SalesCase } from "@/lib/sales/models";
 import type { NextStep } from "@/lib/sales/case-progress";
 import { taskHref } from "@/lib/sales/tasks";
 import { formatMoney } from "@/lib/sales/money";
 import { pageHeaderClass } from "@/components/page-header";
-import { tagClass } from "@/components/tag";
+import { Status } from "@/components/status";
 import { buttonVariants } from "@/components/ui/button";
 import { statCardsClass } from "@/components/stat-cards";
 import { StepBlockedNotice } from "./step-blocked-notice";
@@ -28,7 +28,7 @@ export function CaseHeader({ sale, summary, step, workflow, navigation, showProg
   return <>
     <div className={pageHeaderClass}>
       <div><p className="text-sm text-muted-foreground">{brandLabels[sale.brand]}{sale.unit_label ? ` · ${sale.unit_label}` : ""}</p><h1>{sale.code} · {sale.customer_name}</h1></div>
-      <div className="flex flex-wrap items-center gap-3"><span className={tagClass}>{caseStatusLabels[sale.status]}</span><Link className={buttonVariants({ variant: "outline", size: "auto" })} href="/dashboard" prefetch={false}>กลับแดชบอร์ด</Link></div>
+      <div className="flex flex-wrap items-center gap-3"><Status tone={caseStatusTones[sale.status]}>{caseStatusLabels[sale.status]}</Status><Link className={buttonVariants({ variant: "outline", size: "auto" })} href="/dashboard" prefetch={false}>กลับแดชบอร์ด</Link></div>
     </div>
     {navigation}
     {showProgress && !workflow && current >= 0 && <ol className={stepsClass} aria-label="สถานะงาน">{flow.map((status, index) =>

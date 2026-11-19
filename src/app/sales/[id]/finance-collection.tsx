@@ -6,6 +6,7 @@ import type { CollectionRow } from "@/lib/sales/finance-collection";
 import { formatMoney } from "@/lib/sales/money";
 import { formatDate } from "@/lib/sales/date";
 import * as styles from "./finance-collection-styles";
+import { Status } from "@/components/status";
 import { buttonVariants } from "@/components/ui/button";
 
 const filters = [
@@ -30,6 +31,10 @@ function RowDates({ row }: { row: CollectionRow }) {
     {row.dueDate && <span>ครบกำหนด {formatDate(row.dueDate)}</span>}
     {!row.acceptanceDate && !row.dueDate && <span>ยังไม่มีวันที่</span>}</>;
 }
+function RowStatus({ row }: { row: CollectionRow }) {
+  return <Status tone={row.filter === "complete" ? "success" : row.filter ? "waiting" : "inactive"}>{row.status}</Status>;
+}
+
 function RowAmount({ row, isClosed }: { row: CollectionRow; isClosed: boolean }) {
   return <>{row.isReference && <small>{isClosed ? "ยอดเดิมก่อนปิดงาน" : "ยอดตามแพ็กเกจ"}</small>}<strong>{formatMoney(row.amountCents)} บาท</strong>
     <small>{row.isReference ? "ข้อมูลอ้างอิง ไม่ใช่ยอดเรียกเก็บปัจจุบัน" : `คงเหลือ ${row.outstandingCents === null ? "ยังไม่ระบุ" : `${formatMoney(row.outstandingCents)} บาท`}`}</small></>;
@@ -58,12 +63,12 @@ export function FinanceCollection({ rows, caseId, isClosed = false }: { rows: Co
             <tbody>{groupRows.map(row => <tr key={row.id}>
               <th scope="row"><strong>{row.label}</strong><small>{row.note}</small></th>
               <td className={styles.amount}><RowAmount row={row} isClosed={isClosed} /></td>
-              <td><span className={styles.status} data-done={row.filter === "complete"}>{row.status}</span></td>
+              <td><RowStatus row={row} /></td>
               <td className={styles.dates}><RowDates row={row} /></td><td><RowActions row={row} /></td>
             </tr>)}</tbody>
           </table>
           <ul className={styles.mobileCards}>{groupRows.map(row => <li key={row.id}>
-            <div className={styles.cardHeading}><h5>{row.label}</h5><span className={styles.status} data-done={row.filter === "complete"}>{row.status}</span></div>
+            <div className={styles.cardHeading}><h5>{row.label}</h5><RowStatus row={row} /></div>
             <div className={styles.amount}><RowAmount row={row} isClosed={isClosed} /></div><p className={styles.note}>{row.note}</p>
             <div className={styles.dates}><RowDates row={row} /></div><RowActions row={row} />
           </li>)}</ul>

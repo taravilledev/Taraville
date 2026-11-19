@@ -10,8 +10,8 @@ export const metadata = { title: "Design system · Taraville Group", robots: { i
 // Class names are literal strings so Tailwind can see them.
 const colours = [
   ["background", "bg-background"], ["card", "bg-card"], ["primary", "bg-primary"], ["secondary / muted / accent", "bg-secondary"],
-  ["destructive", "bg-destructive"], ["border", "bg-border"], ["input", "bg-input"], ["brand-tv", "bg-brand-tv"],
-  ["brand-tv-tint", "bg-brand-tv-tint"], ["brand-bk", "bg-brand-bk"], ["brand-bk-tint", "bg-brand-bk-tint"],
+  ["destructive", "bg-destructive"], ["border", "bg-border"], ["input", "bg-input"],
+  ["success", "bg-success"], ["success-ink", "bg-success-ink"], ["success-tint", "bg-success-tint"], ["primary-tint", "bg-primary-tint"],
   ["warn-tint", "bg-warn-tint"], ["danger-tint", "bg-danger-tint"],
 ] as const;
 const textSizes = [["text-xs", "text-xs"], ["text-sm", "text-sm"], ["text-md", "text-md"], ["text-lg", "text-lg"], ["text-xl", "text-xl"], ["text-title", "text-title"]] as const;

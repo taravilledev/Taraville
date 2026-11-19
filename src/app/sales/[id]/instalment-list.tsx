@@ -5,6 +5,7 @@ import { findTask, taskHref } from "@/lib/sales/tasks";
 import type { SummaryData } from "./summary-sections";
 import * as ws from "./workspace-styles";
 import { noticeClass } from "@/components/notice";
+import { Status } from "@/components/status";
 import { buttonVariants } from "@/components/ui/button";
 
 export function InstalmentList({ data }: { data: SummaryData }) {
@@ -23,7 +24,7 @@ export function InstalmentList({ data }: { data: SummaryData }) {
         ? isCreditOnly ? "บันทึกสรุปเครดิตงวดนี้" : "ออกใบแจ้งชำระ" : "บันทึกเงินเข้างวดนี้";
       const status = isPaid ? "ครบยอดแล้ว" : needsAcceptance ? "รอตรวจรับงาน" : row.invoice_id ? "รอรับชำระ" : isCreditOnly ? "รอบันทึกสรุปเครดิต" : "ยังไม่ออกบิล";
       return <li key={row.id} className={ws.card}>
-        <div className={ws.rowHeading}><h3>{row.label}</h3><span className={ws.status} data-done={isPaid}>{status}</span></div>
+        <div className={ws.rowHeading}><h3>{row.label}</h3><Status tone={isPaid ? "success" : "waiting"}>{status}</Status></div>
         <dl className={ws.facts}>
           <div><dt>ยอดชำระงวดนี้</dt><dd className={ws.amount}>{formatMoney(row.net_cents)} บาท</dd></div>
           <div><dt>รับจัดสรรแล้ว</dt><dd>{row.balance ? `${formatMoney(row.balance.allocated_cents)} บาท` : "ยังไม่มีข้อมูลจัดสรร"}</dd></div>

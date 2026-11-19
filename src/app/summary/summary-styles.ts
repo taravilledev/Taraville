@@ -37,7 +37,7 @@ export const projectLink =
 export const stage = "max-[850px]:justify-self-end"
 export const stageBadge = "inline-block rounded-sm bg-accent px-2 py-1 text-primary"
 export const money =
-  "tabular-nums data-[state=received]:text-primary data-[state=billed]:text-brand-bk " +
+  "tabular-nums data-[state=received]:text-success-ink data-[state=billed]:text-primary " +
   "data-[state=pending]:font-bold data-[state=pending]:text-warn-ink data-[state=overdue]:font-bold data-[state=overdue]:text-danger-ink " +
   "data-[state=quiet]:text-muted-foreground"
 export const moneyCell = `${money} text-end`

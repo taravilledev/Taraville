@@ -22,6 +22,12 @@ for (const file of sources) {
 }
 assert.deepEqual(colourOffences, [], `Use semantic colour tokens (bg-primary, text-muted-foreground, bg-brand-tv…):\n${colourOffences.join("\n")}`);
 
+// 1a. Status and brand colour live in components/status.tsx and brand-tag.tsx only.
+const statusRules = [/data-\[(?:done|accepted)=true\][^"\s]*:text-primary/, /\b(?:text|bg)-brand-(?:bk|tv)(?:-tint)?\b/];
+const statusOffences = sources.filter(file => file !== "components/status.tsx" && file !== "components/brand-tag.tsx"
+  && statusRules.some(rule => rule.test(readFileSync(join(srcRoot, file), "utf8"))));
+assert.deepEqual(statusOffences, [], `Use <Status> / <BrandTag> or the status tone classes instead of hand-styled status colours:\n${statusOffences.join("\n")}`);
+
 // 1b. Primitives must follow density (.dense): control sizes come from --control-h / --tap-min and text from the app scale.
 const fixedSize = /\b(?:h|size)-(?:8|9|10)\b|\bmd:text-/;
 const sizeOffences: string[] = [];

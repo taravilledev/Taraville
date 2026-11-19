@@ -7,7 +7,7 @@ import { formatMoney } from "@/lib/sales/money";
 import { formatDate } from "@/lib/sales/date";
 import * as styles from "./document-library-styles";
 import * as ws from "./workspace-styles";
-import { Badge } from "@/components/ui/badge";
+import { Status } from "@/components/status";
 import { buttonVariants } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,7 @@ export function DocumentLibrary({ documents, actions }: { documents: LibraryDocu
   const search = query.trim().toLocaleLowerCase();
   const matches = documents.filter(doc => (!group || doc.group === group) && `${doc.title} ${doc.number ?? ""} ${doc.status} ${doc.note}`.toLocaleLowerCase().includes(search));
   const renderRows = (rows: LibraryDocument[]) => <ul className={styles.list}>{rows.map(doc => <li key={doc.id} className="group/doc" data-cancelled={doc.state === "cancelled"}>
-    <div className={styles.info}><div className={styles.rowHeading}><strong>{doc.number ?? "ยังไม่ออกเลข"}</strong><Badge variant="outline" className={styles.badge}>{doc.status}</Badge></div>
+    <div className={styles.info}><div className={styles.rowHeading}><strong>{doc.number ?? "ยังไม่ออกเลข"}</strong><Status tone={doc.tone}>{doc.status}</Status></div>
       <p>{doc.title}{doc.revision != null ? ` · ฉบับ ${doc.revision}` : ""} · {doc.date ? formatDate(doc.date) : "ยังไม่มีวันที่"}</p>
       {doc.note && <p className={styles.binding}>{doc.note}</p>}
       <p className={styles.amount}>{doc.amount == null ? "ยังไม่ระบุยอด" : `${formatMoney(doc.amount)} บาท`}</p>

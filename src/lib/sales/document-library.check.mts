@@ -26,4 +26,7 @@ const concurrent = documentLibrary({ documents: [] }, { documents: [quote, contr
 assert.equal(concurrent.find(doc => doc.id === "c1")?.history, false, "Signed contract remains visible alongside a newer draft");
 assert.equal(concurrent.find(doc => doc.id === "awaiting")?.history, false, "Awaiting-signature work is visible outside passive history");
 assert.equal(concurrent.find(doc => doc.id === "new-draft")?.history, false);
+assert.equal(documentLibrary({ documents: [] }, { documents: [{ ...quote, state: "mystery" }] })[0].tone, "inactive", "An unknown state renders as inactive, never blank");
+assert.equal(rows.find(doc => doc.id === "q1")?.tone, "success");
+assert.equal(rows.find(doc => doc.id === "c0")?.tone, "inactive");
 console.log("PASS: exact contract binding, revision history, merged dates/amounts and receipt grouping");

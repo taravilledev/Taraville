@@ -13,8 +13,6 @@ export const history =
   "[&_li_p]:m-0 [&_li_p]:mt-1 [&_li_p]:text-sm [&_li_p]:text-muted-foreground"
 export const rowHeading = "flex flex-wrap items-start justify-between gap-3 [&_h3]:text-md"
 export const eyebrow = "text-sm text-muted-foreground"
-export const status =
-  "inline-flex rounded-full bg-accent px-3 py-1 text-sm text-muted-foreground data-[done=true]:text-primary data-[pending=true]:bg-warn-tint data-[pending=true]:text-warn-ink"
 export const facts =
   "m-0 grid grid-cols-3 gap-4 max-[640px]:grid-cols-1 [&>div]:min-w-0 [&>div]:[overflow-wrap:anywhere] [&_dt]:mb-1 [&_dt]:text-sm [&_dt]:text-muted-foreground [&_dd]:m-0 [&_dd]:tabular-nums"
 export const amount = "text-lg font-bold"

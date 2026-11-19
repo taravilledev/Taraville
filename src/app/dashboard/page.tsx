@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { salesBootstrap, salesCaseList, salesWorkQueue } from "@/lib/sales/queries";
-import { brandLabels, caseStatusLabels, workQueueKinds } from "@/lib/sales/models";
+import { brandLabels, caseStatusLabels, caseStatusTones, workQueueKinds } from "@/lib/sales/models";
 import { AppShell } from "@/app/walkin/app-shell";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { executiveWork } from "@/lib/sales/executive";
@@ -13,6 +13,7 @@ import { tabLinksClass } from "@/components/tab-links";
 import { pageHeaderClass } from "@/components/page-header";
 import { noticeClass } from "@/components/notice";
 import { panelClass } from "@/components/panel";
+import { Status } from "@/components/status";
 import { tagClass } from "@/components/tag";
 import { buttonVariants } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -118,7 +119,7 @@ async function Workspace({ searchParams }: Props) {
             {!executive && (sale.responsible_id === staff.id ? " · ฉันดูแล" : " · คนอื่นดูแล")}
             {sale.detail && sale.detail !== sale.code ? ` · ${sale.detail}` : ""} · {sale.can_finance ? "ดูข้อมูลการเงินได้" : "ดูข้อมูลงาน"}
           </p></div>
-        <span className={tagClass}>{caseStatusLabels[sale.status]}</span>
+        <Status tone={caseStatusTones[sale.status]}>{caseStatusLabels[sale.status]}</Status>
       </li>)}</ul> : ownership !== "all"
         ? <p className="text-sm text-muted-foreground">{ownership === "mine" ? "ไม่พบโครงการที่คุณดูแลในรายการนี้" : "ไม่พบโครงการของคนอื่นที่คุณมีสิทธิ์ดูในรายการนี้"}</p>
         : filtered ? <section className={panelClass}><h3>ไม่พบรายการตามตัวกรอง</h3><p>ลองเปลี่ยนคำค้นหรือเลือกสถานะทั้งหมด</p></section>

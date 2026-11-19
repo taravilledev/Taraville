@@ -8,7 +8,6 @@ export const list =
   "max-[640px]:[&>li]:items-start max-[640px]:[&>li]:gap-2 [&_button]:min-h-11 [&_button]:shrink-0"
 export const info = "min-w-0 [overflow-wrap:anywhere] [&_p]:mt-1 [&_p]:text-sm [&_p]:text-muted-foreground"
 export const rowHeading = "flex flex-wrap items-center gap-2"
-export const badge = "bg-accent px-2 py-1 group-data-[cancelled=true]/doc:text-warn-ink group-open/hist:bg-card"
 export const binding = "text-primary!"
 export const amount = "font-semibold text-foreground!"
 export const actions = "flex flex-wrap gap-3 [&_a]:inline-flex [&_a]:min-h-11 [&_a]:items-center [&_a]:text-sm"

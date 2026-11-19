@@ -28,7 +28,6 @@ export const tableClass =
   "[&_tr:last-child>:is(td,th[scope=row])]:border-b-0"
 export const amountClass = "text-end! whitespace-nowrap tabular-nums"
 export const statusCellClass = "whitespace-nowrap"
-export const unitStateClass = { available: "text-primary", reserved: "text-warn-ink", inactive: "" } as const
 export const rowActionsClass = "flex flex-wrap items-start gap-2"
 export const footerClass = "flex flex-wrap items-center justify-between gap-3"
 

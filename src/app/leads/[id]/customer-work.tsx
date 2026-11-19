@@ -2,13 +2,13 @@ import { formErrorClass } from "@/components/form-feedback";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Lead, Project } from "@/lib/walkin/models";
-import { caseStatusLabels } from "@/lib/sales/models";
+import { caseStatusLabels, caseStatusTones } from "@/lib/sales/models";
 import { formatMoney } from "@/lib/sales/money";
 import type { LeadWork } from "@/lib/sales/lead-work";
 import type { ProjectProgress } from "@/lib/sales/case-progress";
 import { formatDate } from "@/app/walkin/privacy-controls";
 import { formCardClass, formHintClass, sectionHeadingClass } from "@/components/form-card";
-import { Badge } from "@/components/ui/badge";
+import { Status, type StatusTone } from "@/components/status";
 import { cn } from "@/lib/utils";
 
 type Props = { lead: Lead; projects: Project[]; names: Map<string, string>; work: LeadWork | null; action?: ReactNode };
@@ -24,18 +24,18 @@ function Progress({ progress }: { progress: ProjectProgress }) {
     return <li key={index} className="group flex min-w-0 flex-1 items-center gap-1 last:flex-none not-last:after:h-px not-last:after:min-w-2 not-last:after:flex-1 not-last:after:bg-line-strong not-last:after:content-['']" data-state={done ? "done" : current ? "current" : "waiting"}
       aria-current={current && !progress.complete ? "step" : undefined}>
       {current ? <span className="shrink-0 text-xs font-bold text-primary">{label}</span> : <>
-        <span className="size-2 shrink-0 rounded-full border border-line-strong group-data-[state=done]:border-primary group-data-[state=done]:bg-primary" aria-hidden="true" /><span className="sr-only">{label}{done ? " · ผ่านแล้ว" : " · ยังไม่ถึงขั้นนี้"}</span>
+        <span className="size-2 shrink-0 rounded-full border border-line-strong group-data-[state=done]:border-success group-data-[state=done]:bg-success" aria-hidden="true" /><span className="sr-only">{label}{done ? " · ผ่านแล้ว" : " · ยังไม่ถึงขั้นนี้"}</span>
       </>}
     </li>;
   })}</ol>;
 }
 
-function WorkCard({ code, status, item, href, children }: {
-  code: string; status: string; item?: LeadWork["cases"][number]; href?: string; children?: ReactNode;
+function WorkCard({ code, status, tone, item, href, children }: {
+  code: string; status: string; tone: StatusTone; item?: LeadWork["cases"][number]; href?: string; children?: ReactNode;
 }) {
   const detail = item?.detail;
   const content = <>
-    <div className="flex flex-wrap items-center justify-between gap-2"><strong className="text-md">{code}</strong><Badge variant="secondary" className="px-3 py-0 font-bold text-muted-foreground">{status}</Badge></div>
+    <div className="flex flex-wrap items-center justify-between gap-2"><strong className="text-md">{code}</strong><Status tone={tone}>{status}</Status></div>
     {item && item.code !== code && <p className={formHintClass}>{item.code}</p>}
     {detail?.plot && <p className={formHintClass}>{detail.plot}</p>}
     {detail?.outstanding != null && detail.outstanding !== "0" && <p className="text-sm font-semibold">ค้างชำระ {formatMoney(detail.outstanding)} บาท</p>}
@@ -60,7 +60,7 @@ export function CustomerWork({ lead, projects, names, work, action }: Props) {
     return <section className={formCardClass}>{heading}
       {!ordered.length && <p className={formHintClass}>ยังไม่มีโครงการ</p>}
       <ul className="m-0 grid list-none gap-3 p-0">{ordered.map(item => <li key={item.code} className="min-w-0 data-[dim=true]:opacity-65" data-dim={isDone(item.status)}>
-        <WorkCard code={item.code} status={caseStatusLabels[item.status]} item={item} href={item.id && item.can_open ? `/sales/${item.id}` : undefined} />
+        <WorkCard code={item.code} status={caseStatusLabels[item.status]} tone={caseStatusTones[item.status]} item={item} href={item.id && item.can_open ? `/sales/${item.id}` : undefined} />
       </li>)}</ul>
     </section>;
   }
@@ -74,7 +74,8 @@ export function CustomerWork({ lead, projects, names, work, action }: Props) {
       const href = item ? item.id && item.can_open ? `/sales/${item.id}` : undefined
         : !cancelled && work.canCreate ? `/sales/new?lead=${lead.id}&project=${project.id}` : undefined;
       return <li key={project.id} className="min-w-0 data-[dim=true]:opacity-65" data-dim={cancelled || (item ? isDone(item.status) : false)}>
-        <WorkCard code={project.code} status={cancelled ? "ยกเลิก" : item ? caseStatusLabels[item.status] : "รอกรอกข้อมูล"} item={item} href={href}>
+        <WorkCard code={project.code} status={cancelled ? "ยกเลิก" : item ? caseStatusLabels[item.status] : "รอกรอกข้อมูล"}
+          tone={cancelled ? "inactive" : item ? caseStatusTones[item.status] : "waiting"} item={item} href={href}>
         {item?.status === "cancelled" && !cancelled && <p className={formHintClass}>โครงการนี้ถูกยกเลิกแล้ว เริ่มดำเนินการซ้ำไม่ได้ หากต้องทำงานต่อให้เปิดโครงการใหม่</p>}
         {cancelled && <p className={formHintClass}>{project.cancel_reason} · โดย {(project.cancelled_by && names.get(project.cancelled_by)) || "ผู้บริหาร"}
           {project.cancelled_at ? ` · ${formatDate(project.cancelled_at)}` : ""}</p>}

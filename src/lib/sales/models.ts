@@ -1,4 +1,6 @@
 import { z } from "zod";
+import type { StatusTone } from "@/components/status";
+import type { Refund } from "./refund-models";
 
 export const brandSchema = z.enum(["BAAN_KUNAPAP", "TARAVILLE"]);
 const version = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
@@ -44,6 +46,12 @@ export type SalesBootstrap = z.infer<typeof bootstrapSchema>;
 export type SalesCase = z.infer<typeof caseDetailSchema>;
 export const brandLabels = { BAAN_KUNAPAP: "บ้านคุณภาพ", TARAVILLE: "ธาราวิลล์" };
 export const caseStatusLabels = { draft: "เตรียมข้อมูล", reserved: "จองแล้ว", contracted: "ทำสัญญาแล้ว", completed: "ครบยอดแล้ว", cancelled: "ยกเลิก" };
+export type CaseStatus = keyof typeof caseStatusLabels;
+export const caseStatusTones: Record<CaseStatus, StatusTone> = { draft: "progress", reserved: "progress", contracted: "progress", completed: "success", cancelled: "inactive" };
+export const refundStates: Record<Refund["state"], { label: string; tone: StatusTone }> = {
+  pending: { label: "รออนุมัติ", tone: "waiting" }, approved: { label: "อนุมัติ รอจ่าย", tone: "waiting" }, paid: { label: "จ่ายคืนแล้ว", tone: "success" },
+  rejected: { label: "ไม่อนุมัติ", tone: "fix" }, withdrawn: { label: "ถอนคำขอ", tone: "inactive" },
+};
 export const workQueueKinds = { payment_pending: "เงินเข้ารอยืนยัน", refund_pending: "คำขอคืนเงินรออนุมัติ", refund_approved: "อนุมัติคืนเงินแล้ว รอจ่ายจริง", acceptance: "รอตรวจรับงาน" };
 export const workQueueSchema = z.object({ case_id: z.uuid(), code: z.string(), brand: brandSchema, customer_name: z.string().nullable(),
   kind: z.enum(["payment_pending", "refund_pending", "refund_approved", "acceptance"]), count: z.number().int(), since: z.string() }).array();
