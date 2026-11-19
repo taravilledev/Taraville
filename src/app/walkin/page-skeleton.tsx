@@ -1,14 +1,14 @@
+import { skeletonClass, skeletonBlockClass, skeletonTitleClass, skeletonCardClass } from "@/components/page-skeleton-styles";
 import type { Staff } from "@/lib/walkin/models";
 import { AppShell } from "./app-shell";
-import styles from "./walkin.module.css";
 
 export function PageSkeleton({ staff }: { staff?: Staff }) {
   return <AppShell staff={staff}>
-    <div className={styles.skeleton} role="status">
-      <span className={styles.srOnly}>กำลังโหลด…</span>
-      <div className={`${styles.skeletonBlock} ${styles.skeletonTitle}`} />
-      <div className={`${styles.skeletonBlock} ${styles.skeletonCard}`} />
-      <div className={`${styles.skeletonBlock} ${styles.skeletonCard}`} />
+    <div className={skeletonClass} role="status">
+      <span className="sr-only">กำลังโหลด…</span>
+      <div className={`${skeletonBlockClass} ${skeletonTitleClass}`} />
+      <div className={`${skeletonBlockClass} ${skeletonCardClass}`} />
+      <div className={`${skeletonBlockClass} ${skeletonCardClass}`} />
     </div>
   </AppShell>;
 }

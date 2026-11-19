@@ -4,7 +4,8 @@ import { privacyNotice, surveyChoice, type PrivacyEvent } from "@/lib/walkin/pri
 import { ActionForm } from "./action-form";
 import { recordPrivacy } from "./privacy-actions";
 import { VersionedNotice } from "./versioned-notice";
-import styles from "./walkin.module.css";
+import { formCardClass, formHintClass } from "@/components/form-card";
+import { walkinOptionClass } from "./walkin-form-styles";
 
 export const formatDate = (value: string) => new Date(value).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
 const mutation = (lead: Lead, operation: "contact" | "opt_in" | "withdraw") =>
@@ -19,28 +20,28 @@ export function ContactRecord({ lead }: { lead: Lead }) {
 export function SurveyChoice({ lead, events, canEdit }: { lead: Lead; events: PrivacyEvent[]; canEdit: boolean }) {
   const choice = surveyChoice(events);
   const notice = privacyNotice(lead.privacy_mode);
-  return <section className={styles.card}><h2>ตัวเลือกแบบสอบถามเพิ่มเติม</h2>
+  return <section className={formCardClass}><h2>ตัวเลือกแบบสอบถามเพิ่มเติม</h2>
     <p>{choice === null ? "ยังไม่มีหลักฐานตัวเลือก" : choice ? "ลูกค้าเลือกให้ข้อมูลเพิ่มเติม" : "ลูกค้าไม่ให้ข้อมูลเพิ่มเติม"}</p>
     {canEdit && choice !== true && <div><h3>เลือกให้ข้อมูลแบบสอบถามเพิ่มเติม</h3>
       <VersionedNotice brand={lead.brand} mode={lead.privacy_mode} />
       <ActionForm action={mutation(lead, "opt_in")} label="ยืนยันตัวเลือกให้ข้อมูลเพิ่มเติม">
-        <label className={styles.option}><input type="checkbox" name="notice_presented" required /><span>{notice.choices.notice_presented}</span></label>
-        <label className={styles.option}><input type="checkbox" name="confirm_operation" required /><span>{notice.choices.survey_consent}</span></label>
+        <label className={walkinOptionClass}><input type="checkbox" name="notice_presented" required /><span>{notice.choices.notice_presented}</span></label>
+        <label className={walkinOptionClass}><input type="checkbox" name="confirm_operation" required /><span>{notice.choices.survey_consent}</span></label>
       </ActionForm>
     </div>}
     {canEdit && choice !== false && <div><h3>ถอนหรือไม่ให้ข้อมูลแบบสอบถามเพิ่มเติม</h3>
       <ActionForm action={mutation(lead, "withdraw")} label="ยืนยันถอนตัวเลือกและล้างคำตอบเพิ่มเติม">
         <p>จะล้างคำตอบแบบสอบถามเพิ่มเติมรวมที่อยู่ คงข้อมูลติดต่อ ผู้ดูแล และประวัติหลักฐานไว้</p>
-        <label className={styles.option}><input type="checkbox" name="confirm_operation" required /><span>ยืนยันการถอนตัวเลือกและล้างคำตอบเพิ่มเติม</span></label>
+        <label className={walkinOptionClass}><input type="checkbox" name="confirm_operation" required /><span>ยืนยันการถอนตัวเลือกและล้างคำตอบเพิ่มเติม</span></label>
       </ActionForm>
     </div>}
   </section>;
 }
 
 export function EvidenceHistory({ events }: { events: PrivacyEvent[] }) {
-  return <section className={styles.card}>
+  return <section className={formCardClass}>
     <h2>ประวัติหลักฐาน ({events.length})</h2>
-    <p className={styles.hint}>เวลาเป็นเวลาที่ระบบบันทึก ไม่ใช่หลักฐานเวลาที่อ่านประกาศจริง</p>
+    <p className={formHintClass}>เวลาเป็นเวลาที่ระบบบันทึก ไม่ใช่หลักฐานเวลาที่อ่านประกาศจริง</p>
     {!events.length && <p>รายการเดิมไม่มีหลักฐานย้อนหลัง</p>}
     <ol>{events.map(event => <li key={event.id}>
       {event.kind === "initial" ? "สร้างรายการพร้อมคำขอติดต่อกลับ" : event.kind === "contact" ? "บันทึกการติดต่อ" : "เปลี่ยนตัวเลือกแบบสอบถาม"}

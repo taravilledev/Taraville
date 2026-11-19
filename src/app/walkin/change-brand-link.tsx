@@ -1,10 +1,10 @@
 "use client";
 
-import styles from "./walkin.module.css";
+import { noticeLinkClass } from "@/components/action-link-styles";
 
 // The privacy notice belongs to one company, so a brand change discards what was typed.
 export function ChangeBrandLink({ formId }: { formId: string }) {
-  return <a className={styles.noticeLink} href="/walkin" onClick={event => {
+  return <a className={noticeLinkClass} href="/walkin" onClick={event => {
     const form = document.getElementById(formId);
     if (!(form instanceof HTMLFormElement)) return;
     const data = new FormData(form);
