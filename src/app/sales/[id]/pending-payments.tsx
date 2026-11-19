@@ -5,7 +5,6 @@ import { formatMoney } from "@/lib/sales/money";
 import { formatDate } from "@/lib/sales/date";
 import { findTask, taskHref } from "@/lib/sales/tasks";
 import type { SummaryData } from "./summary-sections";
-import shared from "../sales.module.css";
 import styles from "./workspace-section.module.css";
 import local from "./finance-collection.module.css";
 import { panelClass } from "@/components/panel";
@@ -16,7 +15,7 @@ export function PendingPayments({ data, payments }: { data: SummaryData; payment
   if (!finance || !payments.length) return null;
   const can = sale.permissions;
   if (sale.brand !== "BAAN_KUNAPAP") return <section className={panelClass} id="pending"><h2>เงินเข้ารอยืนยัน ({payments.length})</h2>
-    {payments.map(payment => <div key={payment.id} className={shared.capability}>
+    {payments.map(payment => <div key={payment.id} className="border-t py-4 [&_p]:m-0 [&_p]:mb-2">
       <p><strong>{paymentKinds[payment.kind]} · {formatMoney(payment.amount_cents)} บาท</strong></p>
       <p>{paymentMethods[payment.method]} · {formatDate(payment.paid_date)} · {payment.payer_name}</p><p>{payment.description}</p>
       {payment.proof_path && <Link href={`/sales/${sale.id}/evidence?path=${encodeURIComponent(payment.proof_path)}`} target="_blank" prefetch={false}>เปิดหลักฐาน</Link>}

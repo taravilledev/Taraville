@@ -54,7 +54,6 @@ const MIGRATION_ALLOWLIST = new Set([
   "sales/[id]/tasks/quotation-editor.module.css",
   "sales/[id]/tasks/task-header.module.css",
   "sales/[id]/workspace-section.module.css",
-  "sales/sales.module.css",
   "summary/summary.module.css",
 ]);
 const modules = all.filter(file => file.startsWith("app/") && file.endsWith(".module.css")).map(file => file.slice(4));

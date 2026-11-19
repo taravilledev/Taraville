@@ -4,11 +4,14 @@ import { brandLabels, caseStatusLabels, type SalesCase } from "@/lib/sales/model
 import type { NextStep } from "@/lib/sales/case-progress";
 import { taskHref } from "@/lib/sales/tasks";
 import { formatMoney } from "@/lib/sales/money";
-import styles from "../sales.module.css";
 import { pageHeaderClass } from "@/components/page-header";
 import { tagClass } from "@/components/tag";
 import { buttonVariants } from "@/components/ui/button";
+import { statCardsClass } from "@/components/stat-cards";
 
+const stepsClass = "m-0 flex list-none flex-wrap gap-2 p-0 [&_li]:rounded-full [&_li]:border [&_li]:px-4 [&_li]:py-1 [&_li]:text-sm [&_li]:text-muted-foreground " +
+  "[&_li[data-done=true]]:bg-accent [&_li[data-done=true]]:text-foreground [&_li[aria-current=step]]:border-primary [&_li[aria-current=step]]:bg-primary [&_li[aria-current=step]]:font-bold [&_li[aria-current=step]]:text-primary-foreground";
+const nextClass = "grid justify-items-start gap-3 rounded-lg border border-l-[6px] border-primary bg-card p-6 data-[done=true]:border-border [&_h2]:m-0 [&_h2]:text-lg [&_p]:m-0";
 const stages = {
   TARAVILLE: ["draft", "reserved", "contracted", "completed"],
   BAAN_KUNAPAP: ["draft", "contracted", "completed"],
@@ -27,9 +30,9 @@ export function CaseHeader({ sale, summary, step, workflow, navigation, showProg
       <div className="flex flex-wrap items-center gap-3"><span className={tagClass}>{caseStatusLabels[sale.status]}</span><Link className={buttonVariants({ variant: "outline", size: "auto" })} href="/dashboard" prefetch={false}>กลับแดชบอร์ด</Link></div>
     </div>
     {navigation}
-    {showProgress && !workflow && current >= 0 && <ol className={styles.steps} aria-label="สถานะงาน">{flow.map((status, index) =>
+    {showProgress && !workflow && current >= 0 && <ol className={stepsClass} aria-label="สถานะงาน">{flow.map((status, index) =>
       <li key={status} aria-current={index === current ? "step" : undefined} data-done={index < current}>{caseStatusLabels[status as SalesCase["status"]]}</li>)}</ol>}
-    {summary && <dl className={styles.summary}>
+    {summary && <dl className={statCardsClass}>
       <div><dt>{sale.brand === "BAAN_KUNAPAP" ? "มูลค่าโครงการ (ราคาสุทธิ)" : "ราคาสุทธิ"}</dt><dd>{money(summary.net)}</dd></div>
       <div><dt>รับแล้ว (หลังหักคืนเงิน)</dt><dd>{money(summary.received)}</dd></div>
       <div><dt>ค้างชำระ</dt><dd>{money(summary.outstanding)}</dd></div>
@@ -40,7 +43,7 @@ export function CaseHeader({ sale, summary, step, workflow, navigation, showProg
 
 function NextStepCard({ sale, step }: { sale: SalesCase; step: NextStep | null }) {
   if (!step) return null;
-  return <section className={styles.next} data-done={step.kind === "done"} aria-labelledby="next-step">
+  return <section className={nextClass} data-done={step.kind === "done"} aria-labelledby="next-step">
     <p className="text-sm text-muted-foreground">{step.kind === "done" ? "สถานะ" : "ขั้นต่อไป"}</p>
     <h2 id="next-step">{step.title}</h2>
     {step.hint && <p className="text-sm text-muted-foreground">{step.hint}</p>}
