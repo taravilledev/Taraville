@@ -22,8 +22,6 @@ const paperValues: Record<string, { colours?: string[]; sizes?: string[] }> = {
   "sales/documents/[id]/receipt-paper.module.css": { sizes: ["10pt", "1.55em", ".9em", ".85em"] },
 };
 const token = /^var\(--[\w-]+\)$/;
-// The document library's backdrop stays until its shared-dialog migration.
-const legacyBackdrop = ".dialog::backdrop { background: rgb(0 0 0 / 45%); }";
 
 const offences: string[] = [];
 for (const file of files) {
@@ -35,7 +33,6 @@ for (const file of files) {
         if (name === "raw font-size" && value && (token.test(value) || value === "inherit" || paper?.sizes?.includes(value))) continue;
         if (name === "raw border-radius" && value?.split(/\s+/).every(part => token.test(part) || part === "0" || part === "50%")) continue;
         if (name === "raw colour" && paper?.colours?.includes(match[0])) continue;
-        if (file === "sales/[id]/document-library.module.css" && line.trim() === legacyBackdrop) continue;
         offences.push(`${file}:${index + 1} ${name}: ${line.trim()}`);
       }
     }
