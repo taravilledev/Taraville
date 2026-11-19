@@ -12,7 +12,8 @@ import { AmountGuideDialog } from "./amount-guide-dialog";
 import { ProjectTable, identityColumns } from "./project-table";
 import { ReportOutputDialog } from "./report-output-dialog";
 import { collectionFilters, summaryPageRange, summaryQuery, summaryReport, summaryStages, type SummaryReport } from "./summary-model";
-import styles from "./summary.module.css";
+import * as styles from "./summary-styles";
+import paper from "./summary-print.module.css";
 import { noticeClass } from "@/components/notice";
 import { pageHeaderClass } from "@/components/page-header";
 import { buttonVariants } from "@/components/ui/button";
@@ -54,8 +55,8 @@ async function Summary({ searchParams }: Props) {
   const returnParams = new URLSearchParams(query.params);
   if (range.page > 1) returnParams.set("page", String(range.page));
 
-  if (isPrint) return <main className={styles.printReport}>
-    <div className={styles.printControls}>
+  if (isPrint) return <main className={paper.printReport}>
+    <div className={paper.printControls}>
       <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={returnParams.size ? `/summary?${returnParams}#projects` : "/summary"} prefetch={false}>
         {query.isPeriodView ? "กลับรายงาน" : "กลับหน้าสรุป"}</Link>
       {report && <PrintButton />}

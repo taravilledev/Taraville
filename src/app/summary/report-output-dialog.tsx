@@ -9,7 +9,8 @@ import {
   amountState, collectionFilters, displayAmount, filterSummaryReportRows, selectSummaryReport, summaryCsv,
   summaryStages, updateSummarySelection, type SummaryReport,
 } from "./summary-model";
-import styles from "./summary.module.css";
+import * as styles from "./summary-styles";
+import paper from "./summary-print.module.css";
 import { buttonVariants } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -130,7 +131,7 @@ export function ReportOutputDialog({ report, title, today }: { report: SummaryRe
         </button>
       </div>
     </dialog>
-    {printReport && createPortal(<main className={`${styles.printReport} ${styles.selectionPrint}`}>
+    {printReport && createPortal(<main className={`${paper.printReport} ${paper.selectionPrint}`}>
       <h1>{title} · บ้านคุณภาพ</h1>
       <p>หน่วยบาท{printReport.periodLabel && ` · รับและคืนเงิน ${printReport.periodLabel}`}
         {printReport.rows.some(row => row.hasUnknownBalance || row.amounts.value === null) && " · รวมเฉพาะยอดที่ระบุได้"}</p>

@@ -40,12 +40,9 @@ const PRINT_MODULES = new Set([
   "sales/[id]/tasks/quotation-editor.module.css",
   "sales/documents/[id]/document.module.css",
   "sales/documents/[id]/receipt-paper.module.css",
+  "summary/summary-print.module.css",
 ]);
-const MIGRATION_ALLOWLIST = new Set([
-  "dashboard/overview.module.css",
-  "login/auth.module.css",
-  "summary/summary.module.css",
-]);
+const MIGRATION_ALLOWLIST = new Set<string>([]);
 const modules = all.filter(file => file.startsWith("app/") && file.endsWith(".module.css")).map(file => file.slice(4));
 const unknown = modules.filter(file => !PRINT_MODULES.has(file) && !MIGRATION_ALLOWLIST.has(file));
 assert.deepEqual(unknown, [], `New CSS modules are not allowed (ADR 0031); build with ui/ components and utilities:\n${unknown.join("\n")}`);

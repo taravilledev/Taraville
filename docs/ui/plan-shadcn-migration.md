@@ -85,7 +85,8 @@ Walk-in split: shared cards, text, shell, feedback and native dialog styles are 
    4. `[id]/tasks` (`task-header`, `contract-wizard`, `quotation-acceptance`, `quotation-editor` with the paper exception)
    `tasks/quotation-editor.module.css` (the A4 quotation paper editor) is reclassified as a paper module like `contract-paper` and `payment-paper`: it stays a CSS module and never imports `ui/` (ADR 0031, ADR 0053 decision 6). Slice 4 is done.
    Print modules (`*-paper`, `document`) stay. `sales.module.css` is deleted with slice 3.
-4. `/summary` + `/dashboard`, login, shell (`layout.tsx`, `AppShell`)
+4. `/summary` + `/dashboard`, login, shell (`layout.tsx`, `AppShell`) — done
+   `summary.module.css` is split: screen styles moved to `summary-styles.ts`; the paper output (`?print=1` view and the selection-dialog print portal: named A4 landscape `@page`, 9pt/5pt print sizes) moved to `summary-print.module.css`, which is a paper module in `PRINT_MODULES`. `MIGRATION_ALLOWLIST` is now empty.
 
 Per page: move module classes to utilities/composites, delete the module file, remove it from `MODULE_ALLOWLIST`.
 

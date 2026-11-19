@@ -14,7 +14,7 @@ const rules: [string, RegExp][] = [
 ];
 // Fixed print typography and document branding belong to the paper templates.
 const paperValues: Record<string, { colours?: string[]; sizes?: string[] }> = {
-  "summary/summary.module.css": { sizes: ["9pt"] },
+  "summary/summary-print.module.css": { sizes: ["9pt"] },
   "leads/report/report.module.css": { colours: ["#111", "#bbb", "#888"], sizes: ["9pt", "10pt", "11pt", "12pt", "18pt"] },
   "sales/[id]/tasks/contract-paper.module.css": { sizes: ["10pt", "12pt"] },
   "sales/[id]/tasks/quotation-editor.module.css": { colours: ["#b6d7a8"] },
