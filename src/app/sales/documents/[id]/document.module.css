@@ -1,6 +1,6 @@
 .page { padding: var(--space-5); color: var(--ink); }
 .controls { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); max-width: 210mm; margin: 0 auto var(--space-5); }
-.paper { width: 100%; max-width: 210mm; min-height: 250mm; margin: auto; padding: var(--space-6); background: var(--paper); border: 1px solid var(--line); overflow-wrap: anywhere; }
+.paper { font-family: var(--font-paper); width: 100%; max-width: 210mm; min-height: 250mm; margin: auto; padding: var(--space-6); background: var(--paper); border: 1px solid var(--line); overflow-wrap: anywhere; }
 .header { display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--space-5); border-bottom: 2px solid var(--line-strong); padding-bottom: var(--space-4); }
 .header h1, .header h2 { font-size: var(--text-lg); margin: 0 0 var(--space-3); }
 .header p, .customer p { margin: var(--space-1) 0; white-space: pre-line; }

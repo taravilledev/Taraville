@@ -40,8 +40,9 @@
   --control-h: 52px;
   --tap-min: 44px;
   --content-w: 880px;
-  --font-body: var(--font-nunito), var(--font-sarabun), "Thonburi", Tahoma, sans-serif;
-  --font-utility: var(--font-nunito), Arial, sans-serif;
+  --font-body: var(--font-noto-thai), "Thonburi", Tahoma, sans-serif;
+  --font-utility: var(--font-body);
+  --font-paper: var(--font-nunito), var(--font-sarabun), "Thonburi", Tahoma, sans-serif;
   color-scheme: light;
 
   /* shadcn variable names, pointing at the tokens above (no dark mode, ADR 0031). */

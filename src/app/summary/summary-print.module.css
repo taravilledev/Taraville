@@ -1,5 +1,5 @@
 /* Paper output of /summary (the ?print view and the selection-dialog portal): A4 landscape page and fixed print sizes. */
-.printReport { width: min(100% - 2rem, 82rem); margin: var(--space-5) auto; }
+.printReport { font-family: var(--font-paper); width: min(100% - 2rem, 82rem); margin: var(--space-5) auto; }
 .printReport h1 { margin-block: var(--space-4); font-size: var(--text-lg); }
 .printControls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); }
 .selectionPrint { display: none; }

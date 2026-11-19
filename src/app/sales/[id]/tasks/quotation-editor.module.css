@@ -8,7 +8,7 @@
 .editor { display: grid; gap: var(--space-4); min-width: 0; padding: var(--space-4); background: var(--tint); border-radius: var(--radius-md); }
 .editHint, .note { margin: 0; color: var(--muted-foreground); font-size: var(--text-sm); }
 .sections { display: grid; gap: var(--space-4); min-width: 0; }
-.paper { width: 100%; max-width: 210mm; min-height: 297mm; padding: var(--space-6); margin: 0 auto; border: 1px solid var(--line-strong); background: var(--paper); color: var(--ink); box-shadow: var(--shadow-hover); overflow-wrap: anywhere; }
+.paper { font-family: var(--font-paper); width: 100%; max-width: 210mm; min-height: 297mm; padding: var(--space-6); margin: 0 auto; border: 1px solid var(--line-strong); background: var(--paper); color: var(--ink); box-shadow: var(--shadow-hover); overflow-wrap: anywhere; }
 .letterhead { display: grid; justify-items: center; gap: var(--space-1); margin-bottom: var(--space-5); text-align: center; }
 .letterhead img { object-fit: contain; }
 .letterhead p { margin: 0; }

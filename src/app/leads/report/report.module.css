@@ -34,6 +34,7 @@
 }
 @media print {
   @page monthlyLeadReport { size: A4 portrait; margin: 14mm; }
+  .page { font-family: var(--font-paper); }
   :global(body):has(.page) > :not(:has(.page)),
   :global(body) > :has(.page) > :not(:global(#main-content)),
   .noPrint,
