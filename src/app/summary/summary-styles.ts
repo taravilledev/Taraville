@@ -23,7 +23,9 @@ export const table =
   "[&_thead_th:first-child]:min-w-36 [&_thead_th:first-child]:rounded-ss-lg [&_thead_th:last-child]:rounded-se-lg " +
   "[&_tbody_th]:font-semibold [&_th_small]:block [&_th_small]:font-normal [&_th_small]:text-muted-foreground"
 // Below 850px the on-screen table becomes one card per row; the paper table keeps its columns.
-export const screenTableWrap = `${tableWrap} max-[850px]:border-0 max-[850px]:bg-transparent`
+// Screen only: a number never breaks across lines; a narrow content area (sidebar) scrolls the table instead.
+export const screenTableWrap = `${tableWrap} max-[850px]:border-0 max-[850px]:bg-transparent ` +
+  "min-[851px]:overflow-x-auto min-[851px]:[&_td[role=cell]]:whitespace-nowrap min-[851px]:[&_td[role=cell]]:[overflow-wrap:normal]"
 export const screenTable =
   `${table} max-[850px]:block ` +
   "max-[850px]:[&_thead]:absolute max-[850px]:[&_thead]:size-px max-[850px]:[&_thead]:overflow-hidden max-[850px]:[&_thead]:[clip-path:inset(50%)] " +
