@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useTransition } from "react";
+import { useEffect, useId, useRef, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { MonthlyReport } from "@/lib/walkin/monthly-report";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { PrintButton } from "./print-button";
 import styles from "./report.module.css";
 
@@ -16,6 +19,7 @@ type Props = {
 };
 
 export function ReportControls({ month, latestMonth, brand, owner, owners, printDisabled }: Props) {
+  const id = useId();
   const router = useRouter();
   const form = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = useTransition();
@@ -41,19 +45,19 @@ export function ReportControls({ month, latestMonth, brand, owner, owners, print
   return <form ref={form} className={`${styles.controls} ${styles.noPrint}`} method="get" action="/leads/report"
     onChange={event => apply(event.currentTarget)}
     onSubmit={event => { event.preventDefault(); apply(event.currentTarget); }}>
-    <label className={styles.field}>เดือน
-      <input type="month" name="month" defaultValue={month} max={latestMonth} required />
-    </label>
-    <label className={styles.field}>แบรนด์
-      <select name="brand" defaultValue={brand ?? ""}>
+    <Field className="w-auto"><FieldLabel htmlFor={`${id}-month`}>เดือน</FieldLabel>
+      <Input id={`${id}-month`} type="month" name="month" defaultValue={month} max={latestMonth} required />
+    </Field>
+    <Field className="w-auto"><FieldLabel htmlFor={`${id}-brand`}>แบรนด์</FieldLabel>
+      <NativeSelect id={`${id}-brand`} name="brand" defaultValue={brand ?? ""}>
         <option value="">ทั้งสองแบรนด์</option><option value="TARAVILLE">ธาราวิล</option><option value="BAAN_KUNAPAP">บ้านคุณภาพ</option>
-      </select>
-    </label>
-    <label className={styles.field}>ผู้ดูแล
-      <select name="owner" defaultValue={owner ?? ""}>
+      </NativeSelect>
+    </Field>
+    <Field className="w-auto"><FieldLabel htmlFor={`${id}-owner`}>ผู้ดูแล</FieldLabel>
+      <NativeSelect id={`${id}-owner`} name="owner" defaultValue={owner ?? ""}>
         <option value="">ทุกคน</option>{owners.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
-      </select>
-    </label>
+      </NativeSelect>
+    </Field>
     <PrintButton disabled={isPending || printDisabled} />
     <span className={styles.status} role="status">{isPending ? "กำลังโหลดรายงาน…" : ""}</span>
   </form>;

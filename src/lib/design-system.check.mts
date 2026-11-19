@@ -42,8 +42,6 @@ const PRINT_MODULES = new Set([
 ]);
 const MIGRATION_ALLOWLIST = new Set([
   "dashboard/overview.module.css",
-  "leads/[id]/lead-detail.module.css",
-  "leads/leads.module.css",
   "login/auth.module.css",
   "sales/[id]/bkp-progress.module.css",
   "sales/[id]/bkp-workflow.module.css",

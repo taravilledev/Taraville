@@ -16,8 +16,11 @@ import { LeadCards } from "./lead-cards";
 import { ListPager } from "./list-pager";
 import { ReportIcon } from "./header-icons";
 import { LeadExportDialog } from "./export-dialog";
-import styles from "./leads.module.css";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
+const actionClass = cn(buttonVariants({ variant: "outline" }), "no-underline");
+const emptyClass = "m-0 rounded-lg border bg-card px-4 py-8 text-center text-muted-foreground";
 export const metadata = { title: "รายการผู้สนใจ · Taraville Group", robots: { index: false, follow: false } };
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 export default function LeadsPage(props: Props) {
@@ -44,34 +47,34 @@ async function List({ searchParams }: Props) {
   const ownerName = new Map(owners.map(owner => [owner.id, owner.full_name]));
   const activeCount = [filters.owner, filters.from, filters.to, filters.stage, filters.sort !== "created" || filters.dir !== "desc"].filter(Boolean).length;
   return <AppShell staff={session.staff} wide>
-    <div className={styles.page}>
-      <header className={styles.titleRow}>
-        <h1>รายการผู้สนใจ</h1>
-        <div className={styles.headerActions}>
-          <Link href="/leads/report" prefetch={false} className={styles.actionBtn}><ReportIcon />รายงานรายเดือน</Link>
+    <div className="grid min-w-0 gap-6">
+      <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <h1 className="m-0 text-title/[1.5] font-bold">รายการผู้สนใจ</h1>
+        <div className="flex flex-wrap items-start gap-2">
+          <Link href="/leads/report" prefetch={false} className={actionClass}><ReportIcon />รายงานรายเดือน</Link>
           {isExecutive && <LeadExportDialog options={[
             { label: "ธาราวิล", href: listHref(filters, { brand: "TARAVILLE", page: undefined }).replace("/leads", "/leads/export") },
             { label: "บ้านคุณภาพ", href: listHref(filters, { brand: "BAAN_KUNAPAP", page: undefined }).replace("/leads", "/leads/export") },
           ]} />}
-          <Link href="/walkin" prefetch={false} className={`${styles.actionBtn} ${styles.primaryAction}`}>รับลูกค้า</Link>
+          <Link href="/walkin" prefetch={false} className={cn(buttonVariants({ size: "default" }), "no-underline")}>รับลูกค้า</Link>
         </div>
       </header>
       <RetentionReview session={session} />
-      <section className={styles.toolbar} aria-label="ค้นหาและกรองรายการผู้สนใจ">
+      <section className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border bg-card p-3 max-[400px]:gap-2" aria-label="ค้นหาและกรองรายการผู้สนใจ">
         <BrandTiles filters={filters} counts={counts} />
         <ListControls filters={filters} owners={owners} activeCount={activeCount} />
         <ListChips filters={filters} ownerName={ownerName} />
       </section>
       <section aria-label="ผลการค้นหาผู้สนใจ">
-        <p className={styles.total} role="status">พบ {total.toLocaleString("th-TH")} รายการ</p>
+        <p className="m-0 mb-3 text-sm text-muted-foreground" role="status">พบ {total.toLocaleString("th-TH")} รายการ</p>
         {leads.length ? <LeadCards leads={leads} workTags={workTags} ownerName={ownerName} />
-          : activeCount || filters.q || filters.brand ? <div className={styles.empty}>
-            <p>ไม่พบรายการที่ตรงกับตัวกรอง</p>
+          : activeCount || filters.q || filters.brand ? <div className={emptyClass}>
+            <p className="m-0 mb-3">ไม่พบรายการที่ตรงกับตัวกรอง</p>
             {filters.q
-              ? <a className={styles.actionBtn} href={listHref(filters, { q: undefined, page: undefined })}>ล้างคำค้น</a>
-              : <a className={styles.actionBtn} href={listHref(filters, { stage: undefined, owner: undefined, from: undefined, to: undefined, brand: undefined, page: undefined })}>ล้างตัวกรอง</a>}
+              ? <a className={actionClass} href={listHref(filters, { q: undefined, page: undefined })}>ล้างคำค้น</a>
+              : <a className={actionClass} href={listHref(filters, { stage: undefined, owner: undefined, from: undefined, to: undefined, brand: undefined, page: undefined })}>ล้างตัวกรอง</a>}
           </div>
-          : <p className={styles.empty}>ยังไม่มีผู้สนใจที่กำลังติดตาม · <Link href="/walkin" prefetch={false}>เริ่มรับลูกค้า Walk-in</Link></p>}
+          : <p className={emptyClass}>ยังไม่มีผู้สนใจที่กำลังติดตาม · <Link href="/walkin" prefetch={false}>เริ่มรับลูกค้า Walk-in</Link></p>}
         <ListPager filters={filters} total={total} />
       </section>
     </div>
