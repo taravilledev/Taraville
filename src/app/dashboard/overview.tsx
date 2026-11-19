@@ -43,7 +43,7 @@ export function DashboardOverview({ data, groups, brand }: { data: DashboardOver
     { label: "เงินรับจริงสุทธิสะสม", amount: displayAmount(data.received), unit: "บาท", Icon: Coins, tone: "positive",
       note: "หักยอดที่จ่ายคืนแล้ว" },
     { label: "รายการรับเงินรอยืนยัน", amount: number.format(data.pending), unit: "รายการ", Icon: Clock, tone: "warning",
-      href: `/dashboard?${pendingParams}#projects-title`, action: "ดูรายการรอยืนยัน" },
+      href: `/sales?${pendingParams}#projects-title`, action: "ดูรายการรอยืนยัน" },
   ] as const;
   return <>
     <section className={styles.metrics} aria-label="ข้อมูลภาพรวมผู้บริหาร">

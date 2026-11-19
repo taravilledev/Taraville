@@ -83,3 +83,10 @@ export async function leadProjects(session: Awaited<ReturnType<typeof leadDetail
   }
   return { projects, names };
 }
+
+/** The owner's Leads still รับเข้า (stage "received"); null on error so the Sale home shows "—" instead of failing. */
+export async function uncontactedLeadCount(supabase: Awaited<ReturnType<typeof requireStaff>>["supabase"], ownerId: string) {
+  const { count, error } = await supabase.from("walkin_leads_staged").select("id", { count: "exact", head: true })
+    .eq("stage", "received").eq("owner_id", ownerId);
+  return error ? null : count;
+}

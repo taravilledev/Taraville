@@ -30,7 +30,7 @@ const pageSize = 30;
 const bangkokDate = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Bangkok" });
 const localDate = (timestamp: string) => formatDate(bangkokDate.format(new Date(timestamp)));
 
-export function ExecutiveDashboard({ rows, filters, filterForm, compact = false }: { rows: ExecutiveWork[]; filters: Filters; filterForm: ReactNode; compact?: boolean }) {
+export function ExecutiveDashboard({ rows, filters, filterForm, basePath, compact = false }: { rows: ExecutiveWork[]; filters: Filters; filterForm: ReactNode; basePath: string; compact?: boolean }) {
   const active = priorities.find(item => item.key === filters.attention);
   const matches = active ? rows.filter(row => row[active.key] > 0) : rows;
   const pages = Math.max(1, Math.ceil(matches.length / pageSize));
@@ -43,7 +43,7 @@ export function ExecutiveDashboard({ rows, filters, filterForm, compact = false 
     if (filters.query) params.set("q", filters.query);
     if (attention) params.set("attention", attention);
     if (nextPage > 1) params.set("page", String(nextPage));
-    return `/dashboard${params.size ? `?${params}` : ""}`;
+    return `${basePath}${params.size ? `?${params}` : ""}`;
   }
   return <>
     <section aria-labelledby="queue-title" id="queue" className="min-w-0">
