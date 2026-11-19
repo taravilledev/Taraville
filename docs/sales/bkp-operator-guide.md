@@ -1,5 +1,7 @@
 # Baan Kunapap operator guide
 
+> **Deprecated (2026-11-19).** Superseded by the Thai user manual for v0.2.0 (Claude Doc "คู่มือใช้งานระบบ Taraville ฝั่งบ้านคุณภาพ": https://claude.ai/artifact/JPYqUymxEtMLsWnEKaojfs). Kept for history; some labels below no longer match the UI.
+
 Use this guide for one project, from the customer’s first enquiry to the last receipt. Thai text in bold matches the staff interface.
 
 ## Before starting
