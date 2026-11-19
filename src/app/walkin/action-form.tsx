@@ -2,6 +2,7 @@
 
 import { primaryActionClass, secondaryActionClass } from "@/components/action-link-styles";
 import { formErrorClass } from "@/components/form-feedback";
+import type { Fix } from "@/lib/errors/error-map";
 import { useActionState, useEffect, useRef, type ReactNode } from "react";
 
 const actionFooterClass = "mt-4 flex items-center justify-between gap-6 pt-2 pb-3 max-[640px]:flex-col max-[640px]:items-stretch";
@@ -9,7 +10,7 @@ const stickyActionFooterClass =
   "sticky bottom-0 z-[5] -mx-3 border-t bg-background px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] " +
   "max-[640px]:-mx-2 max-[640px]:px-2 [&>button[type=submit]]:w-full";
 
-export type ActionState = { error: string; field?: string };
+export type ActionState = { error: string; field?: string; fix?: Fix };
 export function ActionForm({ action, children, label = "บันทึกข้อมูล", id, sticky = false, inline = false, secondaryAction }: {
   action: (state: ActionState, data: FormData) => Promise<ActionState>;
   children: ReactNode; label?: string; id?: string; sticky?: boolean; inline?: boolean;
@@ -37,6 +38,7 @@ export function ActionForm({ action, children, label = "บันทึกข้
   return <form id={id} action={submit} ref={form} className={inline ? "inline-flex flex-col items-start" : undefined} onReset={event => event.preventDefault()}>
     <fieldset className="m-0 min-w-0 border-0 p-0" disabled={isPending}>{children}</fieldset>
     {state.error && <p ref={error} className={formErrorClass} role="alert" tabIndex={-1}>{state.error}</p>}
+    {state.error && state.fix && <a className={`${secondaryActionClass} mt-2`} href={state.fix.href}>{state.fix.label}</a>}
     <div className={inline ? undefined : sticky ? `mt-4 flex items-center justify-between gap-6 max-[640px]:flex-col max-[640px]:items-stretch ${stickyActionFooterClass}` : actionFooterClass}>
       {secondaryAction && ("href" in secondaryAction
         ? <a className={secondaryActionClass} href={isPending ? undefined : secondaryAction.href} aria-disabled={isPending || undefined}>{secondaryAction.label}</a>

@@ -33,7 +33,7 @@ export function parseReopenForm(context: StatusMutation, form: FormData) {
   return statusMutationSchema.parse(context);
 }
 
-const projectCancelContextSchema = statusMutationSchema.extend({ leadId: z.uuid() });
+const projectCancelContextSchema = statusMutationSchema.extend({ leadId: z.uuid(), caseId: z.uuid().optional() });
 export type ProjectCancelContext = z.infer<typeof projectCancelContextSchema>;
 export function parseCancelProjectForm(context: ProjectCancelContext, form: FormData) {
   z.literal("on").parse(form.get("confirm_operation"));

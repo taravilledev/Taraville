@@ -18,6 +18,9 @@ import { DesignPackages } from "./design-packages";
 import { formatMoney } from "@/lib/sales/money";
 import * as acceptance from "./quotation-acceptance-styles";
 import { noticeClass } from "@/components/notice";
+import { FixNotice } from "@/components/fix-notice";
+import { guidance } from "@/lib/errors/error-map";
+import { missingContractPrerequisite } from "@/lib/sales/contract-template";
 import { buttonVariants } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -62,18 +65,20 @@ export function PrepareContractTask({ sale, agreement, finance, row, contractTem
     action={prepareContract.bind(null, { ...idOf(sale), documentId: draft?.id ?? null, documentVersion: draft?.version ?? null })} />;
 }
 
-export function LockContractTask({ sale, agreement, row, contractTemplate }: TaskData) {
+export function LockContractTask({ sale, agreement, row, contractTemplate, isExecutive = false }: TaskData) {
   const draft = agreement?.documents.find(doc => doc.id === row && doc.state === "draft");
   if (!draft) return null;
   const paper = draft.payload.contract_paper;
   const missing = [...(paper ? contractPaperMissing(paper, !!contractTemplate?.is_synthetic) : []), ...(!draft.payload.start_date ? ["วันเริ่มก่อสร้าง"] : [])];
   const needsApproval = !contractTemplate?.is_synthetic && (!contractTemplate?.contract_text_approved || draft.payload.contract_text !== contractTemplate.contract_text);
+  const prerequisite = missingContractPrerequisite(contractTemplate);
   const canLock = !needsApproval && (!!paper || contractTemplate?.is_synthetic) && !missing.length && !!draft.payload.contract_text?.trim();
   return <>
     <p>ตรวจข้อมูลก่อนออกเลขสัญญา ยอดเครดิตจะคำนวณจากเงินที่รับจริง ณ ตอนล็อก</p>
     <AgreementContent payload={draft.payload} />
-    {!canLock && <p className={noticeClass} role="status">{needsApproval
-      ? "รอตรวจข้อความบริษัท หรือบันทึกร่างอีกครั้งเพื่อใช้ข้อความที่อนุมัติล่าสุด"
+    {prerequisite && <FixNotice {...guidance(prerequisite, { brand: sale.brand, isExecutive })} />}
+    {!canLock && !prerequisite && <p className={noticeClass} role="status">{needsApproval
+      ? "บันทึกร่างอีกครั้งเพื่อใช้ข้อความสัญญาที่อนุมัติล่าสุด"
       : missing.length ? `กรอกข้อมูลก่อนออกเลข: ${missing.join(" · ")}` : "กลับไปบันทึกร่างบนแม่แบบใหม่และตรวจข้อความบริษัทก่อนออกเลข"}</p>}
     {!canLock && <p><Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/${sale.id}?task=edit-contract&row=${draft.id}`} prefetch={false}>กลับไปแก้ร่าง</Link></p>}
     {canLock && <ActionForm action={lockContract.bind(null, { ...idOf(sale), documentId: draft.id, documentVersion: draft.version })} label="ล็อกและออกเลขสัญญา"

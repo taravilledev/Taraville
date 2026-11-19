@@ -7,13 +7,14 @@ import * as styles from "./bkp-workflow-styles";
 import { QuotationSection } from "./quotation-section";
 import { ContractSection } from "./contract-section";
 import { WorkspaceHeading } from "./workspace-heading";
+import { StepBlockedNotice } from "./step-blocked-notice";
 import { formatMoney } from "@/lib/sales/money";
 import { panelClass } from "@/components/panel";
 import { buttonVariants } from "@/components/ui/button";
 import { statCardsClass } from "@/components/stat-cards";
 import { cn } from "@/lib/utils";
 
-export function BkpOverview({ data, step }: { data: SummaryData; step: NextStep | null }) {
+export function BkpOverview({ data, step, isExecutive = false }: { data: SummaryData; step: NextStep | null; isExecutive?: boolean }) {
   const { sale, finance, agreement } = data;
   if (!finance || !agreement) return null;
   const flow = bkpWorkflow(finance, agreement);
@@ -49,7 +50,7 @@ export function BkpOverview({ data, step }: { data: SummaryData; step: NextStep 
     <section className={cn(panelClass, styles.context)}>
       <div><h2>งานถัดไป</h2><p>{step?.title ?? "ไม่มีงานถัดไปในขณะนี้"}</p>
         {step?.hint && <p className="text-sm text-muted-foreground">{step.hint}</p>}
-        {step && !step.allowed && <p className="text-sm text-muted-foreground">รอผู้มีสิทธิ์ดำเนินการ</p>}
+        {step && !step.allowed && <StepBlockedNotice isExecutive={isExecutive} />}
       </div>
       {step?.allowed && step.kind !== "done" && (!step.task || task) && <Link className={buttonVariants({ size: "auto" })} prefetch={false}
         href={task && !isFinanceStep ? taskHref(sale.id, task.name, task.row) : `/sales/${sale.id}?tab=${step.tab}${step.anchor ? `#${step.anchor}` : ""}`}>

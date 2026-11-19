@@ -28,12 +28,13 @@ async function Manage({ params }: Props) {
   const [owners, info, { projects }, work] = await Promise.all([
     isExecutive ? saleOwners(session) : Promise.resolve([]), closeInfo(session), leadProjects(session), leadWork(session.supabase, lead.id)]);
   const activeProject = projects.find(project => project.status === "active");
+  const openCaseId = work?.cases.find(item => item.project_id === activeProject?.id && item.status !== "cancelled")?.id ?? undefined;
   const openWorkCount = work?.cases.filter(item => item.brand === "TARAVILLE" && !["completed", "cancelled"].includes(item.status)).length ?? 0;
   return <AppShell staff={staff}>
     <p><Link href={`/leads/${lead.id}`} prefetch={false}>← กลับหน้าผู้สนใจ</Link></p>
     <h1>จัดการ {lead.first_name} {lead.last_name}</h1>
     <LeadStatus lead={lead} info={info} hasActiveProject={Boolean(activeProject)} canEdit={canEdit} openWorkCount={openWorkCount} />
-    {isExecutive && activeProject && <CancelProject lead={lead} project={activeProject} />}
+    {isExecutive && activeProject && <CancelProject lead={lead} project={activeProject} openCaseId={openCaseId} />}
     <SurveyChoice lead={lead} events={events} canEdit={canEdit} />
     {isExecutive && <section className={formCardClass}><h2>เปลี่ยนฝ่ายขายผู้ดูแล</h2>
       <ActionForm action={reassignLead.bind(null, lead.id, lead.version)} label="เปลี่ยนผู้ดูแล">

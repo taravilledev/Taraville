@@ -8,6 +8,7 @@ import { pageHeaderClass } from "@/components/page-header";
 import { tagClass } from "@/components/tag";
 import { buttonVariants } from "@/components/ui/button";
 import { statCardsClass } from "@/components/stat-cards";
+import { StepBlockedNotice } from "./step-blocked-notice";
 
 const stepsClass = "m-0 flex list-none flex-wrap gap-2 p-0 [&_li]:rounded-full [&_li]:border [&_li]:px-4 [&_li]:py-1 [&_li]:text-sm [&_li]:text-muted-foreground " +
   "[&_li[data-done=true]]:bg-accent [&_li[data-done=true]]:text-foreground [&_li[aria-current=step]]:border-primary [&_li[aria-current=step]]:bg-primary [&_li[aria-current=step]]:font-bold [&_li[aria-current=step]]:text-primary-foreground";
@@ -18,8 +19,8 @@ const stages = {
 } as const;
 type Summary = { net: string | null; received: string; outstanding: string | null };
 
-export function CaseHeader({ sale, summary, step, workflow, navigation, showProgress = true }: {
-  sale: SalesCase; summary: Summary | null; step: NextStep | null; workflow?: ReactNode; navigation?: ReactNode; showProgress?: boolean;
+export function CaseHeader({ sale, summary, step, workflow, navigation, showProgress = true, isExecutive = false }: {
+  sale: SalesCase; summary: Summary | null; step: NextStep | null; workflow?: ReactNode; navigation?: ReactNode; showProgress?: boolean; isExecutive?: boolean;
 }) {
   const flow: readonly string[] = stages[sale.brand];
   const current = flow.indexOf(sale.status);
@@ -37,11 +38,11 @@ export function CaseHeader({ sale, summary, step, workflow, navigation, showProg
       <div><dt>รับแล้ว (หลังหักคืนเงิน)</dt><dd>{money(summary.received)}</dd></div>
       <div><dt>ค้างชำระ</dt><dd>{money(summary.outstanding)}</dd></div>
     </dl>}
-    {showProgress && (workflow ?? (summary && <NextStepCard sale={sale} step={step} />))}
+    {showProgress && (workflow ?? (summary && <NextStepCard sale={sale} step={step} isExecutive={isExecutive} />))}
   </>;
 }
 
-function NextStepCard({ sale, step }: { sale: SalesCase; step: NextStep | null }) {
+function NextStepCard({ sale, step, isExecutive }: { sale: SalesCase; step: NextStep | null; isExecutive: boolean }) {
   if (!step) return null;
   return <section className={nextClass} data-done={step.kind === "done"} aria-labelledby="next-step">
     <p className="text-sm text-muted-foreground">{step.kind === "done" ? "สถานะ" : "ขั้นต่อไป"}</p>
@@ -49,6 +50,6 @@ function NextStepCard({ sale, step }: { sale: SalesCase; step: NextStep | null }
     {step.hint && <p className="text-sm text-muted-foreground">{step.hint}</p>}
     {step.kind !== "done" && step.allowed && <Link className={buttonVariants({ size: "auto" })} prefetch={false}
       href={step.task ? taskHref(sale.id, step.task, step.row) : `/sales/${sale.id}?tab=${step.tab}${step.anchor ? `#${step.anchor}` : ""}`}>{step.kind === "reserve" ? "ยืนยันจองแปลง" : "ไปทำขั้นนี้"}</Link>}
-    {!step.allowed && <p className="text-sm text-muted-foreground">รอผู้มีสิทธิ์ดำเนินการขั้นนี้ บัญชีของคุณไม่มีสิทธิ์</p>}
+    {!step.allowed && <StepBlockedNotice isExecutive={isExecutive} />}
   </section>;
 }

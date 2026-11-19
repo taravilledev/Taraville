@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { describeError } from "@/lib/errors/error-map";
 import { SURVEY_QUESTIONS } from "./survey-questions";
 
 export const mutationContextSchema = z.object({
@@ -59,14 +60,4 @@ export function parseLeadForm(context: MutationContext, form: FormData, isSurvey
   return { contact, survey, owner };
 }
 
-export function mutationError(code?: string, message?: string) {
-  if (code === "PT409" || code === "40001") return "ข้อมูลถูกแก้ไขไปแล้ว กรุณาเปิดรายการล่าสุดก่อนแก้ไขอีกครั้ง";
-  if (code === "42501") return "คุณไม่มีสิทธิ์แก้ไขรายการนี้ หรือสิทธิ์เพิ่งเปลี่ยน กรุณาเปิดรายการใหม่";
-  if (message === "request_conflict") return "คำขอนี้ถูกบันทึกไปแล้วด้วยข้อมูลต่างกัน กรุณาตรวจรายการก่อนเริ่มใหม่";
-  if (message === "invalid_lead_state") return "สถานะรายการเปลี่ยนไปแล้ว กรุณาเปิดรายการล่าสุดก่อนดำเนินการ";
-  if (message === "invalid_project_state") return "โครงการนี้ไม่อยู่ในสถานะที่ดำเนินการได้ กรุณาเปิดรายการล่าสุด";
-  if (message === "invalid_close_reason") return "เหตุผลการปิดรายการไม่ถูกต้อง หากเลือก “อื่นๆ” ต้องระบุรายละเอียด";
-  if (message === "invalid_cancel_reason") return "กรุณาระบุเหตุผลการยกเลิก (ไม่เกิน 500 ตัวอักษร)";
-  if (code === "22023") return "ข้อมูลหรือผู้ดูแลไม่ถูกต้อง กรุณาตรวจสอบแล้วลองใหม่";
-  return "บันทึกไม่สำเร็จ กรุณาลองส่งซ้ำจากฟอร์มเดิม หากยังไม่ได้ให้ติดต่อผู้ดูแล";
-}
+export const mutationError = (code?: string, message?: string) => describeError("walkin", code, message).message;
