@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { ActionForm, type ActionState } from "@/app/walkin/action-form";
+import { useConfirm } from "@/components/confirm-dialog";
+import { NativeSelect } from "@/components/ui/native-select";
 import type { AgreementDetail } from "@/lib/sales/agreement-models";
 import { ContractField, ContractClauses, partyFields, photoDraftClauses } from "./contract-party-fields";
 import { contractEndDate, contractPaperMissing, emptyContractPaper, type ContractPaper } from "@/lib/sales/contract-paper";
@@ -73,6 +75,7 @@ export function ContractWizard({ sale, agreement, draftId, action, creditCents: 
   const root = useRef<HTMLDivElement>(null);
   const reviewHeading = useRef<HTMLHeadingElement>(null);
   const leaving = useRef(false);
+  const { confirm, confirmDialog } = useConfirm();
   const total = quotation?.payload.total_cents ?? "0";
   const hasSeparateDesignFee = quotation?.payload.design_fee_separate === true;
   const creditCents = hasSeparateDesignFee ? "0" : availableDesignCredit;
@@ -98,14 +101,15 @@ export function ContractWizard({ sale, agreement, draftId, action, creditCents: 
       if (isDirty && !leaving.current) { event.preventDefault(); event.returnValue = ""; }
     }
     function followLink(event: MouseEvent) {
-      const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
+      const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[href]") : null;
       if (!isDirty || leaving.current || !link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.getAttribute("target") === "_blank") return;
-      if (!window.confirm("มีข้อมูลสัญญาที่ยังไม่ได้บันทึก ต้องการออกจากหน้านี้หรือไม่?")) { event.preventDefault(); event.stopPropagation(); }
-      else leaving.current = true;
+      event.preventDefault(); event.stopPropagation();
+      void confirm({ title: "ออกจากหน้านี้?", description: "ข้อมูลสัญญาที่ยังไม่ได้บันทึกจะหาย และกู้คืนไม่ได้", cancelLabel: "แก้ไขต่อ", confirmLabel: "ออกโดยไม่บันทึก" })
+        .then(isConfirmed => { if (isConfirmed) { leaving.current = true; link.click(); } });
     }
     window.addEventListener("beforeunload", unload); document.addEventListener("click", followLink, true);
     return () => { window.removeEventListener("beforeunload", unload); document.removeEventListener("click", followLink, true); };
-  }, [isDirty]);
+  }, [isDirty, confirm]);
 
   function review(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -145,10 +149,10 @@ export function ContractWizard({ sale, agreement, draftId, action, creditCents: 
       <article className={paper.sheet} aria-label="แก้ไขสัญญา หน้า 1"><p className={paper.pageNumber}>หน้า 1</p><h3>สัญญารับเหมาก่อสร้าง</h3>
         <p className={paper.notice}>ร่างสัญญา · ยังไม่ออกเลขและยังไม่ลงนาม</p>
         {!contractTextApproved && <p className={paper.notice}>รอตรวจข้อความบริษัท · ยังไม่พร้อมใช้กับธุรกรรมจริง</p>}
-        <label>ใบเสนอราคาที่ลูกค้ายอมรับ<select value={quotationId} onChange={event => {
+        <label>ใบเสนอราคาที่ลูกค้ายอมรับ<NativeSelect wrapperClassName="w-full" className="pr-9!" value={quotationId} onChange={event => {
           const next = quotations.find(document => document.id === event.target.value);
           setQuotationId(event.target.value); setCustomer(quoteCustomer(next, sale)); editDetail("employer_address", quoteAddress(next)); setError("");
-        }}>{quotations.map(document => <option key={document.id} value={document.id}>{document.number ?? "ใบเสนอราคา"} · ฉบับ {document.revision} · {formatMoney(document.payload.total_cents!)} บาท</option>)}</select></label>
+        }}>{quotations.map(document => <option key={document.id} value={document.id}>{document.number ?? "ใบเสนอราคา"} · ฉบับ {document.revision} · {formatMoney(document.payload.total_cents!)} บาท</option>)}</NativeSelect></label>
         <div className={paper.fields}>
           <label>ชื่อผู้ลงนาม<input required maxLength={200} value={customer.full_name} autoComplete="name" onChange={event => setCustomer({ ...customer, full_name: event.target.value })} /></label>
           <label>เบอร์โทร<input required type="tel" maxLength={80} value={customer.phone} autoComplete="tel" onChange={event => setCustomer({ ...customer, phone: event.target.value })} /></label>
@@ -200,5 +204,6 @@ export function ContractWizard({ sale, agreement, draftId, action, creditCents: 
       {missing.length > 0 && <p className={paper.notice}>บันทึกร่างได้ · ก่อนล็อกให้กรอก: {missing.join(" · ")}</p>}
       <div className={paper.footer}><p>ตรวจตัวอย่างก่อนบันทึกร่าง · ยังไม่ออกเลขสัญญา</p><button type="submit" className={buttonVariants({ size: "auto" })}>ดูตัวอย่างสัญญา</button></div>
     </form>}
+    {confirmDialog}
   </div>;
 }

@@ -6,6 +6,7 @@ import { closeLead, reopenLead } from "./status-actions";
 import { formatDate } from "./privacy-controls";
 import { formCardClass, formHintClass } from "@/components/form-card";
 import { walkinFieldClass, walkinOptionClass } from "./walkin-form-styles";
+import { NativeSelect } from "@/components/ui/native-select";
 
 type CloseInfo = { text: string | null; by: string | null } | null;
 type Props = { lead: Lead; info: CloseInfo; hasActiveProject: boolean; canEdit: boolean; openWorkCount: number };
@@ -27,10 +28,10 @@ export function LeadStatus({ lead, info, hasActiveProject, canEdit, openWorkCoun
   return <section className={formCardClass}><h2>ปิดรายการนี้</h2>
     {openWorkCount > 0 && <p className={formHintClass} role="note">ลูกค้ารายนี้ยังมีรายการขายที่ดำเนินอยู่ {openWorkCount} รายการ การปิดรายการไม่ได้ยกเลิกรายการเหล่านั้น</p>}
     <ActionForm action={closeLead.bind(null, context)} label="ยืนยันปิดรายการ">
-      <label data-slot="walkin-field" className={walkinFieldClass}><span>เหตุผล</span><select name="reason" defaultValue="" required>
+      <label data-slot="walkin-field" className={walkinFieldClass}><span>เหตุผล</span><NativeSelect wrapperClassName="w-full" className="pr-9!" name="reason" defaultValue="" required>
         <option value="">เลือกเหตุผล</option>
         {closeReasonsFor(lead.brand).map(code => <option key={code} value={code}>{CLOSE_REASON_LABELS[code]}</option>)}
-      </select></label>
+      </NativeSelect></label>
       <label data-slot="walkin-field" className={walkinFieldClass}><span>รายละเอียด (เฉพาะเมื่อเลือก “อื่นๆ” และต้องกรอก)</span><input name="reason_text" maxLength={500} /></label>
       <p className={formHintClass}>รายการที่ปิดยังแก้ไขและบันทึกการติดต่อได้ และเปิดอีกครั้งได้ ไม่ใช่การลบข้อมูลหรือการขอไม่ให้ติดต่อ</p>
       <label className={walkinOptionClass}><input type="checkbox" name="confirm_operation" required /><span>ยืนยันปิดรายการนี้</span></label>
