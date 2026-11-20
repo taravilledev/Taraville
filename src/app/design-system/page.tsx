@@ -42,7 +42,7 @@ async function DesignSystem() {
 
       <Section title="ขนาดตัวอักษร (เปลี่ยนตาม density)">
         <ul className="flex flex-col gap-2 rounded-md border bg-card p-4">
-          {textSizes.map(([name, size]) => <li key={name} className={size}>{name} · ธาราวิล · บ้านคุณภาพ Taraville 0123456789</li>)}
+          {textSizes.map(([name, size]) => <li key={name} className={size}>{name} · ธาราวิลล์ · บ้านคุณภาพ Taraville 0123456789</li>)}
         </ul>
       </Section>
 

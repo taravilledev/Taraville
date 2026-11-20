@@ -6,7 +6,7 @@ export const COMPANIES: Record<Brand, { brandName: string; name: string; logo: s
     brandName: "บ้านคุณภาพ", name: "บริษัท บ้านคุณภาพ เพชรบูรณ์ จำกัด", logo: "/brand/baan-kunapap-logo.jpg", logoFocus: "50% 20%",
   },
   TARAVILLE: {
-    brandName: "Taraville", name: "บริษัท ธารทอง พรอพเพอร์ตี้ แอนด์ คอนสตรัคชั่น จำกัด", // ponytail: the company symbol stands in for the Taraville wordmark, which was not supplied separately — swap path and focus when it arrives
+    brandName: "ธาราวิลล์", name: "บริษัท ธารทอง พรอพเพอร์ตี้ แอนด์ คอนสตรัคชั่น จำกัด", // ponytail: the company symbol stands in for the Taraville wordmark, which was not supplied separately — swap path and focus when it arrives
     logo: "/brand/tarnthong-symbol.jpg", logoFocus: "50% 10%",
   },
 };

@@ -24,6 +24,7 @@ export const caseSummarySchema = z.object({
 export const unitSchema = z.object({ id: z.uuid(), code: z.string(), details: z.record(z.string(), z.unknown()), list_price_cents: money, is_active: z.boolean(), is_available: z.boolean(), version });
 export const developmentSchema = z.object({ id: z.uuid(), name: z.string(), address: z.string(), is_active: z.boolean(), version, units: unitSchema.array() });
 export const caseListRowSchema = caseSummarySchema.extend({ detail: z.string().nullable() });
+export type CaseListRow = z.infer<typeof caseListRowSchema>;
 export const bootstrapSchema = z.object({
   actor: z.object({ id: z.uuid(), full_name: z.string(), role: z.enum(["sale", "executive", "staff"]) }),
   cases: caseSummarySchema.array(),

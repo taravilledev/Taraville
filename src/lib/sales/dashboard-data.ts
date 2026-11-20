@@ -37,7 +37,7 @@ export function dashboardFollowUps(rows: ExecutiveWork[], overview: DashboardOve
     const sample = dated[0] ?? matches[0];
     const query = new URLSearchParams({ attention: key });
     if (brand) query.set("brand", brand);
-    return { label, count: matches.length, href: `/dashboard?${query}#projects-title`,
+    return { label, count: matches.length, href: `/sales?${query}#projects-title`,
       project: sample ? { code: sample.row.code, customer: sample.row.customer, owner: sample.row.owner,
         href: sample.row.followUp[key] ?? `/sales/${sample.row.id}?tab=overview`, waitingSince: sample.since } : undefined };
   });

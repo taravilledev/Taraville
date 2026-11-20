@@ -17,7 +17,7 @@ export async function RetentionReview({ session }: { session: Awaited<ReturnType
     <summary>มี {rows.length > 25 ? "25+" : rows.length} รายการครบกำหนดทบทวน 12 เดือน · ดู</summary>
     <p className={formHintClass}>สำหรับผู้บริหาร · ตรวจเหตุจำเป็นและขออนุมัติวิธีจัดการก่อนลบ ไม่มีการลบอัตโนมัติ</p>
     <ul>{rows.slice(0, 25).map(row => <li key={row.id}><a href={`/leads/${row.id}`}>
-      {row.brand === "TARAVILLE" ? "Taraville" : "บ้านคุณภาพ"} · ครบกำหนด {new Date(row.review_due_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })}
+      {row.brand === "TARAVILLE" ? "ธาราวิลล์" : "บ้านคุณภาพ"} · ครบกำหนด {new Date(row.review_due_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })}
       {holdHint(row) && ` · ${holdHint(row)}`}
     </a></li>)}</ul>
     {rows.length > 25 && <p className={formHintClass}>แสดง 25 รายการที่เก่าสุด เมื่อจัดการแล้วให้เปิดรายการใหม่เพื่อตรวจส่วนที่เหลือ</p>}

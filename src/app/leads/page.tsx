@@ -53,7 +53,7 @@ async function List({ searchParams }: Props) {
         <div className="flex flex-wrap items-start gap-2">
           <Link href="/leads/report" prefetch={false} className={actionClass}><ReportIcon />รายงานรายเดือน</Link>
           {isExecutive && <LeadExportDialog options={[
-            { label: "ธาราวิล", href: listHref(filters, { brand: "TARAVILLE", page: undefined }).replace("/leads", "/leads/export") },
+            { label: "ธาราวิลล์", href: listHref(filters, { brand: "TARAVILLE", page: undefined }).replace("/leads", "/leads/export") },
             { label: "บ้านคุณภาพ", href: listHref(filters, { brand: "BAAN_KUNAPAP", page: undefined }).replace("/leads", "/leads/export") },
           ]} />}
           <Link href="/walkin" prefetch={false} className={cn(buttonVariants({ size: "default" }), "no-underline")}>รับลูกค้า</Link>

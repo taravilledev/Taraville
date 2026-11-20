@@ -50,7 +50,7 @@ export function ReportControls({ month, latestMonth, brand, owner, owners, print
     </Field>
     <Field className="w-auto"><FieldLabel htmlFor={`${id}-brand`}>แบรนด์</FieldLabel>
       <NativeSelect id={`${id}-brand`} name="brand" defaultValue={brand ?? ""}>
-        <option value="">ทั้งสองแบรนด์</option><option value="TARAVILLE">ธาราวิล</option><option value="BAAN_KUNAPAP">บ้านคุณภาพ</option>
+        <option value="">ทั้งสองแบรนด์</option><option value="TARAVILLE">ธาราวิลล์</option><option value="BAAN_KUNAPAP">บ้านคุณภาพ</option>
       </NativeSelect>
     </Field>
     <Field className="w-auto"><FieldLabel htmlFor={`${id}-owner`}>ผู้ดูแล</FieldLabel>
