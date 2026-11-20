@@ -45,7 +45,7 @@ Status: the design is complete and the owner confirmed it on 2026-11-20. No code
 
 ## Phase 0 — prerequisites (owner)
 
-- [ ] Merge design-system v1 #23 → #27 into `dev`, in order.
+- [x] Merge design-system v1 #23 → #27 into `dev`, in order (2026-11-20, `dev` at `e1bf765`).
 - [x] Copy ADRs 0056–0063 and the session logs into the main checkout (2026-11-20).
 - [x] Staging: deferred. Test on the local Docker stack (`supabase start` + `npm run dev:local`) for now ([flow-to-be §4](flow-to-be.md#4-business-decisions-still-open); owner, 2026-11-20).
 
