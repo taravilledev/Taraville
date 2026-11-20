@@ -18,7 +18,7 @@ export function projectProgress(input: NextStepInput): ProjectProgress | null {
   if (input.status === "cancelled") return null;
   const complete = input.status === "completed" || (input.status === "contracted" && input.isSettled);
   const steps = input.brand === "BAAN_KUNAPAP"
-    ? ["เปิดโครงการ", "กำหนดค่าออกแบบ", "ใบเสนอราคา", "สัญญา", "รับชำระ"]
+    ? ["เปิดโครงการ", "ออกแบบ", "ใบเสนอราคา", "สัญญา", "รับชำระ"]
     : ["เปิดโครงการ", "จองแปลง", "สรุปการจอง", "สัญญา", "รับชำระ"];
   let current = 4;
   if (!complete && input.status !== "contracted") {

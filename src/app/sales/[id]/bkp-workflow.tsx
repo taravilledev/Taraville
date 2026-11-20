@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { bkpOverviewStage, bkpOverviewStages, bkpWorkflow } from "@/lib/sales/bkp-workflow";
 import type { NextStep } from "@/lib/sales/case-progress";
+import { nextDesignPayment } from "@/lib/sales/design-fees";
 import { findTask, taskHref } from "@/lib/sales/tasks";
 import type { SummaryData } from "./summary-sections";
 import * as styles from "./bkp-workflow-styles";
@@ -28,6 +29,11 @@ export function BkpOverview({ data, step, isExecutive = false }: { data: Summary
     contract: flow.contract?.state === "signed", money: flow.done.contract,
   };
   const current = bkpOverviewStage(flow);
+  // Paid instalments come from the same net received total that marks the fee stage done.
+  const instalments = finance.design_plan?.instalments ?? [];
+  const feeCount = instalments.filter(amount => amount !== "0").length;
+  const nextFee = nextDesignPayment(instalments, flow.received);
+  const feePaid = nextFee ? instalments.slice(0, nextFee.position - 1).filter(amount => amount !== "0").length : feeCount;
   const isFinanceStep = step?.tab === "money";
   const task = step?.task ? findTask(data.tasks, step.task, step.row) : null;
   return <>
@@ -43,7 +49,8 @@ export function BkpOverview({ data, step, isExecutive = false }: { data: Summary
         const isDone = stageDone[id as keyof typeof stageDone];
         return <li key={id} aria-current={!isDone && current === id ? "step" : undefined}>
           <span className={styles.number}>{index + 1}</span>
-          <span><strong>{label}</strong><small>{isDone ? "เสร็จแล้ว" : current === id ? "กำลังดำเนินการ" : "ยังไม่เสร็จ"}</small></span>
+          <span><strong>{label}</strong><small>{isDone ? "เสร็จแล้ว" : current === id ? "กำลังดำเนินการ" : "ยังไม่เสร็จ"}</small>
+            {id === "design" && feeCount > 0 && <small>ค่าแบบ {feePaid}/{feeCount} งวด</small>}</span>
         </li>;
       })}</ol>
     </section>}

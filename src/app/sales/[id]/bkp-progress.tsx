@@ -7,7 +7,6 @@ import type { NextStep, ProjectProgress } from "@/lib/sales/case-progress";
 import { bkpChecklist, type ChecklistItem } from "@/lib/sales/bkp-checklist";
 import { findTask, taskHref, taskLabels, type Task } from "@/lib/sales/tasks";
 import { formatMoney } from "@/lib/sales/money";
-import { bkpFlowStages, bkpWorkflow } from "@/lib/sales/bkp-workflow";
 import * as styles from "./bkp-progress-styles";
 import { buttonVariants } from "@/components/ui/button";
 import { StepBlockedNotice } from "./step-blocked-notice";
@@ -21,9 +20,7 @@ export function BkpProgress({ sale, finance, agreement, progress, step, tasks, a
   const isCollecting = progress.current === 4;
   const isCurrentTask = !!activeTask && step?.task === activeTask.name && step.row === activeTask.row;
   const href = step?.task ? taskHref(sale.id, step.task, step.row) : `/sales/${sale.id}?tab=${step?.tab ?? "money"}${step?.anchor ? `#${step.anchor}` : ""}`;
-  const flow = bkpWorkflow(finance, agreement);
-  const currentStage = bkpFlowStages.findIndex(stage => stage.id === flow.current);
-  if (compact) return <section className={styles.compact} aria-label="สรุปสถานะโครงการ"><p><strong>{agreement.is_settled ? "ชำระครบทุกงวดแล้ว" : `ขั้นที่ ${currentStage + 1} จาก ${bkpFlowStages.length} · ${bkpFlowStages[currentStage].label}`}</strong>{(activeTask || step) && <span> · {activeTask ? taskLabels[activeTask.name] : step?.title}</span>}</p>
+  if (compact) return <section className={styles.compact} aria-label="สรุปสถานะโครงการ"><p><strong>{agreement.is_settled ? "ชำระครบทุกงวดแล้ว" : `ขั้นที่ ${progress.current + 1} จาก ${progress.steps.length} · ${progress.steps[progress.current]}`}</strong>{(activeTask || step) && <span> · {activeTask ? taskLabels[activeTask.name] : step?.title}</span>}</p>
     <Link href={`/sales/${sale.id}?tab=overview`} prefetch={false}>ดูการติดตามโครงการ →</Link></section>;
   const items = (checks: ChecklistItem[]) => <ul className={styles.checks}>{checks.map((item, index) => {
     const task = !item.done && findTask(tasks, item.task, item.row);

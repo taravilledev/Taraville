@@ -120,7 +120,7 @@ assert.equal(report.columns.find(col => col.key === "period")?.total, BigInt(-30
 const csv = summaryCsv(report);
 assert.equal(csv.charCodeAt(0), 0xfeff);
 assert.equal(csv.split("\r\n").filter(line => /^BKP-/.test(line)).length, 30);
-assert.match(csv, /BKP-100,'  =42,ผู้ดูแล,การเงิน,,1\.00,-0\.01,/);
+assert.match(csv, /BKP-100,'  =42,ผู้ดูแล,รับชำระ,,1\.00,-0\.01,/);
 assert.match(csv, /รวม,,,,290\.00,30\.00,-0\.30,/);
 assert.doesNotMatch(csv, /BKP-130/);
 
