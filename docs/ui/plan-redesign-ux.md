@@ -51,22 +51,20 @@ Status: the design is complete and the owner confirmed it on 2026-11-20. No code
 
 ## Phase 1 — shared pieces (ADR 0060)
 
-The rules come from design-system.md §8. No screen redesign in this phase, except the swaps.
+The rules come from design-system.md §8. No screen redesign in this phase, except the swaps. A shared component is built in the first phase that calls it, never ahead of its caller (owner, 2026-11-20).
 
-- [ ] **Stage track component.** A badge with the step number, ✓ or ×, plus 5 segments. Inputs: the brand's stage list, the current index, done / cancelled. Leave a `*.check.mts` covering done / current / cancelled.
-- [ ] **Drawer** (right side ≥768px, bottom sheet <768px) on `components/ui/dialog`: a title, a body that scrolls, and a sticky footer.
-- [ ] **In-app confirm dialog** on `dialog`. Replace the 4 `window.confirm` call sites. Keep the browser `beforeunload` where it exists.
-- [ ] **Raw `<select>` → `NativeSelect`** in the 5 listed files.
-- [ ] **Shared table pattern helpers.**
-  - Sortable header, sticky header, whole-row link, money cell (right-aligned, `tabular-nums`, nowrap, 2 decimals).
-  - Card fallback below 768px; the dense variant switches below 1024px.
-  - Reuse what `/sales` and `/summary` already have before adding anything.
-- [ ] **Menu labels** in `src/lib/nav.ts`: "การเงิน" → "การเงินบ้านคุณภาพ", "รายงาน" → "รายงาน Lead". Update `nav.check.mts`.
-- [ ] **"ยังไม่มีสิทธิ์ทำงานนี้" page or section.** A component that takes what is needed and who grants it (board AuthStates `page=forbidden`).
+- [x] **In-app confirm dialog** on `dialog`. Replace the 4 `window.confirm` call sites. Keep the browser `beforeunload` where it exists. (`useConfirm` in `src/components/confirm-dialog.tsx`.)
+- [x] **Raw `<select>` → `NativeSelect`** in the 5 listed files (7 selects: `lead-form.tsx` also has the `owner_id` select).
+- [x] **Menu labels** in `src/lib/nav.ts`: "การเงิน" → "การเงินบ้านคุณภาพ", "รายงาน" → "รายงาน Lead". Update `nav.check.mts`.
+- **Moved to their first caller:** drawer, shared table helpers and the "ยังไม่มีสิทธิ์ทำงานนี้" section → Phase 2; stage track → Phase 3.
 - **Verify point:** the swapped confirm and select flows in the browser. Ask first.
 
 ## Phase 2 — Lead area (boards Main, LeadsMobile, LeadDetail, LeadEdit, LeadsReport; ADRs 0059, 0061)
 
+- [ ] **Shared pieces first called here** (moved from Phase 1; rules in design-system §8):
+  - **Drawer** (right side ≥768px, bottom sheet <768px) on `components/ui/dialog`: a title, a body that scrolls, and a sticky footer.
+  - **Shared table pattern helpers** for `/leads`: sortable header, sticky header, whole-row link, card fallback below 768px. Extract them from what `/sales` and `/summary` already have before adding anything. The money cell (right-aligned, `tabular-nums`, nowrap, 2 decimals) and the dense <1024px variant come with the first money table (Phase 3 "บิลที่ต้องตามเก็บ", Phase 5 `/summary`).
+  - **"ยังไม่มีสิทธิ์ทำงานนี้" section** for the Lead-edit non-owner case: it takes what is needed and who grants it (board AuthStates `page=forbidden`).
 - [ ] **`/leads`.**
   - Stage tabs: ทั้งหมด · ยังไม่เปิดโครงการ · เปิดโครงการแล้ว · ปิด.
   - A sale defaults to "my Leads"; newest first; separate "ขั้น" and "โครงการ" columns.
@@ -94,6 +92,7 @@ The rules come from design-system.md §8. No screen redesign in this phase, exce
 
 ## Phase 3 — homes and the project list (boards SaleHome, ExecutiveHome, SalesList; ADR 0058)
 
+- [ ] **Stage track component** (moved from Phase 1; first called by the sale-home cards and the `/sales` column). A badge with the step number, ✓ or ×, plus 5 segments. Inputs: the brand's stage list, the current index, done / cancelled. Leave a `*.check.mts` covering done / current / cancelled.
 - [ ] **Backend migration files, not applied:**
   - `sales_work_queue` + a capability-filtered BKP design-fee kind;
   - `sales_case_list` + the stage and next task (reuse `nextStep()` logic or its SQL equivalent).
