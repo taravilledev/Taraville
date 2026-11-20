@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { refundStates } from "@/lib/sales/models";
 import { formatMoney } from "@/lib/sales/money";
 import { formatDate } from "@/lib/sales/date";
 import { findTask, taskHref } from "@/lib/sales/tasks";
@@ -10,9 +11,8 @@ import { FinanceCollection } from "./finance-collection";
 import * as ws from "./workspace-styles";
 import * as local from "./finance-collection-styles";
 import { noticeClass } from "@/components/notice";
+import { Status } from "@/components/status";
 import { buttonVariants } from "@/components/ui/button";
-
-const refundStates = { pending: "รออนุมัติ", approved: "อนุมัติ รอจ่าย", rejected: "ไม่อนุมัติ", withdrawn: "ถอนคำขอ", paid: "จ่ายคืนแล้ว" };
 
 export function BkpMoneySection({ data }: { data: SummaryData }) {
   const { sale, finance, agreement, summary, closeout, refunds, tasks } = data;
@@ -66,7 +66,7 @@ export function BkpMoneySection({ data }: { data: SummaryData }) {
       {!refunds.length && <p className={ws.note}>ยังไม่มีคำขอคืนเงิน</p>}
       <ul>{refunds.map(refund => {
         const decide = findTask(tasks, "decide-refund", refund.id); const pay = findTask(tasks, "pay-refund", refund.id);
-        return <li key={refund.id}><div><strong>{formatMoney(refund.amount_cents)} บาท · {refundStates[refund.state]}</strong>
+        return <li key={refund.id}><div><strong>{formatMoney(refund.amount_cents)} บาท</strong> <Status tone={refundStates[refund.state].tone}>{refundStates[refund.state].label}</Status>
           <p>{refund.requested_by_name} · {refund.reason}{refund.decision_note ? ` · ผลพิจารณา: ${refund.decision_note}` : ""}</p></div>
           <div className={ws.actions}>
             {decide && <Link className={buttonVariants({ size: "auto" })} href={taskHref(sale.id, decide.name, decide.row)} prefetch={false}>พิจารณาคืนเงิน</Link>}

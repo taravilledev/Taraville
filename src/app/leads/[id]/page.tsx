@@ -7,7 +7,6 @@ import { leadWork } from "@/lib/sales/lead-work";
 import { leadDetail, leadProjects } from "@/lib/walkin/queries";
 import { staffSchema } from "@/lib/walkin/models";
 import { SURVEY_QUESTIONS } from "@/lib/walkin/survey-questions";
-import { COMPANIES } from "@/lib/walkin/companies";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { AppShell } from "@/app/walkin/app-shell";
 import { ContactRecord, formatDate } from "@/app/walkin/privacy-controls";
@@ -15,6 +14,7 @@ import { CustomerWork } from "./customer-work";
 import { OpenProject } from "@/app/walkin/project-controls";
 import { OpenProjectDialog } from "./open-project-dialog";
 import { formCardClass } from "@/components/form-card";
+import { BrandTag } from "@/components/brand-tag";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -47,7 +47,7 @@ async function Detail({ params, searchParams }: Props) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="m-0 mb-3 flex flex-wrap gap-2">
-            <Badge className={cn(pillClass, lead.brand === "TARAVILLE" ? "bg-brand-tv-tint text-brand-tv" : "bg-brand-bk-tint text-brand-bk")}>{COMPANIES[lead.brand].brandName}</Badge>
+            <BrandTag brand={lead.brand} />
             {lead.privacy_mode === "synthetic" && <Badge variant="secondary" className={pillClass}>ข้อมูลสมมติสำหรับทดสอบ</Badge>}
             {lead.closed_at && <Badge variant="secondary" className={pillClass}>ปิดรายการแล้ว</Badge>}
           </p>

@@ -6,6 +6,7 @@ import { formatMoney } from "@/lib/sales/money";
 import { findTask, taskHref, type Task } from "@/lib/sales/tasks";
 import { WorkspaceHeading } from "./workspace-heading";
 import * as ws from "./workspace-styles";
+import { Status } from "@/components/status";
 import { buttonVariants } from "@/components/ui/button";
 
 export function DesignBillingPanel({ sale, finance, tasks }: { sale: SalesCase; finance: FinancialDetail; tasks: Task[] }) {
@@ -17,7 +18,7 @@ export function DesignBillingPanel({ sale, finance, tasks }: { sale: SalesCase; 
   return <section className={ws.section} id="design-fees" aria-labelledby="design-billing-title">
     <WorkspaceHeading caseId={sale.id} title="ออกแบบ" titleId="design-billing-title" description="แพ็กเกจค่าออกแบบและพื้นที่ใช้สอยจริงของโครงการ" />
     <div className={ws.card}><div className={ws.rowHeading}><h3>{packageName}</h3>
-      <span className={ws.status}>{plan ? "กำหนดค่าออกแบบแล้ว" : "รอกำหนดค่าออกแบบ"}</span></div>
+      <Status tone={plan ? "success" : "waiting"}>{plan ? "กำหนดค่าออกแบบแล้ว" : "รอกำหนดค่าออกแบบ"}</Status></div>
       {plan ? <dl className={ws.facts}>
         <div><dt>พื้นที่ใช้สอยจริง</dt><dd>{plan.usable_area ? `${plan.usable_area} ตร.ม.` : "ยังไม่ระบุ"}</dd></div>
         <div><dt>ค่าออกแบบรวม</dt><dd className={ws.amount}>{formatMoney(plan.total_cents)} บาท</dd></div>

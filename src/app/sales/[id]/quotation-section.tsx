@@ -5,6 +5,7 @@ import type { AgreementDetail } from "@/lib/sales/agreement-models";
 import type { SummaryData } from "./summary-sections";
 import * as styles from "./quotation-section-styles";
 import { WorkspaceHeading } from "./workspace-heading";
+import { Status } from "@/components/status";
 import { buttonVariants } from "@/components/ui/button";
 
 type Document = AgreementDetail["documents"][number];
@@ -37,7 +38,7 @@ export function QuotationSection({ data }: { data: SummaryData }) {
     {latest ? <article className={styles.latest} aria-labelledby="latest-quotation">
       <div className={styles.header}><div><p className={styles.eyebrow}>ฉบับล่าสุด · ฉบับที่ {latest.revision}</p>
         <h3 id="latest-quotation">{latest.number ?? "ใบเสนอราคา · ยังไม่มีเลขเอกสาร"}</h3></div>
-        <span className={styles.status} data-accepted={latest.state === "accepted"}>{status(latest)}</span></div>
+        <Status tone={latest.state === "accepted" ? "success" : hasPrice(latest) ? "waiting" : "progress"}>{status(latest)}</Status></div>
       <dl className={styles.facts}>
         <div><dt>ยอดเสนอ</dt><dd className={styles.amount}>{amount(latest)}</dd></div>
         {latest.payload.house && <div><dt>ข้อมูลบ้าน</dt><dd>{latest.payload.house.model} · {latest.payload.house.usable_area} ตร.ม.</dd></div>}

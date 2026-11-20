@@ -7,12 +7,15 @@ import type { SummaryData } from "./summary-sections";
 import { WorkspaceHeading } from "./workspace-heading";
 import * as ws from "./workspace-styles";
 import { noticeClass } from "@/components/notice";
+import { Status, type StatusTone } from "@/components/status";
 import { buttonVariants } from "@/components/ui/button";
 
 type Document = AgreementDetail["documents"][number];
 const money = (value?: string) => value == null ? "ยังไม่ระบุ" : `${formatMoney(value)} บาท`;
 const stateLabel = (doc: Document) => doc.state === "draft" ? "ร่าง · ยังไม่ออกเลข" : doc.state === "awaiting_signature"
   ? "ออกเลขแล้ว · รอลงนาม" : doc.state === "signed" ? "ลงนามแล้ว" : doc.state === "cancelled" ? "ยกเลิกแล้ว" : "เอกสารที่ออกแล้ว";
+const stateTones: Record<string, StatusTone> = { draft: "progress", awaiting_signature: "waiting", signed: "success" };
+const ContractState = ({ doc }: { doc: Document }) => <Status tone={stateTones[doc.state] ?? "inactive"}>{stateLabel(doc)}</Status>;
 
 export function ContractSection({ data }: { data: SummaryData }) {
   const { sale, finance, agreement, tasks } = data;
@@ -50,7 +53,7 @@ export function ContractSection({ data }: { data: SummaryData }) {
     {contract ? <article className={`${ws.card} ${ws.current}`} aria-labelledby="current-contract-title">
       <div className={ws.rowHeading}><div><p className={ws.eyebrow}>{currentLabel} · ฉบับที่ {contract.revision}</p>
         <h3 id="current-contract-title">{contract.number ?? "ร่างสัญญา · ยังไม่ออกเลข"}</h3></div>
-        <span className={ws.status} data-done={contract.state === "signed"} data-pending={contract.state === "awaiting_signature"}>{stateLabel(contract)}</span></div>
+        <ContractState doc={contract} /></div>
       <dl className={ws.facts}>
         <div><dt>มูลค่าตามสัญญา</dt><dd className={ws.amount}>{money(contract.payload.total_cents)}</dd></div>
         <div><dt>เครดิตค่าออกแบบตามฉบับนี้</dt><dd>{money(contract.payload.credit_cents)}</dd></div>
@@ -87,7 +90,7 @@ export function ContractSection({ data }: { data: SummaryData }) {
     </div>}
     {otherIssuedContracts.map(doc => <article key={doc.id} className={ws.card}>
       <div className={ws.rowHeading}><div><p className={ws.eyebrow}>สัญญาที่ออกเลขแล้วซึ่งยังไม่ยกเลิก · ฉบับที่ {doc.revision}</p>
-        <h3>{doc.number ?? "สัญญา"}</h3></div><span className={ws.status} data-done={doc.state === "signed"} data-pending={doc.state === "awaiting_signature"}>{stateLabel(doc)}</span></div>
+        <h3>{doc.number ?? "สัญญา"}</h3></div><ContractState doc={doc} /></div>
       <p>มูลค่าตามสัญญา {money(doc.payload.total_cents)} · แสดงแยกจากฉบับที่กำลังดำเนินการด้านบน</p>
       <div className={ws.actions}>{open(doc)}{documentTasks(doc).map(task => action(task.name, actionLabels[task.name] ?? task.label, task.row))}</div>
     </article>)}

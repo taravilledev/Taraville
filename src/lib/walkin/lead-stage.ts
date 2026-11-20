@@ -1,9 +1,11 @@
 import { z } from "zod";
+import type { StatusTone } from "@/components/status";
 
 export const STAGE_CODES = ["received", "contacted", "project_opened", "closed"] as const;
 export const stageSchema = z.enum(STAGE_CODES);
 export type Stage = z.infer<typeof stageSchema>;
 export const STAGE_LABELS: Record<Stage, string> = { received: "รับเข้า", contacted: "ติดต่อแล้ว", project_opened: "เปิดโครงการแล้ว", closed: "ปิด" };
+export const leadStageTones: Record<Stage, StatusTone> = { received: "waiting", contacted: "progress", project_opened: "success", closed: "inactive" };
 
 export const CLOSE_REASON_CODES = ["not_interested", "bought_elsewhere", "not_ready", "unreachable", "duplicate", "other", "bought_with_us"] as const;
 export const closeReasonSchema = z.enum(CLOSE_REASON_CODES);

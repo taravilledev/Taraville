@@ -15,6 +15,7 @@ import { checkRowClass } from "@/components/check-row";
 import { cn } from "@/lib/utils";
 import * as ui from "../settings-styles";
 import { panelClass } from "@/components/panel";
+import { Status, type StatusTone } from "@/components/status";
 import { buttonVariants } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 const base = "/sales/settings/catalog";
 const statusLabels = { available: "ว่าง", reserved: "กันไว้แล้ว", inactive: "ปิดใช้งาน" };
+const statusTones: Record<keyof typeof statusLabels, StatusTone> = { available: "success", reserved: "progress", inactive: "inactive" };
 type Development = SalesBootstrap["developments"][number];
 
 export const metadata = { title: "โครงการและบ้าน/แปลง · Taraville Group", robots: { index: false, follow: false } };
@@ -110,7 +112,7 @@ async function Catalog({ searchParams }: SettingsPageProps) {
             return <tr key={item.id}><th scope="row">{item.code}</th>
               <td>{typeof item.details.model === "string" && item.details.model || "—"}{detail && <small>{detail}</small>}</td>
               <td className={ui.amountClass}>{item.list_price_cents != null ? formatMoney(item.list_price_cents) : "—"}</td>
-              <td className={ui.statusCellClass}><span className={ui.unitStateClass[state]}>{statusLabels[state]}</span></td>
+              <td className={ui.statusCellClass}><Status tone={statusTones[state]}>{statusLabels[state]}</Status></td>
               {canEdit && <td><div className={ui.rowActionsClass} role="group" aria-label={`จัดการบ้าน/แปลง ${item.code}`}>
                 <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={editHref("unit", item.id)} prefetch={false} aria-label={"แก้ไขบ้าน/แปลง " + item.code}>แก้ไข</Link>
                 {development.is_active && <ActionForm inline action={setUnitActivity.bind(null, {

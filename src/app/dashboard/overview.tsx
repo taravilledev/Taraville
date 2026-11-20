@@ -3,6 +3,7 @@ import { ArrowUpRight, Building2, Clock, Coins, Users } from "lucide-react";
 import type { DashboardOverviewData } from "@/lib/sales/dashboard-data";
 import { formatDate } from "@/lib/sales/date";
 import { brandLabels } from "@/lib/sales/models";
+import { BrandTag } from "@/components/brand-tag";
 import { displayAmount } from "../summary/summary-model";
 import * as styles from "./overview-styles";
 
@@ -105,7 +106,7 @@ export function DashboardOverview({ data, groups, brand }: { data: DashboardOver
             <p className={styles.meta}>รับเมื่อ {dateOf(lead.created_at)}</p>
             <p className={styles.meta}>ผู้ดูแล {lead.owner || "—"}</p>
           </div>
-          <span className={styles.brandBadge} data-brand={lead.brand}>{brandLabels[lead.brand]}</span>
+          <BrandTag brand={lead.brand} />
         </li>)}</ul> : <p className={styles.empty}>ยังไม่มีรายการ Walk-in</p>}
       </section>
     </div>

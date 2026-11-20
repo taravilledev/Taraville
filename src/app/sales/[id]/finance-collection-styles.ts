@@ -16,7 +16,6 @@ export const table =
   "[&_th:nth-child(4)]:w-[18%] [&_th:last-child]:w-[23%] [&_tbody_th]:font-normal [&_small]:mt-1 [&_small]:block [&_small]:text-xs [&_small]:text-muted-foreground"
 export const amount =
   "[&_strong]:block [&_strong]:text-sm [&_strong]:font-bold [&_strong]:tabular-nums [&_small]:mt-1 [&_small]:block [&_small]:text-xs [&_small]:text-muted-foreground"
-export const status = "inline-flex rounded-sm bg-accent px-2 py-1 text-xs text-muted-foreground data-[done=true]:text-primary"
 export const dates = "text-xs text-muted-foreground [&_span]:block"
 export const actions = "flex flex-wrap items-center gap-2 [&>a]:min-h-11 [&>a]:p-2 [&>a]:text-xs"
 export const history = "w-full text-xs [&_summary]:cursor-pointer [&_summary]:py-2 [&_summary]:text-muted-foreground [&_ul]:m-0 [&_ul]:pl-4 [&_li+li]:mt-2"

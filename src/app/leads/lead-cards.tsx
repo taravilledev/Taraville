@@ -2,7 +2,9 @@ import Link from "next/link";
 import { MessageSquare, Phone } from "lucide-react";
 import type { ListLead } from "@/lib/walkin/models";
 import { budgetOf, relativeDays } from "@/lib/walkin/lead-list";
-import { STAGE_LABELS } from "@/lib/walkin/lead-stage";
+import { leadStageTones, STAGE_LABELS } from "@/lib/walkin/lead-stage";
+import { BrandTag } from "@/components/brand-tag";
+import { Status } from "@/components/status";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -24,9 +26,8 @@ export function LeadCards({ leads, workTags, ownerName }: Props) {
         <div className={stackClass}>
           <Link className="text-md font-bold text-foreground no-underline after:absolute after:inset-0 after:content-['']" href={`/leads/${lead.id}`} prefetch={false}>{name}</Link>
           <div className="flex flex-wrap items-center gap-1">
-            <Badge className={cn("px-3 font-bold", lead.brand === "TARAVILLE" ? "bg-brand-tv-tint text-brand-tv" : "bg-brand-bk-tint text-brand-bk")}>
-              {lead.brand === "TARAVILLE" ? "ธาราวิล" : "บ้านคุณภาพ"}</Badge>
-            <Badge variant="secondary" className={tagClass}>{STAGE_LABELS[lead.stage]}</Badge>
+            <BrandTag brand={lead.brand} />
+            <Status tone={leadStageTones[lead.stage]}>{STAGE_LABELS[lead.stage]}</Status>
             {workTag && <Badge variant="secondary" className={cn(tagClass, "text-primary")}>{workTag}</Badge>}
             {lead.privacy_mode === "synthetic" && <Badge variant="secondary" className={tagClass}>ข้อมูลสมมติ</Badge>}
           </div>

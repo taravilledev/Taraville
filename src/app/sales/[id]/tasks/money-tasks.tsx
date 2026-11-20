@@ -8,6 +8,7 @@ import { AcceptanceForm } from "../acceptance-form";
 import { checkRowClass } from "@/components/check-row";
 import { idOf, type TaskData } from "./task-data";
 import { noticeClass } from "@/components/notice";
+import { Status } from "@/components/status";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -56,7 +57,7 @@ export function FixReceiptTask({ sale, finance, row }: TaskData) {
   const isDesignBillReceipt = finance?.design_bills.some(bill => bill.receipt_document_id === doc.id);
   const canAmount = !isDesignBillReceipt && doc.state === "issued" && ["financial.prepare", "financial.confirm", "receipt.cancel", "receipt.issue"].every(key => can[key]);
   return <>
-    <p>ใบเสร็จ {doc.number}{doc.state === "cancelled" ? " · ยกเลิกแล้ว" : ""}</p>
+    <p>ใบเสร็จ {doc.number}{doc.state === "cancelled" && <> · <Status tone="inactive">ยกเลิกแล้ว</Status></>}</p>
     {canReplace && <section><h3>เอกสารผิด: ยกเลิกหรือออกทดแทน</h3>
       <ActionForm action={correctReceipt.bind(null, idOf(sale, doc.id))} label="บันทึกการแก้ไขใบเสร็จ">
         <p>ยอดรับเงินจริงและยอดจัดสรรจะคงเดิม</p>

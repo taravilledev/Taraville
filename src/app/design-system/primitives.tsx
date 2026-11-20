@@ -1,3 +1,4 @@
+import { BrandTag } from "@/components/brand-tag";
 import { checkRowClass } from "@/components/check-row";
 import { factsClass } from "@/components/facts";
 import { formCardClass, formHintClass } from "@/components/form-card";
@@ -5,6 +6,7 @@ import { Notice } from "@/components/notice";
 import { pageHeaderClass } from "@/components/page-header";
 import { Panel } from "@/components/panel";
 import { tabLinksClass } from "@/components/tab-links";
+import { Status } from "@/components/status";
 import { Tag } from "@/components/tag";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -99,8 +101,18 @@ export function Primitives() {
         <Badge variant="secondary">secondary</Badge>
         <Badge variant="outline">outline</Badge>
         <Badge variant="destructive">destructive</Badge>
-        <Badge className="bg-brand-tv-tint text-brand-tv">ธาราวิล</Badge>
-        <Badge className="bg-brand-bk-tint text-brand-bk">บ้านคุณภาพ</Badge>
+      </div>
+    </Block>
+
+    <Block title="Status และ BrandTag">
+      <div className="flex flex-wrap gap-2">
+        <Status tone="success">สำเร็จ</Status>
+        <Status tone="waiting">รอดำเนินการ</Status>
+        <Status tone="fix">ต้องแก้ไข</Status>
+        <Status tone="progress">กำลังดำเนินการ</Status>
+        <Status tone="inactive">ไม่ใช้งาน</Status>
+        <BrandTag brand="TARAVILLE" />
+        <BrandTag brand="BAAN_KUNAPAP" />
       </div>
     </Block>
 
