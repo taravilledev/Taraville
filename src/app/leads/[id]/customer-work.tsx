@@ -1,18 +1,19 @@
 import { formErrorClass } from "@/components/form-feedback";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { Lead, Project } from "@/lib/walkin/models";
 import { caseStatusLabels, caseStatusTones } from "@/lib/sales/models";
 import { formatMoney } from "@/lib/sales/money";
 import type { LeadWork } from "@/lib/sales/lead-work";
+import type { WorkRow } from "@/lib/walkin/lead-page";
 import type { ProjectProgress } from "@/lib/sales/case-progress";
 import { formatDate } from "@/app/walkin/privacy-controls";
+import { secondaryActionClass } from "@/components/action-link-styles";
 import { formCardClass, formHintClass, sectionHeadingClass } from "@/components/form-card";
+import { noticeClass } from "@/components/notice";
 import { Status, type StatusTone } from "@/components/status";
 import { cn } from "@/lib/utils";
 
-type Props = { lead: Lead; projects: Project[]; names: Map<string, string>; work: LeadWork | null; action?: ReactNode };
-const isDone = (status: LeadWork["cases"][number]["status"]) => status === "completed" || status === "cancelled";
+type Props = { rows: WorkRow[] | null; names: Map<string, string>; isClosed: boolean; action?: ReactNode };
 
 const workCardClass = "grid gap-2 rounded-md border bg-card p-4 text-foreground no-underline [overflow-wrap:anywhere] [&_p]:m-0";
 const hintClass = "m-0 text-sm text-muted-foreground";
@@ -47,40 +48,32 @@ function WorkCard({ code, status, tone, item, href, children }: {
     : <div className={workCardClass}>{content}</div>;
 }
 
-/** Customer Work of a Lead: Baan Kunapap Projects with their sale, or Taraville sales. Active work first, finished last. */
-export function CustomerWork({ lead, projects, names, work, action }: Props) {
-  if (!work) return <section className={formCardClass}><h2>โครงการ</h2><p className={formErrorClass} role="alert">โหลดโครงการไม่ได้ ลองรีเฟรชหน้านี้</p></section>;
-  const count = lead.brand === "TARAVILLE" ? work.cases.length : projects.length;
-  const heading = <div className={cn(sectionHeadingClass, "flex-wrap items-center")}>
-    <div><h2>โครงการ</h2><span className={hintClass}>{count} โครงการ</span></div>
-    {action}
-  </div>;
-  if (lead.brand === "TARAVILLE") {
-    const ordered = [...work.cases.filter(item => !isDone(item.status)), ...work.cases.filter(item => isDone(item.status))];
-    return <section className={formCardClass}>{heading}
-      {!ordered.length && <p className={formHintClass}>ยังไม่มีโครงการ</p>}
-      <ul className="m-0 grid list-none gap-3 p-0">{ordered.map(item => <li key={item.code} className="min-w-0 data-[dim=true]:opacity-65" data-dim={isDone(item.status)}>
-        <WorkCard code={item.code} status={caseStatusLabels[item.status]} tone={caseStatusTones[item.status]} item={item} href={item.id && item.can_open ? `/sales/${item.id}` : undefined} />
-      </li>)}</ul>
-    </section>;
-  }
-  const rank = (project: Project) => (project.status === "active" ? 0 : 1);
-  const ordered = [...projects].sort((a, b) => rank(a) - rank(b));
-  return <section className={formCardClass}>{heading}
-    {!projects.length && <p className={formHintClass}>{lead.closed_at ? "รายการนี้ปิดอยู่ เปิดรายการอีกครั้งก่อนจึงจะเปิดโครงการได้" : "ยังไม่ได้เปิดโครงการ"}</p>}
-    <ul className="m-0 grid list-none gap-3 p-0">{ordered.map(project => {
-      const item = work.cases.find(row => row.project_id === project.id);
-      const cancelled = project.status === "cancelled";
-      const href = item ? item.id && item.can_open ? `/sales/${item.id}` : undefined
-        : !cancelled && work.canCreate ? `/sales/new?lead=${lead.id}&project=${project.id}` : undefined;
-      return <li key={project.id} className="min-w-0 data-[dim=true]:opacity-65" data-dim={cancelled || (item ? isDone(item.status) : false)}>
-        <WorkCard code={project.code} status={cancelled ? "ยกเลิก" : item ? caseStatusLabels[item.status] : "รอกรอกข้อมูล"}
-          tone={cancelled ? "inactive" : item ? caseStatusTones[item.status] : "waiting"} item={item} href={href}>
-        {item?.status === "cancelled" && !cancelled && <p className={formHintClass}>โครงการนี้ถูกยกเลิกแล้ว เริ่มดำเนินการซ้ำไม่ได้ หากต้องทำงานต่อให้เปิดโครงการใหม่</p>}
-        {cancelled && <p className={formHintClass}>{project.cancel_reason} · โดย {(project.cancelled_by && names.get(project.cancelled_by)) || "ผู้บริหาร"}
+/** Customer Work of a Lead: live Projects (BKP) or sales (Taraville) as cards, finished ones folded below. */
+export function CustomerWork({ rows, names, isClosed, action }: Props) {
+  if (!rows) return <section className={formCardClass}><h2>โครงการ</h2><p className={formErrorClass} role="alert">โหลดโครงการไม่ได้ ลองรีเฟรชหน้านี้</p></section>;
+  const card = ({ item, project, href, isFinished, isHalfOpen, code }: WorkRow) => {
+    const isCancelled = project?.status === "cancelled";
+    return <li key={project?.id ?? code} className="min-w-0 data-[dim=true]:opacity-65" data-dim={isFinished}>
+      <WorkCard code={code} status={isCancelled ? "ยกเลิก" : item ? caseStatusLabels[item.status] : "รอกรอกข้อมูล"}
+        tone={isCancelled ? "inactive" : item ? caseStatusTones[item.status] : "waiting"} item={item} href={isHalfOpen ? undefined : href}>
+        {project && !isCancelled && item?.status === "cancelled" && <p className={formHintClass}>โครงการนี้ถูกยกเลิกแล้ว เริ่มดำเนินการซ้ำไม่ได้ หากต้องทำงานต่อให้เปิดโครงการใหม่</p>}
+        {project && isCancelled && <p className={formHintClass}>{project.cancel_reason} · โดย {(project.cancelled_by && names.get(project.cancelled_by)) || "ผู้บริหาร"}
           {project.cancelled_at ? ` · ${formatDate(project.cancelled_at)}` : ""}</p>}
-        </WorkCard>
-      </li>;
-    })}</ul>
+        {isHalfOpen && <p className={cn(noticeClass, "p-3 text-sm")}>เปิดโครงการแล้ว แต่ยังไม่ได้บันทึกข้อมูลโครงการ{href ? " ลองเปิดอีกครั้งเพื่อทำต่อ" : " เจ้าของรายการหรือผู้บริหารเปิดต่อได้"}</p>}
+        {isHalfOpen && href && <Link href={href} prefetch={false} className={cn(secondaryActionClass, "justify-self-start")}>ลองเปิดโครงการอีกครั้ง</Link>}
+      </WorkCard>
+    </li>;
+  };
+  const finished = rows.filter(row => row.isFinished);
+  const listClass = "m-0 grid list-none gap-3 p-0";
+  return <section className={formCardClass}>
+    <div className={cn(sectionHeadingClass, "flex-wrap items-center")}>
+      <div><h2>โครงการ</h2><span className={hintClass}>{rows.length} โครงการ</span></div>
+      {action}
+    </div>
+    {!rows.length && <p className={formHintClass}>{isClosed ? "Lead นี้ปิดอยู่ เปิด Lead อีกครั้งก่อนจึงจะเปิดโครงการได้" : "ยังไม่มีโครงการ"}</p>}
+    <ul className={listClass}>{rows.filter(row => !row.isFinished).map(card)}</ul>
+    {finished.length > 0 && <details className="mt-4"><summary>โครงการที่จบแล้ว ({finished.length})</summary>
+      <ul className={cn(listClass, "mt-3")}>{finished.map(card)}</ul></details>}
   </section>;
 }

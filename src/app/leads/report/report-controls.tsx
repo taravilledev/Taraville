@@ -6,7 +6,6 @@ import type { MonthlyReport } from "@/lib/walkin/monthly-report";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
-import { PrintButton } from "./print-button";
 import styles from "./report.module.css";
 
 type Props = {
@@ -15,10 +14,10 @@ type Props = {
   brand?: MonthlyReport["leads"][number]["brand"];
   owner?: string;
   owners: MonthlyReport["owners"];
-  printDisabled?: boolean;
+  isSale: boolean;
 };
 
-export function ReportControls({ month, latestMonth, brand, owner, owners, printDisabled }: Props) {
+export function ReportControls({ month, latestMonth, brand, owner, owners, isSale }: Props) {
   const id = useId();
   const router = useRouter();
   const form = useRef<HTMLFormElement>(null);
@@ -42,7 +41,7 @@ export function ReportControls({ month, latestMonth, brand, owner, owners, print
     startTransition(() => router.replace(`/leads/report?${params}`, { scroll: false }));
   }
 
-  return <form ref={form} className={`${styles.controls} ${styles.noPrint}`} method="get" action="/leads/report"
+  return <form ref={form} className={`flex flex-wrap items-end gap-x-4 gap-y-3 ${styles.noPrint}`} method="get" action="/leads/report"
     onChange={event => apply(event.currentTarget)}
     onSubmit={event => { event.preventDefault(); apply(event.currentTarget); }}>
     <Field className="w-auto"><FieldLabel htmlFor={`${id}-month`}>เดือน</FieldLabel>
@@ -53,12 +52,11 @@ export function ReportControls({ month, latestMonth, brand, owner, owners, print
         <option value="">ทั้งสองแบรนด์</option><option value="TARAVILLE">ธาราวิลล์</option><option value="BAAN_KUNAPAP">บ้านคุณภาพ</option>
       </NativeSelect>
     </Field>
-    <Field className="w-auto"><FieldLabel htmlFor={`${id}-owner`}>ผู้ดูแล</FieldLabel>
+    {!isSale && <Field className="w-auto"><FieldLabel htmlFor={`${id}-owner`}>ผู้ดูแล</FieldLabel>
       <NativeSelect id={`${id}-owner`} name="owner" defaultValue={owner ?? ""}>
         <option value="">ทุกคน</option>{owners.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
       </NativeSelect>
-    </Field>
-    <PrintButton disabled={isPending || printDisabled} />
-    <span className={styles.status} role="status">{isPending ? "กำลังโหลดรายงาน…" : ""}</span>
+    </Field>}
+    <span className="self-center text-sm text-muted-foreground" role="status">{isPending ? "กำลังโหลดรายงาน…" : ""}</span>
   </form>;
 }

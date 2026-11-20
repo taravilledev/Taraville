@@ -1,6 +1,6 @@
 "use client";
 
-import { primaryActionClass, secondaryActionClass } from "@/components/action-link-styles";
+import { destructiveActionClass, primaryActionClass, secondaryActionClass } from "@/components/action-link-styles";
 import { formErrorClass } from "@/components/form-feedback";
 import type { Fix } from "@/lib/errors/error-map";
 import { useActionState, useEffect, useRef, type ReactNode } from "react";
@@ -11,9 +11,9 @@ const stickyActionFooterClass =
   "max-[640px]:-mx-2 max-[640px]:px-2 [&>button[type=submit]]:w-full";
 
 export type ActionState = { error: string; field?: string; fix?: Fix };
-export function ActionForm({ action, children, label = "บันทึกข้อมูล", id, sticky = false, inline = false, secondaryAction }: {
+export function ActionForm({ action, children, label = "บันทึกข้อมูล", id, sticky = false, inline = false, destructive = false, secondaryAction }: {
   action: (state: ActionState, data: FormData) => Promise<ActionState>;
-  children: ReactNode; label?: string; id?: string; sticky?: boolean; inline?: boolean;
+  children: ReactNode; label?: string; id?: string; sticky?: boolean; inline?: boolean; destructive?: boolean;
   secondaryAction?: { label: string; onClick: () => void } | { label: string; href: string };
 }) {
   const form = useRef<HTMLFormElement>(null);
@@ -43,7 +43,7 @@ export function ActionForm({ action, children, label = "บันทึกข้
       {secondaryAction && ("href" in secondaryAction
         ? <a className={secondaryActionClass} href={isPending ? undefined : secondaryAction.href} aria-disabled={isPending || undefined}>{secondaryAction.label}</a>
         : <button type="button" className={secondaryActionClass} disabled={isPending} onClick={secondaryAction.onClick}>{secondaryAction.label}</button>)}
-      <button className={inline ? secondaryActionClass : primaryActionClass} disabled={isPending} type="submit">
+      <button className={inline ? secondaryActionClass : destructive ? destructiveActionClass : primaryActionClass} disabled={isPending} type="submit">
       {isPending ? "กำลังดำเนินการ…" : label}
     </button></div>
   </form>;

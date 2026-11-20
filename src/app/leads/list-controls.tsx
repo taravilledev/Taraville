@@ -1,34 +1,41 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { LeadFilters } from "@/lib/walkin/lead-list";
-import { STAGE_CODES, STAGE_LABELS } from "@/lib/walkin/lead-stage";
+import { listHref, type LeadFilters, type surveyFilterOptions } from "@/lib/walkin/lead-list";
 import { Button } from "@/components/ui/button";
-import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { cn } from "@/lib/utils";
 
-type Props = { filters: LeadFilters; owners?: { id: string; full_name: string }[]; activeCount: number };
+const RANGES = [["all", "ทุกช่วงเวลา"], ["week", "7 วันล่าสุด"], ["month", "เดือนนี้"], ["custom", "กำหนดเอง…"]] as const;
+const pillClass = "inline-flex min-h-9 cursor-pointer items-center rounded-full border border-line-strong bg-card px-3 text-sm has-checked:border-primary has-checked:bg-primary-tint has-checked:font-semibold has-checked:text-primary has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary";
 
-// Search and filters share one form; every change rewrites the URL so the server list re-renders in place.
-export function ListControls({ filters, owners, activeCount }: Props) {
+// The pill is the label; the real input stays in the form so FormData and the keyboard work unchanged.
+function Pill({ type, name, value, checked, children }: { type: "checkbox" | "radio"; name: string; value: string; checked: boolean; children: string }) {
+  return <label className={pillClass}><input className="sr-only" type={type} name={name} value={value} checked={checked} onChange={() => undefined} />{children}</label>;
+}
+
+type Props = {
+  filters: LeadFilters; owners: { id: string; full_name: string }[]; selfId?: string; activeCount: number;
+  survey: ReturnType<typeof surveyFilterOptions>; selected: { budget: string[]; channel: string[] };
+};
+
+// Search, owner and the "ตัวกรอง" panel share one form; every change rewrites the URL so the server list re-renders in place.
+export function ListControls({ filters, owners, selfId, activeCount, survey, selected }: Props) {
   const id = useId();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [isOpen, setIsOpen] = useState(false);
   useEffect(() => () => clearTimeout(timer.current), []);
+  const range = filters.range ?? (filters.from || filters.to ? "custom" : "all");
 
   function apply() {
     if (!formRef.current) return;
     const params = new URLSearchParams();
-    for (const [key, value] of new FormData(formRef.current)) if (typeof value === "string" && value) params.set(key, value);
-    const [sort, dir] = (params.get("order") ?? "").split(":");
-    params.delete("order");
-    if (sort && sort !== "created") params.set("sort", sort);
-    if (dir && dir !== "desc") params.set("dir", dir);
+    for (const [key, value] of new FormData(formRef.current)) if (typeof value === "string" && value && !(key === "range" && value === "all")) params.append(key, value);
     const query = params.toString();
     router.replace(query ? `/leads?${query}` : "/leads", { scroll: false });
   }
@@ -43,28 +50,44 @@ export function ListControls({ filters, owners, activeCount }: Props) {
     apply();
   }
 
-  return <form ref={formRef} className={cn("min-w-0 flex-[1_1_320px]", isOpen && "basis-full")} action="/leads" method="get" onChange={onChange} onSubmit={onSubmit}>
+  return <form ref={formRef} className={cn("flex min-w-0 flex-[1_1_320px] flex-wrap items-center gap-2", isOpen && "basis-full")} action="/leads" method="get" onChange={onChange} onSubmit={onSubmit}>
     {filters.brand && <input type="hidden" name="brand" value={filters.brand} />}
-    {filters.closed && <input type="hidden" name="closed" value={filters.closed} />}
-    <div className="flex items-end gap-3 max-[400px]:gap-2">
-      <Field className="flex-1"><FieldLabel htmlFor={`${id}-q`} className="sr-only">ค้นหาชื่อ เบอร์โทร หรือ LINE ID</FieldLabel>
-        <Input id={`${id}-q`} type="search" name="q" placeholder="ค้นหาชื่อ เบอร์โทร หรือ LINE ID" defaultValue={filters.q} maxLength={50} autoComplete="off" /></Field>
-      <Button type="button" variant="outline" className="border-primary font-bold text-primary max-[400px]:px-3" aria-controls="lead-filters" aria-expanded={isOpen} onClick={() => setIsOpen(open => !open)}>
-        ตัวกรอง{activeCount > 0 ? ` (${activeCount})` : ""}</Button>
-    </div>
-    <div id="lead-filters" className={cn("mt-3 grid-cols-[repeat(auto-fit,minmax(min(180px,100%),1fr))] gap-3", isOpen ? "grid" : "hidden")}>
-      <Field><FieldLabel htmlFor={`${id}-stage`}>สถานะ</FieldLabel>
-        <NativeSelect id={`${id}-stage`} name="stage" defaultValue={filters.stage ?? ""}>
-          <option value="">ทุกสถานะ</option>{STAGE_CODES.map(stage => <option key={stage} value={stage}>{STAGE_LABELS[stage]}</option>)}</NativeSelect></Field>
-      {owners && <Field><FieldLabel htmlFor={`${id}-owner`}>ฝ่ายขายผู้ดูแล</FieldLabel>
-        <NativeSelect id={`${id}-owner`} name="owner" defaultValue={filters.owner ?? ""}>
-          <option value="">ทุกคน</option>{owners.map(owner => <option key={owner.id} value={owner.id}>{owner.full_name}</option>)}</NativeSelect></Field>}
-      <Field><FieldLabel htmlFor={`${id}-order`}>เรียงตาม</FieldLabel>
-        <NativeSelect id={`${id}-order`} name="order" defaultValue={`${filters.sort}:${filters.dir}`}>
-          <option value="created:desc">บันทึกล่าสุดก่อน</option><option value="created:asc">บันทึกเก่าสุดก่อน</option>
-          <option value="contact:desc">ติดต่อล่าสุดก่อน</option><option value="contact:asc">ติดต่อนานที่สุดก่อน</option></NativeSelect></Field>
-      <Field><FieldLabel htmlFor={`${id}-from`}>บันทึกตั้งแต่</FieldLabel><Input id={`${id}-from`} type="date" name="from" defaultValue={filters.from} /></Field>
-      <Field><FieldLabel htmlFor={`${id}-to`}>ถึงวันที่</FieldLabel><Input id={`${id}-to`} type="date" name="to" defaultValue={filters.to} /></Field>
+    {filters.stage && <input type="hidden" name="stage" value={filters.stage} />}
+    {filters.dir !== "desc" && <input type="hidden" name="dir" value={filters.dir} />}
+    <label htmlFor={`${id}-q`} className="sr-only">ค้นหาชื่อ เบอร์โทร LINE ID หรือทำเลที่สนใจ</label>
+    <Input id={`${id}-q`} className="min-w-48 flex-[1_1_200px]" type="search" name="q" placeholder="ค้นหาชื่อ เบอร์โทร หรือ LINE ID" defaultValue={filters.q} maxLength={50} autoComplete="off" />
+    <label htmlFor={`${id}-owner`} className="inline-flex items-center gap-2 text-muted-foreground">ผู้ดูแล
+      <NativeSelect id={`${id}-owner`} name="owner" defaultValue={filters.owner ?? "all"}>
+        <option value="all">ทุกคน</option>{owners.map(owner => <option key={owner.id} value={owner.id}>{owner.id === selfId ? "ฉัน" : owner.full_name}</option>)}
+      </NativeSelect>
+    </label>
+    <Button type="button" variant="outline" className={cn(activeCount > 0 && "border-primary bg-primary-tint text-primary")} aria-controls="lead-filters" aria-expanded={isOpen} onClick={() => setIsOpen(open => !open)}>
+      ตัวกรอง{activeCount > 0 ? ` (${activeCount})` : ""}</Button>
+    <div id="lead-filters" className={cn("mt-1 basis-full gap-4 rounded-lg border bg-card p-4", isOpen ? "grid" : "hidden")}>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(260px,100%),1fr))] gap-x-7 gap-y-4">
+        <fieldset className="m-0 grid min-w-0 content-start gap-2 border-0 p-0"><legend className="mb-2 p-0 font-semibold">ลงทะเบียน</legend>
+          <div className="flex flex-wrap gap-1.5">{RANGES.map(([value, label]) => <Pill key={value} type="radio" name="range" value={value} checked={range === value}>{label}</Pill>)}</div>
+          {range === "custom" && <div className="flex flex-wrap items-center gap-2">
+            <Input aria-label="ลงทะเบียนตั้งแต่" className="w-auto" type="date" name="from" defaultValue={filters.from} />–
+            <Input aria-label="ลงทะเบียนถึง" className="w-auto" type="date" name="to" defaultValue={filters.to} /></div>}
+        </fieldset>
+        {survey && <>
+          <fieldset className="m-0 grid min-w-0 content-start gap-2 border-0 p-0"><legend className="mb-2 p-0 font-semibold">{survey.budgetLabel}</legend>
+            <div className="flex flex-wrap gap-1.5">{survey.budget.map(option => <Pill key={option} type="checkbox" name="budget" value={option} checked={selected.budget.includes(option)}>{option}</Pill>)}</div>
+          </fieldset>
+          <fieldset className="m-0 grid min-w-0 content-start gap-2 border-0 p-0"><legend className="mb-2 p-0 font-semibold">รู้จักจากช่องทาง</legend>
+            <div className="flex flex-wrap gap-1.5">{survey.channel.map(option => <Pill key={option} type="checkbox" name="channel" value={option} checked={selected.channel.includes(option)}>{option}</Pill>)}</div>
+          </fieldset>
+        </>}
+      </div>
+      {!survey && <p className="m-0 rounded-md bg-muted px-3 py-2 text-muted-foreground">กรองตามงบ/ค่างวด และช่องทางได้หลังเลือกแบรนด์ด้านบน เพราะคำถามในแบบสอบถามของสองแบรนด์ไม่เหมือนกัน</p>}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+        <span className="text-xs text-muted-foreground">ผลในตารางเปลี่ยนทันทีที่เลือก · เลือกได้หลายค่าในแต่ละหัวข้อ</span>
+        <span className="inline-flex gap-2">
+          <Link className="inline-flex min-h-9 items-center px-3 font-semibold text-primary no-underline" prefetch={false} href={listHref(filters, { from: undefined, to: undefined, range: undefined, budget: undefined, channel: undefined, page: undefined })}>ล้างตัวกรองเพิ่มเติม</Link>
+          <Button type="button" variant="outline" size="sm" onClick={() => setIsOpen(false)}>ปิด</Button>
+        </span>
+      </div>
     </div>
   </form>;
 }

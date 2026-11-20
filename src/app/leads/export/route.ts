@@ -12,7 +12,9 @@ export async function GET(request: Request) {
   const session = await requireStaff();
   // RLS would already limit a Sale to their own leads; export itself is an Executive permission.
   if (session.staff.role !== "executive") return text("ไม่มีสิทธิ์ส่งออกข้อมูล", 403);
-  const raw = Object.fromEntries([...new URL(request.url).searchParams].filter(([, value]) => value !== ""));
+  // A repeated key (several budget choices) stays a list for the schema.
+  const raw: Record<string, string | string[]> = {};
+  for (const [key, value] of new URL(request.url).searchParams) if (value !== "") raw[key] = key in raw ? [raw[key], value].flat() : value;
   const parsed = filtersSchema.safeParse(raw);
   const brand = parsed.success ? parsed.data.brand : undefined;
   if (!parsed.success || !brand) return text("กรุณาเลือกแบรนด์ก่อนส่งออก", 400);
