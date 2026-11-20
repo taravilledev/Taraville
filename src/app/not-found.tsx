@@ -10,7 +10,7 @@ export default function NotFound() {
     <p>รายการอาจถูกลบ หรือลิงก์ไม่ถูกต้อง</p>
     <div className="mt-6 flex flex-wrap gap-3">
       <Link className={primaryActionClass} href="/leads">ไปที่รายการผู้สนใจ</Link>
-      <Link className={secondaryActionClass} href="/walkin">รับลูกค้า Walk-in</Link>
+      <Link className={secondaryActionClass} href="/dashboard">กลับหน้าหลัก</Link>
     </div>
   </section></main></div>;
 }

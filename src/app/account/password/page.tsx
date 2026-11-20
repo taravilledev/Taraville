@@ -34,6 +34,6 @@ async function PasswordContent() {
       </div>
       <p className={formHintClass}>เมื่อบันทึกสำเร็จ ให้เข้าสู่ระบบใหม่ด้วยรหัสใหม่</p>
     </ActionForm>
-    <a href="/walkin">กลับไปรับลูกค้า</a>
+    <a href="/dashboard">กลับหน้าหลัก</a>
   </section></AppShell>;
 }

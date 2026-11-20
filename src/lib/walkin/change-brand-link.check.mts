@@ -17,13 +17,12 @@ const form = new IntakeForm();
 let asked = false;
 let shouldLeave = false;
 const exports = {} as typeof import("../../app/walkin/change-brand-link");
-const source = readFileSync(new URL("../../app/walkin/change-brand-link.tsx", import.meta.url), "utf8");
-const compiled = ts.transpileModule(source, {
+const draft = {} as typeof import("../../app/walkin/form-draft");
+const compile = (path: string) => ts.transpileModule(readFileSync(new URL(path, import.meta.url), "utf8"), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
 }).outputText;
-runInNewContext(compiled, {
-  exports,
-  require: (name: string) => name === "react/jsx-runtime" ? jsxRuntime : { default: {} },
+const sandbox = {
+  require: (name: string) => name === "react/jsx-runtime" ? jsxRuntime : name === "./form-draft" ? draft : { default: {} },
   HTMLFormElement: IntakeForm,
   FormData: function CurrentFormData(current: IntakeForm) {
     const data = new FormData();
@@ -32,7 +31,9 @@ runInNewContext(compiled, {
   },
   document: { getElementById: () => form },
   window: { confirm: () => { asked = true; return shouldLeave; } },
-}, { timeout: 1000 });
+};
+runInNewContext(compile("../../app/walkin/form-draft.ts"), { ...sandbox, exports: draft }, { timeout: 1000 });
+runInNewContext(compile("../../app/walkin/change-brand-link.tsx"), { ...sandbox, exports }, { timeout: 1000 });
 
 function click(entries: [string, string][], hasOwnerSelect = false) {
   asked = false;
