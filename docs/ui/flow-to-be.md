@@ -52,7 +52,7 @@ Status: every screen below was decided by the owner in grilling rounds Q1–Q92 
 8. Leaving with unsaved values uses an in-app dialog. The browser's own `beforeunload` prompt stays for tab close and reload.
 9. Legal and consent strings stay word for word (`docs/walkin/notices/walkin-live-2026-10-30.1.json`, `choices.*`).
 
-**Walk-in ships last, and only after the PDPA review** (Q84, §4).
+**Walk-in ships last.** The PDPA review is done (owner, 2026-11-20; Q84, §4).
 
 ### 3.2 Lead list → Lead (Main, LeadDetail, LeadEdit)
 
@@ -202,7 +202,7 @@ The same frame with Taraville's own stages (เปิดโครงการ ·
   - Show/hide password, a visible username rule, distinct login errors (verify that Supabase returns distinct codes), and a spinner.
   - Session expiry shows "หมดเวลาการใช้งาน…" and returns to the original page; only a same-origin path is accepted.
   - A signed-in user who opens `/login` goes to `/dashboard`.
-  - The forgot-password page says "ติดต่อ Support ทาง LINE". The owner still has to supply the LINE ID.
+  - The forgot-password page says "ติดต่อ Support ทาง LINE" with the LINE ID `art`.
 - **Account.**
   - Change-password has a live rule checklist and the note "signs out every device".
   - The sidebar user block holds "เปลี่ยนรหัสผ่าน" and "ออกจากระบบ". Sign-out is not red and needs no confirm.
@@ -218,18 +218,18 @@ The same frame with Taraville's own stages (เปิดโครงการ ·
 
 These are not decisions for the implementer. Each needs the owner (or the PDPA reviewer) before the related phase ships.
 
-- **PDPA review (blocks the walk-in phase only, Q84).**
+- **PDPA review — done (owner, 2026-11-20; Q84).** The reviewed points stand as drawn:
   - The combined attestation checkbox is kept verbatim (Q57).
   - The attestation says the notice was shown "ก่อนกรอกข้อมูล", but the notice step was removed.
   - The survey is visible before consent is ticked.
 - **PDPA retention.** What should extend the 12-month review once contact recording is gone (ADR 0059).
 - **Print.** Mask phone numbers on the `/leads/report` paper (Q81).
-- **Staging.** Set up a staging environment: with no testing in prod and no staging, there is nowhere to test.
+- **Staging — deferred (owner, 2026-11-20).** Test on the local Docker stack (`supabase start` + `npm run dev:local`) for now.
 - **Go-live R0 task, needing its own itemised approval.**
   - Purge synthetic data from prod.
   - Set every issuer's `is_synthetic` to false.
   - Decide then whether to remove the synthetic flag, test modes and the "Synthetic" staff accounts (ADR 0062).
-- **Forgot-password.** The real Support LINE ID.
+- **Forgot-password — decided (owner, 2026-11-20).** Support LINE ID `art`.
 - **Finance.** A Taraville finance summary (`/summary` is BKP only); trend charts.
 - **Design delivery.**
   - A design delivery date column (the drawer checkbox is UI-only).

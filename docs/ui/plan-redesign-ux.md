@@ -9,7 +9,7 @@ Status: the design is complete and the owner confirmed it on 2026-11-20. No code
 ## Confirmed facts — do not re-derive
 
 - **Environment.**
-  - `.env.local` points at **production**; there is no staging.
+  - `.env.local` points at **production**; there is no staging. Staging is deferred: local testing runs on Docker (`supabase start`, then `npm run dev:local`) (owner, 2026-11-20).
   - Never run plain `next dev`. Use `npm run dev:local` (port 3100; `preview_start` config `taraville-local`).
   - Next.js here is newer than model training data, so read `node_modules/next/dist/docs/` before framework code.
 - **Tests.**
@@ -39,15 +39,15 @@ Status: the design is complete and the owner confirmed it on 2026-11-20. No code
 - **Stops.** Design forks and R0 stop the executor, which reports back.
 - **Verification.**
   - At each phase's verify point, **ask the owner first**: (1) a browser subagent run, (2) a checklist for the owner, or (3) skip. Choices 2 and 3 leave the phase unverified, and the PR is a Draft.
-  - The browser runs against prod data. Until staging exists, keep verify runs read-only, or use the Synthetic accounts.
+  - Browser checks run on the local Docker stack (`npm run dev:local`), never on prod.
 - **PRs.** Commit only when the owner asks. Ask whether the PR is Thai or English. Never mark a PR ready.
 - **Logs.** Each session that touches code ends with `.docs/SESSIONLOG-ux-redesign-<topic>-<date>.md`.
 
 ## Phase 0 — prerequisites (owner)
 
 - [ ] Merge design-system v1 #23 → #27 into `dev`, in order.
-- [ ] Copy ADRs 0056–0063 and the session logs into the main checkout.
-- [ ] Decide on a staging environment ([flow-to-be §4](flow-to-be.md#4-business-decisions-still-open)). **DECISION PENDING.** Until then, phases proceed with read-only browser checks.
+- [x] Copy ADRs 0056–0063 and the session logs into the main checkout (2026-11-20).
+- [x] Staging: deferred. Test on the local Docker stack (`supabase start` + `npm run dev:local`) for now ([flow-to-be §4](flow-to-be.md#4-business-decisions-still-open); owner, 2026-11-20).
 
 ## Phase 1 — shared pieces (ADR 0060)
 
@@ -157,7 +157,7 @@ The rules come from design-system.md §8. No screen redesign in this phase, exce
   - Show/hide password, the username rule, a spinner.
   - Distinct login errors: **verify first which codes Supabase auth returns**, and keep one generic message where they are not distinct.
 - [ ] **Session return.** `?next=` in `requireStaff` with same-origin validation, plus a `*.check.mts`. "หมดเวลาการใช้งาน…" banner. A signed-in user on `/login` → `/dashboard`.
-- [ ] **Forgot-password page** "ติดต่อ Support ทาง LINE". **DECISION PENDING:** the real LINE ID.
+- [ ] **Forgot-password page** "ติดต่อ Support ทาง LINE", LINE ID `art` (owner, 2026-11-20).
 - [ ] **Change password.** Live checklist and the "signs out every device" note. Sidebar user block: "เปลี่ยนรหัสผ่าน" / "ออกจากระบบ" (not red, no confirm).
 - [ ] **Error pages.**
   - The error page gets retry, home, and a reference code; add `src/app/global-error.tsx`.
@@ -165,9 +165,9 @@ The rules come from design-system.md §8. No screen redesign in this phase, exce
   - `/privacy` without a brand asks for it.
 - **Verify point:** login error states and session return. Ask first.
 
-## Phase 8 — walk-in (board WalkinForm; ADR 0063) — **last, blocked**
+## Phase 8 — walk-in (board WalkinForm; ADR 0063) — **last**
 
-- **DECISION PENDING: PDPA review** of the attestation wording, the survey shown before consent, and the combined checkbox. Do not start until the owner reports the review result.
+- **PDPA review: done** (owner, 2026-11-20). The attestation wording, the survey shown before consent, and the combined checkbox stand as drawn.
 - [ ] Three steps with no notice step; consent text on step ②; chips; the advance warning on ③; the saved screen without personal data; the executive-without-sale-account block; the in-app leave dialog; one phone rule.
 
 ## R0 tasks (never inside a phase; each needs its own approval with the exact list)
