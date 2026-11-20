@@ -5,7 +5,7 @@ Status: every screen below was decided by the owner in grilling rounds Q1–Q92 
 - **Mockups (source of truth for layout):** the private canvas "Taraville Leads redesign", version 48 — https://claude.ai/artifact/QVJZM8ptwW7FFRnip19318. Every board is interactive (Play) and most have a `role` tweak (sale / executive). The board names are given in brackets below.
 - **As-is behaviour:** `docs/ui/flow-as-is.md` (main checkout).
 - **Built on:** [design-system v1](design-system.md) (ADR 0056, PRs #23–#27). The redesign keeps v1's tokens, status groups, brand tag, typeface, sidebar and stage names. The new app-wide rules are in design-system.md §8.
-- **ADRs (git-ignored, main checkout):** 0057 project workspace, 0058 design-fee next step, 0059 contact recording removed, 0060 UI interaction rules, 0061 Lead page without sub-pages, 0062 synthetic data and test mode, 0063 walk-in steps and consent placement. ADR 0063 is still proposed: it waits for the PDPA review ([§4](#4-business-decisions-still-open)).
+- **ADRs (git-ignored, main checkout):** 0057 project workspace, 0058 design-fee next step, 0059 contact recording removed, 0060 UI interaction rules, 0061 Lead page without sub-pages, 0062 synthetic data and test mode, 0063 walk-in steps and consent placement. The PDPA review behind ADR 0063 is done (owner, 2026-11-20; [§4](#4-business-decisions-still-open)).
 
 ## 1. Ground rules (Q1–Q7)
 
