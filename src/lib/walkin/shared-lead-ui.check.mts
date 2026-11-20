@@ -110,7 +110,9 @@ const count = (text: string, pattern: string) => text.split(pattern).length - 1;
 
 // ADR 0061: manage and history are gone as pages; the old links land on the Lead page, history as its drawer.
 for (const [Page, target] of [[ManagePage, `/leads/${lead.id}`], [HistoryPage, `/leads/${lead.id}?drawer=history`]] as const) {
-  await assert.rejects(render(Page), { message: `CHECK_REDIRECT ${target}` });
+  // The redirect runs inside Suspense (Cache Components), so it surfaces through onError rather than a rejection.
+  const { errors } = await render(Page);
+  assert.ok(errors.some(error => error instanceof Error && error.message === `CHECK_REDIRECT ${target}`), `old link must redirect to ${target}`);
 }
 
 // Actual async pages and actual status/project/privacy children; only data and server-action boundaries are mocked.
