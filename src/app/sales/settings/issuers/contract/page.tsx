@@ -31,6 +31,6 @@ async function ContractEditor({ searchParams }: SettingsPageProps) {
       brandName={name} needsApproval={needsApproval} cancelHref={`${base}?brand=${brand}`}
       isApproved={Boolean(issuer?.contract_text_approved)} issuer={issuer ? {
         legal_name: issuer.legal_name, address: issuer.address, tax_id: issuer.tax_id, contact: issuer.contact,
-        contract_text: issuer.contract_text, is_synthetic: issuer.is_synthetic } : undefined} />
+        contract_text: issuer.contract_text } : undefined} />
   </SettingsShell>;
 }
