@@ -63,6 +63,7 @@ export function summaryQuery(raw: Record<string, string | string[] | undefined>)
     query: typeof raw.q === "string" ? raw.q.trim().slice(0, 150) : "",
     stage: typeof raw.stage === "string" && Object.hasOwn(summaryStages, raw.stage) ? raw.stage : "",
     money: typeof raw.money === "string" && Object.hasOwn(collectionFilters, raw.money) ? raw.money : "",
+    owner: typeof raw.owner === "string" ? raw.owner.trim().slice(0, 150) : "",
   };
   const params = new URLSearchParams();
   const [sortKey, direction, extra] = typeof raw.sort === "string" ? raw.sort.split(".") : [];
@@ -76,6 +77,7 @@ export function summaryQuery(raw: Record<string, string | string[] | undefined>)
   if (filters.query) params.set("q", filters.query);
   if (filters.stage) params.set("stage", filters.stage);
   if (filters.money) params.set("money", filters.money);
+  if (filters.owner) params.set("owner", filters.owner);
   const page = typeof raw.page === "string" && /^\d+$/.test(raw.page) ? Number(raw.page) : 1;
   return { from, to, filters, params, page, sort, isPeriodView, isPeriodValid: period.success };
 }
@@ -86,18 +88,19 @@ export function summaryPageRange(rowCount: number, requested: number) {
   return { page, totalPages, start: (page - 1) * SUMMARY_PAGE_SIZE, end: Math.min(page * SUMMARY_PAGE_SIZE, rowCount) };
 }
 
-type ReportFilters = { query: string; stage: string; money: string };
+type ReportFilters = { query: string; stage: string; money: string; owner?: string };
 type CollectionAmounts = Record<keyof typeof collectionFilters, bigint>;
 
-function matchesReportFilters(row: { code: string; customer: string }, stage: string, amounts: CollectionAmounts,
+function matchesReportFilters(row: { code: string; customer: string; owner?: string }, stage: string, amounts: CollectionAmounts,
   query: string, filters: ReportFilters) {
   if (query && !row.code.toLowerCase().includes(query) && !row.customer.toLowerCase().includes(query)) return false;
   if (filters.stage && stage !== filters.stage) return false;
+  if (filters.owner && row.owner !== filters.owner) return false;
   return !Object.hasOwn(collectionFilters, filters.money) || amounts[filters.money as keyof CollectionAmounts] > ZERO;
 }
 
 export function summaryEntries<T extends {
-  code: string; customer: string; stage: string; pending: string; closeout: string; rows: ReportInstalment[];
+  code: string; customer: string; owner?: string; stage: string; pending: string; closeout: string; rows: ReportInstalment[];
 }>(projects: T[], today: string, filters: ReportFilters) {
   const query = filters.query.trim().toLowerCase();
   const entries = projects.map(project => ({ project, balance: collectionTotals(project.rows, today) }));
@@ -107,6 +110,52 @@ export function summaryEntries<T extends {
     balance.overdue > ZERO ? 2 : BigInt(project.pending) > ZERO ? 1 : 0;
   visible.sort((a, b) => priority(b) - priority(a));
   return { entries, visible };
+}
+
+// Stage-tab counts and the closeout chip ignore the money filter (and the stage filter for the counts) so they stay clickable.
+export function summaryFacets<T extends Parameters<typeof summaryEntries>[0][number]>(projects: T[], today: string, filters: ReportFilters) {
+  const { visible } = summaryEntries(projects, today, { ...filters, stage: "", money: "" });
+  const stageCounts: Record<string, number> = {};
+  let closeout = ZERO;
+  for (const { project } of visible) {
+    stageCounts[project.stage] = (stageCounts[project.stage] ?? 0) + 1;
+    if (!filters.stage || project.stage === filters.stage) closeout += BigInt(project.closeout);
+  }
+  const owners = [...new Set(projects.flatMap(project => project.owner ? [project.owner] : []))].sort(codeOrder.compare);
+  return { total: visible.length, stageCounts, closeout, owners };
+}
+
+// Same-page link with some params replaced (null removes one); the page number always resets.
+export function summaryHref(params: URLSearchParams, patch: Record<string, string | null> = {}, hash = "") {
+  const next = new URLSearchParams(params);
+  next.delete("page");
+  for (const [key, value] of Object.entries(patch)) {
+    if (value) next.set(key, value);
+    else next.delete(key);
+  }
+  return `${next.size ? `/summary?${next}` : "/summary"}${hash}`;
+}
+
+const isoDate = (year: number, month: number, day: number) => new Date(Date.UTC(year, month - 1, day)).toISOString().slice(0, 10);
+const monthLabel = (date: string) => new Date(`${date}T00:00:00Z`).toLocaleDateString("th-TH", { month: "short", year: "numeric", timeZone: "UTC" });
+
+// Calendar periods around `today` (YYYY-MM-DD, Bangkok); the picker writes their from/to into the URL.
+export function periodPresets(today: string) {
+  const [year, month] = today.split("-").map(Number);
+  const quarter = Math.floor((month - 1) / 3) * 3 + 1;
+  const thisMonth = isoDate(year, month, 1);
+  const lastMonth = isoDate(year, month - 1, 1);
+  return [
+    { value: "thisMonth", label: `เดือนนี้ (${monthLabel(thisMonth)})`, from: thisMonth, to: isoDate(year, month + 1, 0) },
+    { value: "lastMonth", label: `เดือนที่แล้ว (${monthLabel(lastMonth)})`, from: lastMonth, to: isoDate(year, month, 0) },
+    { value: "quarter", label: "ไตรมาสนี้", from: isoDate(year, quarter, 1), to: isoDate(year, quarter + 3, 0) },
+    { value: "year", label: `ปีนี้ (${year + 543})`, from: isoDate(year, 1, 1), to: isoDate(year, 12, 31) },
+  ];
+}
+
+export function periodPresetValue(presets: ReturnType<typeof periodPresets>, query: { from: string | null; to: string | null; isPeriodView: boolean }) {
+  if (!query.isPeriodView) return "none";
+  return presets.find(preset => preset.from === query.from && preset.to === query.to)?.value ?? "custom";
 }
 
 export function displayAmount(amount: string | bigint | null): string {

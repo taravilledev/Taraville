@@ -1,128 +1,64 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { salesBootstrap, salesCaseList, salesWorkQueue } from "@/lib/sales/queries";
-import { brandLabels, caseStatusLabels, workQueueKinds } from "@/lib/sales/models";
+import { redirect } from "next/navigation";
+import { salesCaseList, salesWorkQueue } from "@/lib/sales/queries";
+import { brandLabels } from "@/lib/sales/models";
+import { requireStaff } from "@/lib/supabase/staff";
+import { openLeadCount } from "@/lib/walkin/queries";
 import { AppShell } from "@/app/walkin/app-shell";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { executiveWork } from "@/lib/sales/executive";
 import { dashboardFollowUps, dashboardOverview } from "@/lib/sales/dashboard-data";
-import { ExecutiveDashboard } from "../sales/executive-dashboard";
 import { DashboardOverview } from "./overview";
-import { groupDashboardProjects, projectOwnershipLabels, type ProjectOwnership } from "./project-ownership";
+import { SaleHome } from "./sale-home";
+import { queueFilterOf } from "./queue-filters";
+import { groupDashboardProjects } from "./project-ownership";
 import { tabLinksClass } from "@/components/tab-links";
 import { pageHeaderClass } from "@/components/page-header";
 import { noticeClass } from "@/components/notice";
-import { panelClass } from "@/components/panel";
-import { tagClass } from "@/components/tag";
-import { buttonVariants } from "@/components/ui/button";
-import { Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
-import { cn } from "@/lib/utils";
-
-const caseRowClass = "grid grid-cols-[1fr_auto] items-center gap-3 rounded-md border bg-card p-4 max-[640px]:grid-cols-1 [&_a]:font-bold [&_a]:text-foreground [&_a]:underline-offset-4";
 
 export const metadata = { title: "แดชบอร์ด · Taraville Group", robots: { index: false, follow: false } };
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
-const statusOptions = { active: "กำลังดำเนินการ", all: "ทั้งหมด", ...caseStatusLabels };
 const one = (value: string | string[] | undefined) => typeof value === "string" ? value : "";
+const LIST_PARAMS = ["attention", "status", "q", "ownership", "page"];
+const thaiDate = (date: Date) => date.toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
-export default function DashboardPage(props: Props) { return <Suspense fallback={<PageSkeleton />}><Workspace {...props} /></Suspense>; }
-async function Workspace({ searchParams }: Props) {
+export default function DashboardPage(props: Props) { return <Suspense fallback={<PageSkeleton />}><Home {...props} /></Suspense>; }
+async function Home({ searchParams }: Props) {
   const raw = await searchParams;
-  const status = Object.hasOwn(statusOptions, one(raw.status)) ? one(raw.status) : "active";
-  const brand = Object.hasOwn(brandLabels, one(raw.brand)) ? one(raw.brand) : "";
-  const query = one(raw.q).trim().slice(0, 100);
-  const { staff, workspace, supabase } = await salesBootstrap();
-  const executive = staff.role === "executive";
-  const attention = one(raw.attention);
-  const rawOwnership = one(raw.ownership);
-  const ownership: ProjectOwnership = !executive && Object.hasOwn(projectOwnershipLabels, rawOwnership)
-    ? rawOwnership as ProjectOwnership : "all";
-  const filtered = status !== "active" || brand !== "" || query !== "" || attention !== "";
-  const brands = [{ value: "", label: "ทั้งสองแบรนด์" }, ...Object.entries(brandLabels).map(([value, label]) => ({ value, label }))];
-  const filterForm = <form className={cn("grid grid-cols-[minmax(0,2fr)_repeat(2,minmax(0,1fr))_auto_auto] items-end gap-3 max-[640px]:grid-cols-1", executive && "min-[641px]:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto_auto]")} method="get" role="search">
-      <Field><FieldLabel htmlFor="dashboard-q">ค้นหาชื่อลูกค้าหรือรหัส</FieldLabel><Input id="dashboard-q" type="search" name="q" defaultValue={query} maxLength={100} /></Field>
-      {executive ? <input type="hidden" name="brand" value={brand} />
-        : <Field><FieldLabel htmlFor="dashboard-brand">แบรนด์</FieldLabel><NativeSelect id="dashboard-brand" name="brand" defaultValue={brand}>
-          {brands.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}</NativeSelect></Field>}
-      <Field><FieldLabel htmlFor="dashboard-status">สถานะ</FieldLabel><NativeSelect id="dashboard-status" name="status" defaultValue={status}>
-        {Object.entries(statusOptions).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</NativeSelect></Field>
-      {ownership !== "all" && <input type="hidden" name="ownership" value={ownership} />}
-      <button className={buttonVariants({ size: "auto" })} type="submit">ค้นหา</button>
-      {filtered && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={ownership === "all" ? "/dashboard" : `/dashboard?ownership=${ownership}`} prefetch={false}>ล้างตัวกรอง</Link>}
-    </form>;
-  const settings = (workspace.can_catalog || workspace.can_admin || workspace.developments.length > 0) &&
-    <Link className={buttonVariants({ variant: "outline", size: "auto" })} href="/sales/settings" prefetch={false}>ตั้งค่า</Link>;
-  const [dashboard, overview, overviewWork] = await Promise.all([
-    executive ? executiveWork(supabase, { status, brand, query }) : null,
-    executive ? dashboardOverview(supabase, brand) : null,
-    executive && (status !== "active" || query) ? executiveWork(supabase, { status: "active", brand, query: "" }) : null,
-  ]);
-  if (dashboard) {
-    const rawPage = Number(one(raw.page));
-    const page = Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1;
-    const baseWork = status === "active" && !query ? dashboard : overviewWork;
-    return <AppShell staff={staff} wide><div className="grid gap-6">
-      <div className={pageHeaderClass}><div><h1>แดชบอร์ด</h1><p>ติดตามงานและโครงการของบ้านคุณภาพและธาราวิลล์</p></div>
-        <div className="flex flex-wrap items-center gap-3"><Link className={buttonVariants({ size: "auto" })} href="/summary" prefetch={false}>สรุปการเงินบ้านคุณภาพ</Link>{settings}</div>
-      </div>
-      <nav className={tabLinksClass} aria-label="เลือกแบรนด์สำหรับแดชบอร์ด">
-        {brands.map(({ value, label }) => <Link key={value} href={value ? `/dashboard?brand=${value}` : "/dashboard"}
-          aria-current={value === brand ? "page" : undefined} prefetch={false}>{label}</Link>)}
-      </nav>
-      {overview && baseWork ? <DashboardOverview data={overview} groups={dashboardFollowUps(baseWork, overview, brand)} brand={brand} />
-        : <p className={noticeClass} role="status">โหลดภาพรวมผู้บริหารไม่ได้ ตารางโครงการด้านล่างยังใช้งานได้</p>}
-      <ExecutiveDashboard rows={dashboard} filterForm={filterForm} compact={!!overview && !!baseWork} filters={{ status, brand, query, page, attention }} />
+  // The project list moved to /sales; old /dashboard?attention=… (and other list filter) links still open that list.
+  if (LIST_PARAMS.some(key => one(raw[key]))) {
+    const params = new URLSearchParams(Object.entries(raw).flatMap(([key, value]) => typeof value === "string" ? [[key, value]] : []));
+    redirect(`/sales?${params}`);
+  }
+  const { staff, supabase } = await requireStaff();
+  if (staff.role === "executive") {
+    const requested = one(raw.brand);
+    const brand = Object.hasOwn(brandLabels, requested) ? requested : "";
+    const brands = [{ value: "", label: "ทั้งสองแบรนด์" }, ...Object.entries(brandLabels).map(([value, label]) => ({ value, label }))];
+    const [work, overview] = await Promise.all([
+      executiveWork(supabase, { status: "active", brand, query: "" }),
+      dashboardOverview(supabase, brand),
+    ]);
+    return <AppShell staff={staff} wide><div className="grid gap-5">
+      <div className={pageHeaderClass}><div><h1>ภาพรวม</h1><p>ติดตามงานและโครงการของบ้านคุณภาพและธาราวิลล์</p></div></div>
+      {overview && work ? <>
+        <nav className={tabLinksClass} aria-label="เลือกแบรนด์สำหรับแดชบอร์ด">
+          {brands.map(({ value, label }) => <Link key={value} href={value ? `/dashboard?brand=${value}` : "/dashboard"}
+            aria-current={value === brand ? "page" : undefined} prefetch={false}>{label}</Link>)}
+        </nav>
+        <DashboardOverview data={overview} groups={dashboardFollowUps(work, overview, brand)} brand={brand} />
+      </> : <p className={`${noticeClass} flex flex-wrap items-center justify-between gap-3`} role="alert">
+        <span>โหลดภาพรวมไม่ได้ ลองรีเฟรชหน้านี้ · รายการโครงการยังเปิดได้ที่เมนูโครงการ</span>
+        <Link className="font-semibold underline underline-offset-4" href="/sales" prefetch={false}>ไปที่โครงการ ›</Link></p>}
     </div></AppShell>;
   }
-  const [cases, queue] = await Promise.all([salesCaseList({ status, brand, query }), salesWorkQueue()]);
-  const projectGroups = groupDashboardProjects(cases, staff.id);
-  const visibleCases = projectGroups[ownership];
-  function ownershipHref(next: ProjectOwnership) {
-    const params = new URLSearchParams();
-    if (next !== "all") params.set("ownership", next);
-    if (brand) params.set("brand", brand);
-    if (status !== "active") params.set("status", status);
-    if (query) params.set("q", query);
-    return params.size ? `/dashboard?${params}#dashboard-projects` : "/dashboard#dashboard-projects";
-  }
-  return <AppShell staff={staff} wide><div className="grid gap-6">
-    <div className={pageHeaderClass}><div><h1>แดชบอร์ด</h1><p>บ้านคุณภาพ · ธาราวิลล์</p></div>
-      <div className="flex flex-wrap items-center gap-3">
-        {executive && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href="/summary" prefetch={false}>สรุปการเงินบ้านคุณภาพ</Link>}{settings}
-      </div>
-    </div>
-    {executive && <p className={noticeClass} role="status">โหลดแดชบอร์ดผู้บริหารไม่ได้ รายการงานด้านล่างยังใช้งานได้</p>}
-    <section className={panelClass} id="queue" aria-labelledby="queue-title"><h2 id="queue-title">งานรอทำ</h2>
-      {!queue ? <p className={noticeClass} role="status">โหลดงานรอทำไม่ได้ ลองรีเฟรชหน้านี้ รายการทั้งหมดด้านล่างยังใช้ได้</p>
-        : !queue.length ? <p className="text-sm text-muted-foreground">ไม่มีงานที่รอคุณดำเนินการ</p>
-        : <ul className="grid gap-3">{queue.map(item => <li key={`${item.case_id}:${item.kind}`} className={caseRowClass}>
-          <div><Link href={`/sales/${item.case_id}?tab=money#${item.kind === "acceptance" ? "schedule" : item.kind === "payment_pending" ? "pending" : "refunds"}`} prefetch={false}>{item.code}{item.customer_name ? ` · ${item.customer_name}` : ""}</Link>
-            <p className="text-sm text-muted-foreground">{workQueueKinds[item.kind]} {item.count} รายการ · รอตั้งแต่ {new Date(item.since).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })}</p></div>
-          <span className={tagClass}>{brandLabels[item.brand]}</span></li>)}</ul>}
-    </section>
-    <section className="grid gap-6" id="dashboard-projects" aria-labelledby="dashboard-projects-title">
-      <h2 id="dashboard-projects-title">โครงการ</h2>
-      {!executive && <nav className={tabLinksClass} aria-label="ผู้รับผิดชอบโครงการ">
-        {(Object.keys(projectOwnershipLabels) as ProjectOwnership[]).map(item =>
-          <Link href={ownershipHref(item)} key={item} prefetch={false} aria-current={item === ownership ? "page" : undefined}>
-            {projectOwnershipLabels[item]}
-          </Link>)}
-      </nav>}
-      {filterForm}
-      <p className="text-sm text-muted-foreground">พบ {visibleCases.length} โครงการ{cases.length === 100 && " จากผลล่าสุด 100 รายการ"}</p>
-      {visibleCases.length ? <ul className="grid gap-3">{visibleCases.map(sale => <li key={sale.id} className={caseRowClass}>
-        <div><Link href={`/sales/${sale.id}`} prefetch={false}>{sale.code} · {sale.customer_name}</Link>
-          <p className="text-sm text-muted-foreground">{brandLabels[sale.brand]}
-            {!executive && (sale.responsible_id === staff.id ? " · ฉันดูแล" : " · คนอื่นดูแล")}
-            {sale.detail && sale.detail !== sale.code ? ` · ${sale.detail}` : ""} · {sale.can_finance ? "ดูข้อมูลการเงินได้" : "ดูข้อมูลงาน"}
-          </p></div>
-        <span className={tagClass}>{caseStatusLabels[sale.status]}</span>
-      </li>)}</ul> : ownership !== "all"
-        ? <p className="text-sm text-muted-foreground">{ownership === "mine" ? "ไม่พบโครงการที่คุณดูแลในรายการนี้" : "ไม่พบโครงการของคนอื่นที่คุณมีสิทธิ์ดูในรายการนี้"}</p>
-        : filtered ? <section className={panelClass}><h3>ไม่พบรายการตามตัวกรอง</h3><p>ลองเปลี่ยนคำค้นหรือเลือกสถานะทั้งหมด</p></section>
-        : <section className={panelClass}><h3>ยังไม่มีรายการที่คุณดูได้</h3><p>เริ่มเปิดงานจาก Lead หรือให้ผู้บริหารตรวจสอบสิทธิ์ของคุณ</p><Link href="/leads" prefetch={false}>ไปที่รายการ Lead</Link></section>}
-    </section>
+  const [cases, queue, openLeads] = await Promise.all([
+    salesCaseList({ status: "active", brand: "", query: "" }), salesWorkQueue(), openLeadCount(supabase, staff.id),
+  ]);
+  const mine = groupDashboardProjects(cases, staff.id).mine.slice(0, 5);
+  return <AppShell staff={staff} wide><div className="grid gap-5">
+    <div className={pageHeaderClass}><div><h1>สวัสดี {staff.full_name}</h1><p>{thaiDate(new Date())}</p></div></div>
+    <SaleHome queue={queue} openLeads={openLeads} mine={mine} filter={queueFilterOf(one(raw.kind))} />
   </div></AppShell>;
 }

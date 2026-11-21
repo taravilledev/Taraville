@@ -43,7 +43,7 @@ export function EvidenceUpload({ caseId, category = "payment", className, title 
           <p className="mt-2 mb-0 text-sm text-muted-foreground">{path ? "เลือกไฟล์ใหม่จะต้องอัปโหลดใหม่อีกครั้ง" : isPending ? "รอให้อัปโหลดเสร็จก่อนบันทึกรายการ" : "การเลือกไฟล์ยังไม่ส่งข้อมูล ต้องกดอัปโหลดในขั้นที่ 2"}</p>
           {file && !path && !isPending && <p className="mt-2 rounded-sm border border-warn-line bg-warn-tint px-3 py-2 text-sm text-warn-ink [overflow-wrap:anywhere]" role="status">เลือก {file.name} แล้ว · ยังไม่ได้อัปโหลด</p>}
         </div>
-        <div className="grid content-start pt-[calc(var(--text-md)+1rem)] max-[640px]:pt-0">{path ? <div className="grid max-w-[280px] gap-1 text-primary [&_small]:text-muted-foreground" role="status"><strong>✓ อัปโหลดสำเร็จ</strong>
+        <div className="grid content-start pt-[calc(var(--text-md)+1rem)] max-[640px]:pt-0">{path ? <div className="grid max-w-[280px] gap-1 text-success-ink [&_small]:text-muted-foreground" role="status"><strong>✓ อัปโหลดสำเร็จ</strong>
           <span className="text-sm [overflow-wrap:anywhere]">{file?.name}</span><small>พร้อมบันทึกรายการ</small></div> : uploadButton}</div>
       </div>
     </> : <>{picker}

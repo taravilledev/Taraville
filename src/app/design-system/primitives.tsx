@@ -1,3 +1,4 @@
+import { BrandTag } from "@/components/brand-tag";
 import { checkRowClass } from "@/components/check-row";
 import { factsClass } from "@/components/facts";
 import { formCardClass, formHintClass } from "@/components/form-card";
@@ -5,6 +6,7 @@ import { Notice } from "@/components/notice";
 import { pageHeaderClass } from "@/components/page-header";
 import { Panel } from "@/components/panel";
 import { tabLinksClass } from "@/components/tab-links";
+import { Status } from "@/components/status";
 import { Tag } from "@/components/tag";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,9 +21,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 
 const unitOptions = [
-  { id: "a1", label: "แปลง A1", detail: "ธาราวิล · 50 ตร.ว. · ว่าง", search: "a1 a-1" },
-  { id: "a2", label: "แปลง A2", detail: "ธาราวิล · 52 ตร.ว. · จอง", search: "a2 a-2" },
-  { id: "b7", label: "แปลง B7", detail: "ธาราวิล · 60 ตร.ว. · ว่าง", search: "b7 b-7" },
+  { id: "a1", label: "แปลง A1", detail: "ธาราวิลล์ · 50 ตร.ว. · ว่าง", search: "a1 a-1" },
+  { id: "a2", label: "แปลง A2", detail: "ธาราวิลล์ · 52 ตร.ว. · จอง", search: "a2 a-2" },
+  { id: "b7", label: "แปลง B7", detail: "ธาราวิลล์ · 60 ตร.ว. · ว่าง", search: "b7 b-7" },
   { id: "h3", label: "บ้านเดี่ยว H3", detail: "บ้านคุณภาพ · 3 ห้องนอน", search: "h3" },
 ];
 
@@ -60,7 +62,7 @@ export function Primitives() {
         <Field>
           <FieldLabel htmlFor="ds-brand">แบรนด์</FieldLabel>
           <NativeSelect id="ds-brand" defaultValue="tv" className="w-full">
-            <NativeSelectOption value="tv">ธาราวิล</NativeSelectOption>
+            <NativeSelectOption value="tv">ธาราวิลล์</NativeSelectOption>
             <NativeSelectOption value="bk">บ้านคุณภาพ</NativeSelectOption>
           </NativeSelect>
         </Field>
@@ -99,8 +101,18 @@ export function Primitives() {
         <Badge variant="secondary">secondary</Badge>
         <Badge variant="outline">outline</Badge>
         <Badge variant="destructive">destructive</Badge>
-        <Badge className="bg-brand-tv-tint text-brand-tv">ธาราวิล</Badge>
-        <Badge className="bg-brand-bk-tint text-brand-bk">บ้านคุณภาพ</Badge>
+      </div>
+    </Block>
+
+    <Block title="Status และ BrandTag">
+      <div className="flex flex-wrap gap-2">
+        <Status tone="success">สำเร็จ</Status>
+        <Status tone="waiting">รอดำเนินการ</Status>
+        <Status tone="fix">ต้องแก้ไข</Status>
+        <Status tone="progress">กำลังดำเนินการ</Status>
+        <Status tone="inactive">ไม่ใช้งาน</Status>
+        <BrandTag brand="TARAVILLE" />
+        <BrandTag brand="BAAN_KUNAPAP" />
       </div>
     </Block>
 
@@ -109,7 +121,7 @@ export function Primitives() {
         <Table>
           <TableHeader><TableRow><TableHead>ผู้สนใจ</TableHead><TableHead>แบรนด์</TableHead><TableHead className="text-right">งบ (บาท)</TableHead></TableRow></TableHeader>
           <TableBody>
-            <TableRow><TableCell>สมชาย ใจดี</TableCell><TableCell>ธาราวิล</TableCell><TableCell className="text-right">2,500,000</TableCell></TableRow>
+            <TableRow><TableCell>สมชาย ใจดี</TableCell><TableCell>ธาราวิลล์</TableCell><TableCell className="text-right">2,500,000</TableCell></TableRow>
             <TableRow><TableCell>สมหญิง รักบ้าน</TableCell><TableCell>บ้านคุณภาพ</TableCell><TableCell className="text-right">3,200,000</TableCell></TableRow>
           </TableBody>
         </Table>
@@ -141,7 +153,7 @@ export function Primitives() {
           </div>
           <div>
             <dt>แบรนด์</dt>
-            <dd>ธาราวิล</dd>
+            <dd>ธาราวิลล์</dd>
           </div>
         </dl>
       </Panel>

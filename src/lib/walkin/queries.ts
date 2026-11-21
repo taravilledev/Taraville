@@ -4,7 +4,8 @@ import { z } from "zod";
 import { requireStaff } from "@/lib/supabase/staff";
 import { LEAD_COLUMNS, PROJECT_COLUMNS, leadSchema, projectSchema, staffSchema } from "./models";
 import { privacyEventSchema } from "./privacy";
-import { hidesClosed, type LeadFilters } from "./lead-list";
+import { activeSurveyFilters, instalmentClause, registrationRange, stageTab, type LeadFilters } from "./lead-list";
+import { STAGE_GROUPS, STAGE_GROUP_CODES, stageGroupOf, stageSchema, type StageGroup } from "./lead-stage";
 
 export async function leadDetail(id: string) {
   const session = await requireStaff();
@@ -19,21 +20,45 @@ export async function leadDetail(id: string) {
   return { ...session, lead: leadSchema.parse(data), events: privacyEventSchema.array().parse(events.data) };
 }
 
+/** The saved screen shows the first name only, so nothing else is selected. RLS decides whether the staff may read the lead. */
+export async function savedLead(session: Awaited<ReturnType<typeof requireStaff>>, id: string) {
+  if (!z.uuid().safeParse(id).success) return null;
+  const { data, error } = await session.supabase.from("leads").select("id,brand,first_name").eq("id", id).maybeSingle();
+  if (error) throw new Error("โหลดรายการไม่ได้ กรุณาลองใหม่");
+  return data ? leadSchema.pick({ id: true, brand: true, first_name: true }).parse(data) : null;
+}
+
 /** The list's filters as one query, shared by the list page and the CSV export so both select the same leads. */
 export function filteredLeads(session: Awaited<ReturnType<typeof requireStaff>>, filters: LeadFilters) {
   let request = session.supabase.from("walkin_leads_staged").select(`${LEAD_COLUMNS},stage`, { count: "exact" });
   // PostgREST or() syntax reserves these characters; names, phones and LINE IDs never need them.
+  // The Taraville location answer is searched with the name, so it is not a filter of its own.
   for (const term of (filters.q ?? "").replace(/[%,()*\\"]/g, " ").split(/\s+/).filter(Boolean).slice(0, 3)) {
-    request = request.or(`first_name.ilike.%${term}%,last_name.ilike.%${term}%,phone.ilike.%${term}%,line_id.ilike.%${term}%`);
+    request = request.or(`first_name.ilike.%${term}%,last_name.ilike.%${term}%,phone.ilike.%${term}%,line_id.ilike.%${term}%,survey->>preferred_location.ilike.%${term}%`);
   }
-  if (filters.stage) request = request.eq("stage", filters.stage);
-  else if (hidesClosed(filters)) request = request.neq("stage", "closed");
+  const tab = stageTab(filters);
+  if (tab !== "all") request = request.in("stage", STAGE_GROUP_CODES[tab]);
   if (filters.brand) request = request.eq("brand", filters.brand);
-  if (filters.owner) request = request.eq("owner_id", filters.owner);
-  if (filters.from) request = request.gte("created_at", `${filters.from}T00:00:00+07:00`);
-  if (filters.to) request = request.lte("created_at", `${filters.to}T23:59:59.999999+07:00`);
+  if (filters.owner && filters.owner !== "all") request = request.eq("owner_id", filters.owner);
+  const { from, to } = registrationRange(filters);
+  if (from) request = request.gte("created_at", `${from}T00:00:00+07:00`);
+  if (to) request = request.lte("created_at", `${to}T23:59:59.999999+07:00`);
+  const { budget, channel } = activeSurveyFilters(filters);
+  if (budget.length) request = filters.brand === "TARAVILLE" ? request.or(instalmentClause(budget)) : request.in("survey->>budget_range", budget);
+  if (channel.length) request = request.in("survey->>channel", channel);
   const ascending = filters.dir === "asc";
-  return filters.sort === "contact" ? request.order("last_contact_at", { ascending, nullsFirst: false }).order("id", { ascending }) : request.order("created_at", { ascending }).order("id", { ascending });
+  return request.order("created_at", { ascending }).order("id", { ascending });
+}
+
+/** Lead counts per stage tab under every other filter; "all" is the sum, and the stage and page are ignored. */
+export async function stageCounts(session: Awaited<ReturnType<typeof requireStaff>>, filters: LeadFilters) {
+  const count = async (group: StageGroup) => {
+    const { count, error } = await filteredLeads(session, { ...filters, stage: group }).range(0, 0);
+    if (error) throw new Error("โหลดรายการไม่ได้ กรุณาลองใหม่");
+    return count ?? 0;
+  };
+  const [open, project, closed] = await Promise.all(STAGE_GROUPS.map(count));
+  return { all: open + project + closed, open, project, closed };
 }
 
 /** Lead counts per brand under every other filter, for the brand tiles; brand and page are ignored. */
@@ -52,6 +77,25 @@ export async function saleOwners(session: Awaited<ReturnType<typeof requireStaff
     .eq("role", "sale").eq("is_active", true).order("full_name");
   if (error) throw new Error("โหลดรายชื่อผู้ดูแลไม่ได้ กรุณาลองใหม่");
   return staffSchema.array().parse(data);
+}
+
+/** The stage group the list files this Lead under, so the Lead page and the list never disagree. */
+export async function leadStageGroup(session: Awaited<ReturnType<typeof leadDetail>>) {
+  const { data, error } = await session.supabase.from("walkin_leads_staged").select("stage").eq("id", session.lead.id).maybeSingle();
+  const stage = stageSchema.safeParse(data?.stage);
+  if (error || !stage.success) throw new Error("โหลดสถานะรายการไม่ได้ กรุณาลองใหม่");
+  return stageGroupOf(stage.data);
+}
+
+/** Names of whoever recorded the evidence events. */
+export async function evidenceActors(session: Awaited<ReturnType<typeof leadDetail>>) {
+  const ids = [...new Set(session.events.map(event => event.actor_id))];
+  const names = new Map<string, string>();
+  if (!ids.length) return names;
+  const { data, error } = await session.supabase.from("staff").select("id,full_name").in("id", ids);
+  if (error) throw new Error("โหลดประวัติหลักฐานไม่ได้ กรุณาลองใหม่");
+  for (const row of data) names.set(row.id as string, row.full_name as string);
+  return names;
 }
 
 /** Who closed the lead and the free-text reason. */
@@ -82,4 +126,11 @@ export async function leadProjects(session: Awaited<ReturnType<typeof leadDetail
     for (const row of staff.data) names.set(row.id as string, row.full_name as string);
   }
   return { projects, names };
+}
+
+/** The owner's Leads that have not opened a project yet (stage group "open"); null on error so the Sale home shows "—". */
+export async function openLeadCount(supabase: Awaited<ReturnType<typeof requireStaff>>["supabase"], ownerId: string) {
+  const { count, error } = await supabase.from("walkin_leads_staged").select("id", { count: "exact", head: true })
+    .in("stage", STAGE_GROUP_CODES.open).eq("owner_id", ownerId);
+  return error ? null : count;
 }

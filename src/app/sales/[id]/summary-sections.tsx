@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { SalesCase } from "@/lib/sales/models";
+import { refundStates, type SalesCase } from "@/lib/sales/models";
 import type { FinancialDetail } from "@/lib/sales/financial-models";
 import type { AgreementDetail } from "@/lib/sales/agreement-models";
 import type { Refund } from "@/lib/sales/refund-models";
@@ -8,13 +8,13 @@ import { formatMoney } from "@/lib/sales/money";
 import { formatDate } from "@/lib/sales/date";
 import { findTask, taskHref, taskLabels, type Task, type TaskName } from "@/lib/sales/tasks";
 import { BkpDocuments } from "./bkp-documents";
-import { BkpMoneySection } from "./bkp-money-section";
 import { PendingPayments } from "./pending-payments";
 export { PendingPayments } from "./pending-payments";
 import { factsClass } from "@/components/facts";
 import * as ws from "./workspace-styles";
 import { panelClass } from "@/components/panel";
 import { noticeClass } from "@/components/notice";
+import { Status } from "@/components/status";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +26,6 @@ export type SummaryData = {
   summary?: { net: string | null; received: string; outstanding: string | null } | null;
   work: { id: string; position: number; progress_percent: number | null; accepted: boolean }[];
 };
-const refundStates = { pending: "รออนุมัติ", approved: "อนุมัติ รอจ่าย", rejected: "ไม่อนุมัติ", withdrawn: "ถอนคำขอ", paid: "จ่ายคืนแล้ว" };
 const managementActions: Partial<Record<TaskName, { title: string; description: string }>> = {
   assign: { title: "เปลี่ยนผู้รับผิดชอบ", description: "มอบหมายงานนี้ให้ผู้ดูแลคนใหม่" },
   amend: { title: "แก้ไขสัญญา", description: "ปรับยอดงวดหรือขอบเขตงานตามข้อตกลงที่ลงนามแล้ว" },
@@ -67,7 +66,7 @@ export function OverviewSection({ data, houseBrief }: { data: SummaryData; house
     {work.length > 0 && <section className={panelClass}><h2>ตรวจรับงานก่อสร้าง</h2><ul className={sale.brand === "BAAN_KUNAPAP" ? ws.rows : "grid gap-3"}>
       {work.map(item => sale.brand === "BAAN_KUNAPAP" ? <li key={item.id} className={ws.card}>
         <div className={ws.rowHeading}><strong>งวดที่ {item.position}{item.progress_percent == null ? "" : ` · ความคืบหน้า ${item.progress_percent}%`}</strong>
-          <span className={ws.status} data-done={item.accepted}>{item.accepted ? "ตรวจรับแล้ว" : "รอตรวจรับ"}</span></div>
+          <Status tone={item.accepted ? "success" : "waiting"}>{item.accepted ? "ตรวจรับแล้ว" : "รอตรวจรับ"}</Status></div>
         <div className={ws.actions}><TaskLink data={data} name="acceptance" row={item.id} /></div>
       </li> : <li key={item.id}>งวดที่ {item.position}{item.progress_percent == null ? "" : ` · ความคืบหน้า ${item.progress_percent}%`} · {item.accepted ? "ตรวจรับแล้ว" : "รอตรวจรับ"}{" "}
         <TaskLink data={data} name="acceptance" row={item.id} /></li>)}</ul></section>}
@@ -109,7 +108,6 @@ export function DocumentsSection({ data }: { data: SummaryData }) {
 export function MoneySection({ data }: { data: SummaryData }) {
   const { sale, finance, agreement, closeout, refunds } = data;
   if (!finance || !agreement) return null;
-  if (sale.brand === "BAAN_KUNAPAP") return <BkpMoneySection data={data} />;
   const rows = agreement.instalments.filter(row => row.is_active).sort((a, b) => a.position - b.position);
   const receiptCount = finance.documents.filter(doc => doc.kind === "receipt").length;
   return <>
@@ -144,7 +142,7 @@ export function MoneySection({ data }: { data: SummaryData }) {
     {(finance.payments.length > 0 || refunds.length > 0) && <details className={moneyDisclosureClass} id="refunds" open><summary>คืนเงินจริง ({refunds.length})</summary>
       {!refunds.length && <p className="text-sm text-muted-foreground">ยังไม่มีคำขอคืนเงิน</p>}
       <ul className="grid gap-3">{refunds.map(refund => <li key={refund.id}>
-        <p>{formatMoney(refund.amount_cents)} บาท · {refundStates[refund.state]} · {refund.requested_by_name}</p>
+        <p>{formatMoney(refund.amount_cents)} บาท · <Status tone={refundStates[refund.state].tone}>{refundStates[refund.state].label}</Status> · {refund.requested_by_name}</p>
         <p className="text-sm text-muted-foreground">{refund.reason}{refund.decision_note ? ` · ผลพิจารณา: ${refund.decision_note}` : ""}</p>
         {refund.document_id && <p><Link href={`/sales/documents/${refund.document_id}`} prefetch={false}>เปิดเอกสารจ่ายคืน</Link></p>}
         <p><TaskLink data={data} name="decide-refund" row={refund.id} /> <TaskLink data={data} name="pay-refund" row={refund.id} /></p>

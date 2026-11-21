@@ -12,6 +12,7 @@ import { TaskHeader } from "./task-header";
 import { QuotationBrand, QuotationPreview } from "./quotation-sheet";
 import { QuotationPaperFields, type QuotationPaper } from "./quotation-paper-fields";
 import { buttonVariants } from "@/components/ui/button";
+import { useConfirm } from "@/components/confirm-dialog";
 
 const houseFields = [
   { key: "model", label: "แบบบ้าน" }, { key: "stories", label: "จำนวนชั้น" },
@@ -67,6 +68,8 @@ export function QuotationEditor({ sale, agreement, designArea, action }: {
   const addSpecButton = useRef<HTMLButtonElement>(null);
   const addExclusionButton = useRef<HTMLButtonElement>(null);
   const didReview = useRef(false);
+  const isLeaving = useRef(false);
+  const { confirm, confirmDialog } = useConfirm();
   const [baseline] = useState(() => JSON.stringify({ house, priceUnset, price, specs, exclusions, description, paper }));
   const isDirty = baseline !== JSON.stringify({ house, priceUnset, price, specs, exclusions, description, paper });
 
@@ -79,18 +82,20 @@ export function QuotationEditor({ sale, agreement, designArea, action }: {
   }, [errors]);
   useEffect(() => {
     if (!isDirty || canLeave) return;
-    const beforeUnload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    const beforeUnload = (event: BeforeUnloadEvent) => { if (!isLeaving.current) { event.preventDefault(); event.returnValue = ""; } };
     const leave = (event: MouseEvent) => {
-      const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
+      const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[href]") : null;
       if (link && !event.defaultPrevented && !event.ctrlKey && !event.metaKey && !event.shiftKey
-        && link.getAttribute("target") !== "_blank" && !window.confirm("มีข้อมูลใบเสนอราคาที่ยังไม่ได้บันทึก ต้องการออกจากหน้านี้หรือไม่?")) {
+        && link.getAttribute("target") !== "_blank" && !isLeaving.current) {
         event.preventDefault(); event.stopPropagation();
+        void confirm({ title: "ออกจากหน้านี้?", description: "ข้อมูลใบเสนอราคาที่ยังไม่ได้บันทึกจะหาย และกู้คืนไม่ได้", cancelLabel: "แก้ไขต่อ", confirmLabel: "ออกโดยไม่บันทึก" })
+          .then(isConfirmed => { if (isConfirmed) { isLeaving.current = true; link.click(); } });
       }
     };
     window.addEventListener("beforeunload", beforeUnload);
     document.addEventListener("click", leave, true);
     return () => { window.removeEventListener("beforeunload", beforeUnload); document.removeEventListener("click", leave, true); };
-  }, [isDirty, canLeave]);
+  }, [isDirty, canLeave, confirm]);
 
   let totalCents: string | null = null;
   if (!priceUnset) { try { totalCents = parseMoney(price); } catch { /* Reviewed before submission. */ } }
@@ -120,7 +125,7 @@ export function QuotationEditor({ sale, agreement, designArea, action }: {
   };
 
   return <div className={local.editor}>
-    <TaskHeader sale={sale} title="จัดทำใบเสนอราคา" backTab="quotation" backLabel="กลับรายการใบเสนอราคา"
+    <TaskHeader sale={sale} title="จัดทำใบเสนอราคา" backTab="quotation" backLabel={`กลับขั้นใบเสนอราคา · ${sale.code} · ${sale.customer_name}`} hasContext={false}
       phase={isReview ? "ใบเสนอราคา · ตรวจตัวอย่าง" : "ใบเสนอราคา · กำลังแก้ไข"}
       status={<p>{latest ? `เริ่มจากฉบับที่ ${latest.revision} · บันทึกเป็นฉบับใหม่` : "ฉบับใหม่ · ยังไม่บันทึก"}{isDirty && " · มีการแก้ไข"}</p>} />
     {isReview ? <ActionForm action={submit} label="บันทึกเป็นฉบับใหม่"
@@ -196,5 +201,6 @@ export function QuotationEditor({ sale, agreement, designArea, action }: {
       </article>
       <div className={local.footer}><p>ตรวจตัวอย่างก่อนออกใบเสนอราคาฉบับใหม่</p><button className={buttonVariants({ size: "auto" })} type="submit">ดูตัวอย่างใบเสนอราคา</button></div>
     </form>}
+    {confirmDialog}
   </div>;
 }

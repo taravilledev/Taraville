@@ -22,7 +22,7 @@ const model = load("./summary-model.ts", {
 }) as typeof import("./summary-model");
 const { collectionTotals, displayAmount, isOverdue, periodSchema, summaryEntries, summaryQuery,
   summaryPageRange, summaryReport, selectSummaryReport, summaryCsv, amountState,
-  filterSummaryReportRows, updateSummarySelection } = model;
+  filterSummaryReportRows, updateSummarySelection, summaryFacets, summaryHref, periodPresets, periodPresetValue } = model;
 
 const today = "2026-11-17";
 const older = { outstanding: "101", billed: true, due: "2026-11-16", reference: false };
@@ -120,7 +120,7 @@ assert.equal(report.columns.find(col => col.key === "period")?.total, BigInt(-30
 const csv = summaryCsv(report);
 assert.equal(csv.charCodeAt(0), 0xfeff);
 assert.equal(csv.split("\r\n").filter(line => /^BKP-/.test(line)).length, 30);
-assert.match(csv, /BKP-100,'  =42,ผู้ดูแล,การเงิน,,1\.00,-0\.01,/);
+assert.match(csv, /BKP-100,'  =42,ผู้ดูแล,รับชำระ,,1\.00,-0\.01,/);
 assert.match(csv, /รวม,,,,290\.00,30\.00,-0\.30,/);
 assert.doesNotMatch(csv, /BKP-130/);
 
@@ -149,6 +149,40 @@ assert.match(selectedLines[1] ?? "", /^รวม,,,,10\.00,2\.00,-0\.02,/);
 assert.match(selectedLines[2] ?? "", /^BKP-100,/);
 assert.match(selectedLines[3] ?? "", /^BKP-125,/);
 assert.equal(selectedLines.length, 5);
+
+
+// Owner filter, facets (stage counts / closeout chip), links and period presets.
+const owned = [
+  { ...base, code: "BKP-A", owner: "สมศรี", rows: [unbilled] },
+  { ...base, code: "BKP-B", owner: "ธนพล", stage: "design", rows: [older], pending: "5" },
+  { ...base, code: "BKP-C", owner: "สมศรี", stage: "cancelled", closeout: "300", rows: [closed] },
+];
+const ownedCodes = (patch: Partial<typeof filters> & { owner?: string }) =>
+  Array.from(summaryEntries(owned, today, { ...filters, ...patch }).visible, entry => entry.project.code).sort();
+assert.deepEqual(ownedCodes({}), ["BKP-A", "BKP-B", "BKP-C"], "no owner filter changes nothing");
+assert.deepEqual(ownedCodes({ owner: "สมศรี" }), ["BKP-A", "BKP-C"]);
+assert.deepEqual(ownedCodes({ owner: "สมศรี", money: "closeout" }), ["BKP-C"]);
+assert.equal(summaryQuery({ owner: " สมศรี " }).params.get("owner"), "สมศรี");
+const facets = summaryFacets(owned, today, { ...filters, owner: "สมศรี", money: "pending" });
+assert.deepEqual({ ...facets.stageCounts }, { money: 1, cancelled: 1 }, "stage counts ignore the money filter but keep the owner");
+assert.equal(facets.closeout, BigInt(300));
+assert.equal(summaryFacets(owned, today, { ...filters, stage: "money" }).closeout, BigInt(0), "closeout follows the stage tab");
+assert.deepEqual([...summaryFacets(owned, today, filters).owners], ["ธนพล", "สมศรี"]);
+const linkParams = new URLSearchParams("stage=money&money=billed&page=3");
+assert.equal(summaryHref(linkParams, { money: null }, "#projects"), "/summary?stage=money#projects");
+assert.equal(summaryHref(new URLSearchParams("page=2"), {}), "/summary");
+assert.equal(summaryHref(linkParams, { sort: "value.desc" }), "/summary?stage=money&money=billed&sort=value.desc");
+const presets = periodPresets("2026-11-21");
+const presetRange = (value: string) => presets.find(preset => preset.value === value);
+assert.deepEqual({ ...presetRange("thisMonth") }, { value: "thisMonth", label: presetRange("thisMonth")?.label, from: "2026-11-01", to: "2026-11-30" });
+assert.deepEqual([presetRange("lastMonth")?.from, presetRange("lastMonth")?.to], ["2026-10-01", "2026-10-31"]);
+assert.deepEqual([presetRange("quarter")?.from, presetRange("quarter")?.to], ["2026-10-01", "2026-12-31"]);
+assert.deepEqual([presetRange("year")?.from, presetRange("year")?.to], ["2026-01-01", "2026-12-31"]);
+assert.deepEqual([periodPresets("2027-01-05")[1]?.from, periodPresets("2027-01-05")[1]?.to], ["2026-12-01", "2026-12-31"]);
+assert.equal(periodPresetValue(presets, summaryQuery({})), "none");
+assert.equal(periodPresetValue(presets, summaryQuery({ from: "2026-11-01", to: "2026-11-30" })), "thisMonth");
+assert.equal(periodPresetValue(presets, summaryQuery({ from: "2026-11-02", to: "2026-11-30" })), "custom");
+assert.equal(periodPresetValue(presets, summaryQuery({ view: "period" })), "custom");
 
 
 let role = "sale";

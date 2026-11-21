@@ -38,7 +38,9 @@ assert.equal(at({ ...bkp, contract: "draft", contractId: "draft-id" })?.task, "l
 const progressAt = (patch: Partial<NextStepInput>) => projectProgress({ ...base, ...patch });
 assert.equal(progressAt({ status: "cancelled" }), null);
 for (const [patch, current] of [
-  [{ ...bkp }, 1], [{ ...bkp, hasDesignPlan: true }, 2],
+  [{ ...bkp }, 1], [{ ...bkp, hasDesignPlan: true }, 1], [{ ...bkp, quotations: { offered: 1, accepted: 0 } }, 2],
+  [{ ...bkp, hasDesignPlan: true, design: { canCollect: true, feesPaid: true, hasQuotation: false, instalments: [] } }, 2],
+  [{ ...bkp, hasDesignPlan: true, design: { canCollect: true, feesPaid: false, hasQuotation: true, instalments: [] } }, 2],
   [{ ...bkp, contract: "awaiting" }, 3], [{ ...bkp, quotations: { offered: 0, accepted: 1 } }, 3],
   [{ ...bkp, status: "contracted" }, 4],
   [{}, 1], [{ status: "reserved" }, 2], [{ status: "reserved", hasSummary: true }, 3], [{ status: "contracted" }, 4],
@@ -64,4 +66,20 @@ assert.equal(moneySummary({ net: "9900000", payments: [pay("999900")], instalmen
 assert.equal(moneySummary({ net: "999", payments: [], instalments: [
   { is_active: true, net_cents: "100", balance: { outstanding_cents: "40" } }, { is_active: true, net_cents: "60", balance: null },
   { is_active: false, net_cents: "9", balance: null }] }).outstanding, "100");
+// ADR 0058: during ออกแบบ the next step walks the design-fee instalments, then the quotation leads.
+type Fee = NonNullable<NextStepInput["design"]>["instalments"][number];
+const fees = (...bills: Fee["bill"][]): NextStepInput["design"] => ({ canCollect: true, feesPaid: false, hasQuotation: false,
+  instalments: bills.map((bill, index) => ({ amount: ["750000", "750000", "1000000"][index], bill, billId: bill === "none" ? undefined : `bill-${index + 1}` })) });
+const designAt = (design: NextStepInput["design"]) => at({ ...bkp, hasDesignPlan: true, design });
+assert.deepEqual([designAt(fees("none", "none", "none"))?.task, designAt(fees("none", "none", "none"))?.row], ["issue-design-invoice", "1"]);
+assert.equal(designAt(fees("none", "none", "none"))?.title, "ส่งมอบแบบแปลนให้ลูกค้า แล้วออกใบแจ้งชำระค่าออกแบบงวดที่ 1 · 7,500.00 บาท");
+assert.deepEqual([designAt(fees("open", "none", "none"))?.task, designAt(fees("open", "none", "none"))?.row], ["prepare-design-payment", "bill-1"]);
+assert.deepEqual([designAt(fees("settled", "none", "none"))?.task, designAt(fees("settled", "none", "none"))?.row], ["issue-design-invoice", "2"]);
+assert.equal(designAt(fees("settled", "open", "none"))?.task, "prepare-design-payment");
+assert.match(designAt(fees("settled", "settled", "none"))?.title ?? "", /^ส่งมอบครบทุกรายการให้ลูกค้า แล้วออกใบแจ้งชำระค่าออกแบบงวดที่ 3/);
+assert.equal(designAt(fees("settled", "settled", "open"))?.task, "issue-quotation", "after instalment 3 is billed the quotation leads");
+assert.equal(designAt(fees("settled", "settled", "settled"))?.task, "issue-quotation");
+assert.equal(designAt({ ...fees("none", "none", "none")!, canCollect: false })?.task, "issue-quotation", "no collection once a signed contract folds the fee in");
+assert.equal(at({ ...bkp, hasDesignPlan: true, can: { ...all, "billing.issue": false }, design: fees("none", "none", "none") })?.allowed, false, "shown but not allowed without billing.issue");
+assert.equal(at({ ...bkp, hasDesignPlan: true, pendingPayments: 1, design: fees("open", "none", "none") })?.anchor, "pending", "a pending payment still comes first");
 console.log("case-progress ok");

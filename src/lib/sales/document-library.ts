@@ -1,3 +1,4 @@
+import type { StatusTone } from "@/components/status";
 import type { AgreementDetail } from "./agreement-models";
 import type { FinancialDetail } from "./financial-models";
 
@@ -9,10 +10,12 @@ const kinds: Record<string, { title: string; group: DocumentGroup }> = {
   summary: { title: "สรุปการจอง", group: "agreement" }, invoice: { title: "ใบแจ้งชำระ / สรุปเครดิต", group: "invoice" },
   receipt: { title: "ใบเสร็จรับเงิน", group: "receipt" }, refund: { title: "เอกสารจ่ายคืนเงิน", group: "receipt" },
 };
+// An unknown state falls back to inactive, never blank.
+const stateTones: Record<string, StatusTone> = { issued: "success", accepted: "success", signed: "success", offered: "waiting", awaiting_signature: "waiting", draft: "progress", cancelled: "inactive" };
 const states: Record<string, string> = { draft: "ร่าง · ยังไม่ออกเลข", cancelled: "ยกเลิกแล้ว", offered: "รอลูกค้ายอมรับ", accepted: "ลูกค้ายอมรับแล้ว",
   awaiting_signature: "รอลงนาม", signed: "ลงนามแล้ว", issued: "ออกเอกสารแล้ว" };
 export type LibraryDocument = { id: string; title: string; group: DocumentGroup; number: string | null; date: string;
-  revision?: number; state: string; status: string; amount: string | null; note: string; history: boolean };
+  revision?: number; state: string; status: string; tone: StatusTone; amount: string | null; note: string; history: boolean };
 
 type AgreementSource = { documents: (Pick<AgreementDetail["documents"][number], "id" | "kind" | "state" | "number" | "parent_id" | "revision"> & {
   payload: Pick<AgreementDetail["documents"][number]["payload"], "price_set" | "total_cents" | "text_addendum" | "contract_number"> })[] };
@@ -32,7 +35,7 @@ export function documentLibrary(finance: Pick<FinancialDetail, "documents">, agr
     const history = doc.state === "cancelled" || (doc.kind === "contract" && doc.id !== live?.id && !["signed", "awaiting_signature"].includes(doc.state))
       || (doc.kind === "quotation" && doc.id !== selectedQuote);
     return [{ id: doc.id, title: detail?.payload.text_addendum ? "บันทึกข้อตกลงแนบท้ายสัญญา" : kind.title, group: kind.group, number: doc.number, date: doc.document_date,
-      revision: detail?.revision, state: doc.state, status: doc.state === "cancelled" ? states.cancelled : estimate ? "ประมาณราคา · ยังไม่ระบุราคา" : states[doc.state] ?? "ดูสถานะในเอกสาร",
+      revision: detail?.revision, state: doc.state, tone: stateTones[doc.state] ?? "inactive", status: doc.state === "cancelled" ? states.cancelled : estimate ? "ประมาณราคา · ยังไม่ระบุราคา" : states[doc.state] ?? "ดูสถานะในเอกสาร",
       amount: estimate ? null : detail?.payload.total_cents ?? doc.amount_cents,
       note: detail?.payload.text_addendum ? `อ้างอิงสัญญา ${detail.payload.contract_number ?? "—"}` : doc.kind === "quotation" && doc.id === live?.parent_id ? `ใช้กับสัญญา ${live.number ?? "ร่างที่ยังไม่ออกเลข"}` : "", history }];
   }).sort((a, b) => b.date.localeCompare(a.date) || (b.revision ?? 0) - (a.revision ?? 0) || b.id.localeCompare(a.id));

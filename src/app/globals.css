@@ -4,30 +4,34 @@
 /* Design tokens: the only place raw colours, sizes and radii are written (ADR 0012 palette, ADR 0031 shadcn mapping).
    CSS modules read var(--…) directly; Tailwind/shadcn read the same values through @theme below. */
 :root {
-  --ink: #0f172a;
-  --muted-foreground: #64748b;
-  --primary: #047857;
+  --ink: #1c1917;
+  --muted-foreground: #78716c;
+  --primary: #1e3a5f;
+  --primary-tint: #e9eef5;
   --on-accent: #fff;
-  --tint: #f1f5f9;
-  --line: #e2e8f0;
-  --line-strong: #cbd5e1;
-  --control-border: #7c8a9d;
+  --tint: #f5f5f4;
+  --line: #e7e5e4;
+  --line-strong: #d6d3d1;
+  --control-border: #857e79;
   --paper: #fff;
-  --canvas: #f8fafc;
-  --skeleton: #e2e8f0;
+  --canvas: #fafaf9;
+  --skeleton: #e7e5e4;
+  --success: #16a34a;
+  --success-ink: #166534;
+  --success-tint: #dcfce7;
   --danger: #b91c1c;
   --danger-ink: #991b1b;
-  --danger-tint: #fef2f2;
+  --danger-tint: #fee2e2;
   --warn-ink: #92400e;
-  --warn-tint: #fffbeb;
+  --warn-tint: #fef3c7;
   --warn-line: #fcd34d;
-  --brand-tv: #15803d;
-  --brand-tv-tint: #dcfce7;
-  --brand-bk: #1d4ed8;
-  --brand-bk-tint: #dbeafe;
-  --backdrop: rgb(15 23 42 / 0.45);
-  --shadow-hover: 0 6px 18px rgb(15 23 42 / 0.1);
-  --shadow-menu: 0 12px 32px rgb(15 23 42 / 0.16);
+  --brand-tv: #30b448;
+  --brand-tv-accent: #f08424;
+  --brand-bk: #303c54;
+  --brand-bk-accent: #e49024;
+  --backdrop: rgb(28 25 23 / 0.45);
+  --shadow-hover: 0 6px 18px rgb(28 25 23 / 0.1);
+  --shadow-menu: 0 12px 32px rgb(28 25 23 / 0.16);
 
   /* Spacing for the print modules (PRINT_MODULES in design-system.check.mts); screens use Tailwind spacing. */
   --space-1: 4px;
@@ -40,8 +44,9 @@
   --control-h: 52px;
   --tap-min: 44px;
   --content-w: 880px;
-  --font-body: var(--font-nunito), var(--font-sarabun), "Thonburi", Tahoma, sans-serif;
-  --font-utility: var(--font-nunito), Arial, sans-serif;
+  --font-body: var(--font-noto-thai), "Thonburi", Tahoma, sans-serif;
+  --font-utility: var(--font-body);
+  --font-paper: var(--font-nunito), var(--font-sarabun), "Thonburi", Tahoma, sans-serif;
   color-scheme: light;
 
   /* shadcn variable names, pointing at the tokens above (no dark mode, ADR 0031). */
@@ -72,6 +77,7 @@
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
+  --color-primary-tint: var(--primary-tint);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -85,15 +91,18 @@
   --color-ring: var(--ring);
   --color-line-strong: var(--line-strong);
   --color-skeleton: var(--skeleton);
+  --color-success: var(--success);
+  --color-success-ink: var(--success-ink);
+  --color-success-tint: var(--success-tint);
   --color-danger-ink: var(--danger-ink);
   --color-danger-tint: var(--danger-tint);
   --color-warn-ink: var(--warn-ink);
   --color-warn-tint: var(--warn-tint);
   --color-warn-line: var(--warn-line);
   --color-brand-tv: var(--brand-tv);
-  --color-brand-tv-tint: var(--brand-tv-tint);
+  --color-brand-tv-accent: var(--brand-tv-accent);
   --color-brand-bk: var(--brand-bk);
-  --color-brand-bk-tint: var(--brand-bk-tint);
+  --color-brand-bk-accent: var(--brand-bk-accent);
   --color-backdrop: var(--backdrop);
   --font-sans: var(--font-body);
 }

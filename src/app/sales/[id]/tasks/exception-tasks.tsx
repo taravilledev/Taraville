@@ -73,7 +73,7 @@ export function ReleaseTask({ sale }: TaskData) {
   </ActionForm>;
 }
 
-export function RequestRefundTask({ sale, finance }: TaskData) {
+export function RequestRefundTask({ sale, finance }: Pick<TaskData, "sale" | "finance">) {
   const id = useId();
   return <ActionForm action={requestRefund.bind(null, idOf(sale))} label="ส่งคำขอคืนเงิน"><div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
     <p className="text-sm text-muted-foreground col-span-full">คำขอและการอนุมัติยังไม่ใช่การจ่ายคืน ต้องมีผู้ใช้อีกคนอนุมัติและบันทึกการจ่ายจริงพร้อมหลักฐาน เงินที่เป็นเครดิตสัญญาแล้วต้องแก้ข้อตกลงเครดิตก่อนจ่ายคืน</p>
@@ -88,7 +88,7 @@ export function RequestRefundTask({ sale, finance }: TaskData) {
   </div></ActionForm>;
 }
 
-export function DecideRefundTask({ sale, refunds, staffId, row }: TaskData) {
+export function DecideRefundTask({ sale, refunds, staffId, row }: Pick<TaskData, "sale" | "refunds" | "staffId" | "row">) {
   const id = useId();
   const refund = refunds.find(item => item.id === row);
   if (!refund) return null;
@@ -100,7 +100,7 @@ export function DecideRefundTask({ sale, refunds, staffId, row }: TaskData) {
   </ActionForm>;
 }
 
-export function PayRefundTask({ sale, refunds, row }: TaskData) {
+export function PayRefundTask({ sale, refunds, row }: Pick<TaskData, "sale" | "refunds" | "row">) {
   const id = useId();
   const refund = refunds.find(item => item.id === row);
   if (!refund) return null;

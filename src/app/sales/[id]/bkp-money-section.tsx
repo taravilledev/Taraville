@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { refundStates } from "@/lib/sales/models";
 import { formatMoney } from "@/lib/sales/money";
 import { formatDate } from "@/lib/sales/date";
 import { findTask, taskHref } from "@/lib/sales/tasks";
@@ -6,20 +7,24 @@ import { collectionRows, collectionSummary } from "@/lib/sales/finance-collectio
 import type { SummaryData } from "./summary-sections";
 import { WorkspaceHeading } from "./workspace-heading";
 import { PendingPayments } from "./pending-payments";
+import { MoneyDrawer } from "./money-drawers";
 import { FinanceCollection } from "./finance-collection";
 import * as ws from "./workspace-styles";
 import * as local from "./finance-collection-styles";
 import { noticeClass } from "@/components/notice";
+import { Status } from "@/components/status";
 import { buttonVariants } from "@/components/ui/button";
 
-const refundStates = { pending: "รออนุมัติ", approved: "อนุมัติ รอจ่าย", rejected: "ไม่อนุมัติ", withdrawn: "ถอนคำขอ", paid: "จ่ายคืนแล้ว" };
-
-export function BkpMoneySection({ data }: { data: SummaryData }) {
+export function BkpMoneySection({ data, staffId }: { data: SummaryData; staffId: string }) {
   const { sale, finance, agreement, summary, closeout, refunds, tasks } = data;
   if (!finance || !agreement) return null;
   const isClosed = sale.status === "cancelled";
   const totals = collectionSummary(finance, agreement, summary?.received, isClosed ? closeout?.remaining_cents : undefined, isClosed);
   const rows = collectionRows(sale.id, finance, agreement, tasks, isClosed);
+  const drawerData = { sale, finance, agreement, refunds, work: data.work, staffId };
+  // A contract row whose next step is the acceptance form opens it in a drawer; every other row keeps its link (paper pages).
+  const drawers = Object.fromEntries(rows.filter(row => row.group === "contract" && row.primaryAction && findTask(tasks, "acceptance", row.id))
+    .map(row => [row.id, <MoneyDrawer key={row.id} task="acceptance" row={row.id} data={drawerData} variant="default" label={row.primaryAction?.label} />]));
   const hasLegacyDesign = finance.design_legacy_has_payments || BigInt(finance.design_legacy_received_cents) > BigInt(0);
   const amount = (value: string | null) => value === null ? "ยังไม่ระบุ" : `${formatMoney(value)} บาท`;
   const receipts = finance.documents.filter(doc => doc.kind === "receipt");
@@ -42,7 +47,7 @@ export function BkpMoneySection({ data }: { data: SummaryData }) {
     <PendingPayments data={data} payments={finance.pending} />
     {!finance.pending.length && <p id="pending" className={ws.note}>ไม่มีรายการรับเงินรอยืนยัน</p>}
     {hasLegacyDesign && <p className={noticeClass}>ยอดรับจริงรวมเงินค่าแบบเดิมแล้ว แต่ยังไม่ระบุว่าชำระบิลใด กรุณาตรวจประวัติรับเงินก่อนเรียกเก็บซ้ำ</p>}
-    <FinanceCollection rows={rows} caseId={sale.id} isClosed={isClosed} />
+    <FinanceCollection rows={rows} caseId={sale.id} isClosed={isClosed} drawers={drawers} />
     {sale.status === "contracted" && agreement.is_settled && <p className={noticeClass}>ชำระครบทุกงวดตามสัญญาแล้ว</p>}
     <div className={ws.card} id="prepare"><div><h3>เงินเข้าอื่นของโครงการ</h3><p className={ws.note}>หากรับเงินตามรายการ ให้ใช้ปุ่มของรายการนั้นเพื่อผูกยอดให้ถูกต้อง</p></div>
       {prepare ? <div className={ws.actions}><Link className={buttonVariants({ variant: "outline", size: "auto" })} href={taskHref(sale.id, prepare.name)} prefetch={false}>บันทึกเงินเข้าอื่น</Link></div>
@@ -61,20 +66,20 @@ export function BkpMoneySection({ data }: { data: SummaryData }) {
       <div><dt>ยังต้องรับ</dt><dd>{formatMoney(closeout.remaining_cents)} บาท</dd></div>
       <div><dt>ยังต้องคืน</dt><dd>{formatMoney(closeout.refund_due_cents)} บาท</dd></div>
     </dl><Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/documents/${closeout.document_id}`} prefetch={false}>เปิดข้อตกลงปิดงาน</Link></div>}
+    {requestRefund && <div className={ws.actions}><MoneyDrawer task="request-refund" data={drawerData} label="ขอคืนเงิน" /></div>}
     <details className={ws.history} id="refunds" open={activeRefunds.length > 0 || undefined}>
       <summary>คืนเงินจริง ({refunds.length}){activeRefunds.length > 0 ? ` · รอดำเนินการ ${activeRefunds.length} รายการ` : ""}</summary>
       {!refunds.length && <p className={ws.note}>ยังไม่มีคำขอคืนเงิน</p>}
       <ul>{refunds.map(refund => {
         const decide = findTask(tasks, "decide-refund", refund.id); const pay = findTask(tasks, "pay-refund", refund.id);
-        return <li key={refund.id}><div><strong>{formatMoney(refund.amount_cents)} บาท · {refundStates[refund.state]}</strong>
+        return <li key={refund.id}><div><strong>{formatMoney(refund.amount_cents)} บาท</strong> <Status tone={refundStates[refund.state].tone}>{refundStates[refund.state].label}</Status>
           <p>{refund.requested_by_name} · {refund.reason}{refund.decision_note ? ` · ผลพิจารณา: ${refund.decision_note}` : ""}</p></div>
           <div className={ws.actions}>
-            {decide && <Link className={buttonVariants({ size: "auto" })} href={taskHref(sale.id, decide.name, decide.row)} prefetch={false}>พิจารณาคืนเงิน</Link>}
-            {pay && <Link className={buttonVariants({ size: "auto" })} href={taskHref(sale.id, pay.name, pay.row)} prefetch={false}>บันทึกจ่ายคืน</Link>}
+            {decide && <MoneyDrawer task="decide-refund" row={refund.id} data={drawerData} variant="default" label="พิจารณาคืนเงิน" />}
+            {pay && <MoneyDrawer task="pay-refund" row={refund.id} data={drawerData} variant="default" label="บันทึกจ่ายคืน" />}
             {refund.document_id && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/documents/${refund.document_id}`} prefetch={false}>เปิดเอกสารจ่ายคืน</Link>}
           </div></li>;
       })}</ul>
-      {requestRefund && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={taskHref(sale.id, requestRefund.name)} prefetch={false}>ขอคืนเงิน</Link>}
     </details>
   </section>;
 }

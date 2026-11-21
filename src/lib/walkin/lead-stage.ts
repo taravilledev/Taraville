@@ -1,9 +1,19 @@
 import { z } from "zod";
+import type { StatusTone } from "@/components/status";
 
 export const STAGE_CODES = ["received", "contacted", "project_opened", "closed"] as const;
 export const stageSchema = z.enum(STAGE_CODES);
 export type Stage = z.infer<typeof stageSchema>;
 export const STAGE_LABELS: Record<Stage, string> = { received: "รับเข้า", contacted: "ติดต่อแล้ว", project_opened: "เปิดโครงการแล้ว", closed: "ปิด" };
+
+// The UI shows three groups, never "ติดต่อแล้ว": contact is no longer recorded (ADR 0059). STAGE_LABELS stays for the report and CSV.
+export const STAGE_GROUPS = ["open", "project", "closed"] as const;
+export type StageGroup = (typeof STAGE_GROUPS)[number];
+export const STAGE_GROUP_LABELS: Record<StageGroup, string> = { open: "ยังไม่เปิดโครงการ", project: "เปิดโครงการแล้ว", closed: "ปิด" };
+export const STAGE_GROUP_TONES: Record<StageGroup, StatusTone> = { open: "waiting", project: "success", closed: "inactive" };
+export const STAGE_GROUP_CODES: Record<StageGroup, readonly Stage[]> = { open: ["received", "contacted"], project: ["project_opened"], closed: ["closed"] };
+export const stageGroupOf = (stage: Stage): StageGroup => STAGE_GROUPS.find(group => STAGE_GROUP_CODES[group].includes(stage)) ?? "open";
+export const stageGroupLabel = (stage: Stage) => STAGE_GROUP_LABELS[stageGroupOf(stage)];
 
 export const CLOSE_REASON_CODES = ["not_interested", "bought_elsewhere", "not_ready", "unreachable", "duplicate", "other", "bought_with_us"] as const;
 export const closeReasonSchema = z.enum(CLOSE_REASON_CODES);

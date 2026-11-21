@@ -22,6 +22,12 @@ for (const file of sources) {
 }
 assert.deepEqual(colourOffences, [], `Use semantic colour tokens (bg-primary, text-muted-foreground, bg-brand-tv…):\n${colourOffences.join("\n")}`);
 
+// 1a. Status and brand colour live in components/status.tsx and brand-tag.tsx only.
+const statusRules = [/data-\[(?:done|accepted)=true\][^"\s]*:text-primary/, /\b(?:text|bg)-brand-(?:bk|tv)(?:-tint)?\b/];
+const statusOffences = sources.filter(file => file !== "components/status.tsx" && file !== "components/brand-tag.tsx"
+  && statusRules.some(rule => rule.test(readFileSync(join(srcRoot, file), "utf8"))));
+assert.deepEqual(statusOffences, [], `Use <Status> / <BrandTag> or the status tone classes instead of hand-styled status colours:\n${statusOffences.join("\n")}`);
+
 // 1b. Primitives must follow density (.dense): control sizes come from --control-h / --tap-min and text from the app scale.
 const fixedSize = /\b(?:h|size)-(?:8|9|10)\b|\bmd:text-/;
 const sizeOffences: string[] = [];
@@ -42,6 +48,10 @@ const PRINT_MODULES = new Set([
   "sales/documents/[id]/receipt-paper.module.css",
   "summary/summary-print.module.css",
 ]);
+const FONT_EXEMPT = new Set(["sales/[id]/tasks/contract-paper.module.css", "sales/documents/[id]/receipt-paper.module.css"]);
+for (const file of PRINT_MODULES) {
+  if (!FONT_EXEMPT.has(file)) assert.ok(readFileSync(join(srcRoot, "app", file), "utf8").includes("var(--font-paper)"), `${file} must pin the paper font`);
+}
 const MIGRATION_ALLOWLIST = new Set<string>([]);
 const modules = all.filter(file => file.startsWith("app/") && file.endsWith(".module.css")).map(file => file.slice(4));
 const unknown = modules.filter(file => !PRINT_MODULES.has(file) && !MIGRATION_ALLOWLIST.has(file));

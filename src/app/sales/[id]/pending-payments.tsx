@@ -5,6 +5,7 @@ import { formatMoney } from "@/lib/sales/money";
 import { formatDate } from "@/lib/sales/date";
 import { findTask, taskHref } from "@/lib/sales/tasks";
 import type { SummaryData } from "./summary-sections";
+import { MoneyDrawer } from "./money-drawers";
 import * as ws from "./workspace-styles";
 import * as local from "./finance-collection-styles";
 import { panelClass } from "@/components/panel";
@@ -33,9 +34,9 @@ export function PendingPayments({ data, payments }: { data: SummaryData; payment
           <p>{paymentMethods[payment.method]} · {formatDate(payment.paid_date)} · {payment.payer_name}</p><p>{payment.description}</p>
           {!confirm && <p>รอผู้มีสิทธิ์ตรวจสอบและยืนยันรับเงิน</p>}</div>
         <div className={cn(local.actions, "max-[760px]:w-full")}>
-          {confirm && <Link className={buttonVariants({ size: "auto" })} href={taskHref(sale.id, confirm.name, confirm.row)} prefetch={false}>ตรวจใบเสร็จและยืนยันรับเงิน</Link>}
+          {confirm && <MoneyDrawer task="confirm-payment" row={payment.id} data={data} variant="default" label="ตรวจใบเสร็จและยืนยันรับเงิน" />}
           {payment.proof_path && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/${sale.id}/evidence?path=${encodeURIComponent(payment.proof_path)}`} target="_blank" rel="noopener noreferrer" prefetch={false}>เปิดหลักฐาน</Link>}
-          {withdraw && <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={taskHref(sale.id, withdraw.name, withdraw.row)} prefetch={false}>ถอนรายการที่เตรียมไว้</Link>}
+          {withdraw && <MoneyDrawer task="withdraw-payment" row={payment.id} data={data} label="ถอนรายการที่เตรียมไว้" />}
         </div>
       </li>;
     })}</ul>

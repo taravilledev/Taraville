@@ -8,6 +8,7 @@ import { AcceptanceForm } from "../acceptance-form";
 import { checkRowClass } from "@/components/check-row";
 import { idOf, type TaskData } from "./task-data";
 import { noticeClass } from "@/components/notice";
+import { Status } from "@/components/status";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,7 +39,7 @@ export function PrepareInstalmentTask({ sale, finance, agreement, row }: TaskDat
     finalLabel="ส่งรายการรับเงินงวดนี้เพื่อตรวจยืนยัน" />;
 }
 
-export function WithdrawPaymentTask({ sale, finance, row }: TaskData) {
+export function WithdrawPaymentTask({ sale, finance, row }: Pick<TaskData, "sale" | "finance" | "row">) {
   const id = useId();
   return <ActionForm action={withdrawPayment.bind(null, idOf(sale, row ?? "", finance?.version ?? 0))} label="ถอนรายการรับเงิน">
     <Field><FieldLabel htmlFor={`${id}-reason`}>เหตุผล</FieldLabel><Textarea id={`${id}-reason`} name="reason" maxLength={1000} required /></Field>
@@ -56,7 +57,7 @@ export function FixReceiptTask({ sale, finance, row }: TaskData) {
   const isDesignBillReceipt = finance?.design_bills.some(bill => bill.receipt_document_id === doc.id);
   const canAmount = !isDesignBillReceipt && doc.state === "issued" && ["financial.prepare", "financial.confirm", "receipt.cancel", "receipt.issue"].every(key => can[key]);
   return <>
-    <p>ใบเสร็จ {doc.number}{doc.state === "cancelled" ? " · ยกเลิกแล้ว" : ""}</p>
+    <p>ใบเสร็จ {doc.number}{doc.state === "cancelled" && <> · <Status tone="inactive">ยกเลิกแล้ว</Status></>}</p>
     {canReplace && <section><h3>เอกสารผิด: ยกเลิกหรือออกทดแทน</h3>
       <ActionForm action={correctReceipt.bind(null, idOf(sale, doc.id))} label="บันทึกการแก้ไขใบเสร็จ">
         <p>ยอดรับเงินจริงและยอดจัดสรรจะคงเดิม</p>
@@ -95,7 +96,7 @@ export function IssueInvoiceTask({ sale, agreement, row }: TaskData) {
   </>;
 }
 
-export function AcceptanceTask({ sale, agreement, work, row }: TaskData) {
+export function AcceptanceTask({ sale, agreement, work, row }: Pick<TaskData, "sale" | "agreement" | "work" | "row">) {
   const item = agreement?.instalments.find(candidate => candidate.id === row);
   const contract = agreement?.documents.find(doc => doc.id === item?.contract_id);
   const requiresDate = contract?.payload.contract_paper?.payment_due_days === 30 || !!work?.find(item => item.id === row)?.requires_acceptance_date;

@@ -2,6 +2,7 @@ import "server-only";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { requireStaff } from "@/lib/supabase/staff";
+import { caseWork } from "./case-work";
 import { bootstrapSchema, caseDetailSchema, caseListRowSchema, workQueueSchema } from "./models";
 
 export async function salesBootstrap() {
@@ -32,5 +33,7 @@ export async function salesCaseList(filters: { status: string; brand: string; qu
   const { data, error } = await session.supabase.rpc("sales_case_list", {
     p_status: filters.status, p_brand: filters.brand || null, p_query: filters.query || null });
   if (error) throw new Error("โหลดรายการงานไม่ได้ กรุณาลองใหม่");
-  return caseListRowSchema.array().parse(data);
+  // work is null without financial.view, matching the case page, which shows no next step then either.
+  return caseListRowSchema.array().parse(data).map(row => ({
+    ...row, work: row.facts && row.permissions ? caseWork(row, row.facts, row.permissions) : null }));
 }

@@ -1,0 +1,198 @@
+# Design system v1
+
+Status: decided by the owner on 2026-11-19 (ADR 0056, git-ignored; this file is the tracked copy). It changes the look and navigation only. Data, permissions, routes and business rules stay as they are. It builds on [plan-shadcn-migration](plan-shadcn-migration.md) (ADR 0031): Tailwind v4 + shadcn on Radix, tokens in `src/app/globals.css`, light only, `.dense` density under `pointer: fine`.
+
+Visual reference: the Figma file "Untitled", Page 2 (`G8BAzX7STervFQjfrnsO5V`). It has Foundations, Components and three screens: Sale home, BKP project overview and iPad walk-in. Its text styles still use IBM Plex Sans Thai Looped; switch them to Noto Sans Thai.
+
+## 1. Colour
+
+| Token | Value | Use |
+|---|---|---|
+| bg/canvas | `#FAFAF9` | page background |
+| bg/surface | `#FFFFFF` | cards, inputs |
+| bg/subtle | `#F5F5F4` | table header, segmented control |
+| border/default · strong · control | `#E7E5E4` · `#D6D3D1` · `#857E79` | dividers · emphasis · input borders |
+| text/primary · secondary · muted | `#1C1917` · `#57534E` · `#78716C` | |
+| primary · hover · subtle | `#1E3A5F` · `#162C49` · `#E9EEF5` | buttons, links, current step, active nav |
+
+**Rules.**
+- Primary marks things you can act on.
+- Green means success and nothing else.
+- Brand colours only identify a brand. They never theme the UI.
+
+## 2. Status: five groups, app-wide
+
+Every status in the app maps to one of these groups. No page picks its own colours.
+
+| Group | Text / bg / solid | Statuses |
+|---|---|---|
+| Success | `#166534` / `#DCFCE7` / `#16A34A` | ชำระครบ, ยืนยันแล้ว, ลงนามแล้ว, ลูกค้ายอมรับแล้ว, จ่ายคืนแล้ว |
+| Waiting on someone | `#92400E` / `#FEF3C7` / `#D97706` | รอยืนยัน, รอชำระ, รอลงนาม, รอลูกค้ายอมรับ, รออนุมัติ, รอตรวจรับ |
+| Needs fixing | `#991B1B` / `#FEE2E2` / `#DC2626` | เกินกำหนด, ถูกบล็อก, ไม่อนุมัติ |
+| In progress | primary / primary-subtle | current step, draft being edited, จองแล้ว |
+| Finished / inactive | `#44403C` / `#F5F5F4` | not started, ยกเลิก, ถอน, ปิดรายการ |
+
+## 3. Brand tag
+
+The brand tag is a white tag with a 14px mark in the logo colours, followed by the brand name.
+
+| Brand | Mark colours |
+|---|---|
+| BKP | navy `#303C54`, orange `#E49024`, red `#E4483C` |
+| Taraville | green `#30B448`, orange `#F08424`, red-orange `#F05424` |
+
+The values were sampled with `sharp` from the logo JPEGs in `docs/assets/brand/`. They are quantised to steps of 12, so each channel is accurate to about ±6. Code uses only `brand-bk` / `brand-bk-accent` and `brand-tv` / `brand-tv-accent`.
+
+## 4. Typeface
+
+**Noto Sans Thai** for everything.
+- Google Fonts serves the thai, latin and latin-ext subsets, so it needs no Latin partner.
+- Weights: 400, 500 and 600.
+- It replaces Nunito + Sarabun in `src/app/walkin/app-fonts.ts`.
+
+Target sizes for `pointer: fine` (size/line height in px):
+
+| Style | Size / line height | Weight |
+|---|---|---|
+| KPI | 30/38 | 600 |
+| H1 | 24/34 | 600 |
+| H2 | 20/30 | 600 |
+| H3 | 16/26 | 600 |
+| Body | 14/22 | 400 |
+| Body strong | 14/22 | 500 |
+| Label | 13/20 | 500 |
+| Caption | 12/18 | 400 |
+
+Touch keeps body text at 16/26 and 44px controls. Under `pointer: fine`, controls stay 36px. Money columns use `tabular-nums`.
+
+## 5. Shell and landing
+
+- **Layout.** A left sidebar replaces the top tabs. It holds the group mark, the menu and an account card at the bottom.
+
+| Role | Menu | Lands on after login |
+|---|---|---|
+| Sale | หน้าหลัก · รับลูกค้า · ลูกค้า (Lead) · โครงการ · รายงาน | หน้าหลัก: Work Queue, key money figures, own projects |
+| Executive | ภาพรวม · รับลูกค้า · ลูกค้า (Lead) · โครงการ · การเงิน · รายงาน · ตั้งค่า | ภาพรวม (the existing executive overview) |
+
+- **Menu entries for existing pages.**
+
+| Menu item | Page |
+|---|---|
+| การเงิน | `/summary` |
+| รายงาน | `/leads/report` |
+| ตั้งค่า | `/sales/settings`: in the sidebar for Executives only. A Sale with catalog rights reaches it from the ตั้งค่า button on `/sales`, which uses the existing capability check. |
+
+- **Why ตั้งค่า is not capability-gated in the sidebar.** The sidebar would have had to call `sales_bootstrap` on every page, and that loads every Lead and customer.
+- **Widths.** The sidebar is full at ≥1180px, an icon rail at 768–1179px and a drawer below 768px.
+- **Walk-in.** `/walkin` is a full-screen focus mode with no sidebar. Its ✕ warns about unsaved values.
+- **Project list.** It lives at `/sales` for both roles, and `/dashboard` is the role home.
+- **Unchanged:** routes and permissions.
+
+## 6. Stage names (Work Stage)
+
+| Brand | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|
+| BKP | เปิดโครงการ | ออกแบบ | ใบเสนอราคา | สัญญา | รับชำระ |
+| Taraville | เปิดโครงการ | จองแปลง | สรุปการจอง | สัญญา | รับชำระ |
+
+- **Where the labels change:**
+  - the task progress card and the overview strip (`src/lib/sales/bkp-workflow.ts`);
+  - the `/summary` stage filter;
+  - Lead cards and the executive table (`src/lib/sales/case-progress.ts`).
+- **Design-fee collection** shows as a detail under ออกแบบ ("ค่าแบบ 2/3 งวด"). The "ทำคู่กันได้" card from Figma is deferred: choosing which task it offers is a business-rule decision.
+- **v1 changes labels only.** The overview strip and `/summary` filter derive the current step one way, and the progress card, Lead cards and executive table derive it another. Unifying the two changes `/summary` results, so it is a separate owner decision. A check records where they disagree.
+- **Unchanged:** the next-step priority and the tab names.
+
+Glossary entry for `CONTEXT.md`. Insert it after **Work Queue**:
+
+```markdown
+**Work Stage** (staff UI label: ขั้น):
+One of the five named phases of Customer Work, shown in the same words on every screen. Baan Kunapap: เปิดโครงการ · ออกแบบ · ใบเสนอราคา · สัญญา · รับชำระ. Taraville: เปิดโครงการ · จองแปลง · สรุปการจอง · สัญญา · รับชำระ. Collecting the design fee belongs to ออกแบบ and may run alongside ใบเสนอราคา; it is not a stage of its own. Chosen by the owner on 2026-11-19.
+_Avoid_: รับลูกค้า, รับค่าแบบ, ออกแบบและรับค่าแบบ, กำหนดค่าออกแบบ, สัญญาและงวด, การเงิน (as stage names)
+```
+
+## 7. Decided in the planning round (2026-11-19)
+
+- **Devices.** iPad for walk-in, desktop for back office, phone for quick actions.
+- **Sidebar, walk-in, project list.** As in §5.
+- **Sale home uses no new SQL or RPC.**
+  - It shows counts from the Work Queue plus the count of the Sale's Leads still รับเข้า (from the existing view `walkin_leads_staged`).
+  - It leaves out "ครบกำหนดใน 7 วัน" and money totals.
+- **Print paper keeps Nunito + Sarabun exactly** (`--font-paper`). Only screens move to Noto Sans Thai.
+- **Delivery.** Five PRs into `dev`, in this order: font → colour + status → stage names → shell → Sale home and `/sales`. See [plan-design-system-v1](plan-design-system-v1.md).
+
+## 8. App-wide interaction rules (UX redesign, 2026-11-20)
+
+Decided by the owner during the redesign grilling (ADR 0060, git-ignored). They apply to every new or touched screen. The screens are in [flow-to-be](flow-to-be.md).
+
+**Stage indicator.**
+- A stage always shows as a step-number badge plus a 5-segment track, everywhere: tables, cards, the Lead page and the project stage bar.
+  - green = done, navy = current, grey = not reached;
+  - completed shows as a green ✓ badge;
+  - cancelled or closed shows as a grey × badge with a grey track.
+- Colour is reserved for status. A stage never gets a colour of its own.
+
+**Colour for problems** (refines §1–§2).
+- The §2 status groups stay as they are, including the red **Needs fixing** pill (เกินกำหนด, ถูกบล็อก, ไม่อนุมัติ). Overdue money keeps red text.
+- A **red button** is only for an irreversible action: cancel a project, withdraw survey consent and wipe the answers, delete.
+- **Red text under a field** is only for an input error.
+- **Notices and warnings are amber.** This covers advance blockers, "why you cannot do this yet", and stale or partial data. They are never red.
+- Reversible actions are never red, for example close Lead, sign out, reopen.
+
+**Say why, in advance.**
+- Do not show a bare disabled button. Show the reason next to it, and when someone can fix it, a link to the place (ADR 0055).
+- Do not hide actions in a "ตัวเลือก ▾" overflow menu. Each action sits where it belongs:
+  - the owner is changed with a pencil next to the owner;
+  - destructive or closing actions go in a bottom section;
+  - history is a row link.
+
+**Links.** Five styles, chosen by purpose:
+
+| Style | Use |
+|---|---|
+| in-sentence underline | inside a sentence |
+| continue button with › | the next step |
+| row link with › | a list row that opens something |
+| short text link + icon | a secondary action |
+| whole table row | open the record |
+
+**Icons.**
+- Icons appear only in the sidebar, stat cards, section headings on home and work-list pages, and task-kind rows.
+- One meaning = one icon across the app (banknote = money in, clock = waiting, people = Leads, folder = projects, bars = report).
+- A stat card puts its icon in a 28px tile. The tile is tinted by meaning; the card background stays white.
+
+**Feedback.**
+- **Toast** (Sonner, already mounted top-right and fed by `?feedback=`): only for a completed action with nothing left to do.
+- **Errors** stay inline.
+- **A result that needs a next step** stays as an in-page bar with that action.
+- **Confirm dialogs** only for data loss or irreversible actions.
+- **Never `window.confirm`.** Use an in-app dialog. The browser's own `beforeunload` prompt on tab close or reload stays.
+
+**Dropdowns.**
+- Always the `NativeSelect` look: `appearance: none`, 12px left / 40px right padding, its own chevron 12px from the right edge, 40px tall, the label outside the box.
+- No raw `<select>`.
+
+**Tables.**
+- **Shared pattern:**
+  - sortable headers, a sticky header, ~48px rows, and the whole row clickable;
+  - money right-aligned, `tabular-nums`, no wrap, 2 decimals;
+  - `Status` for every pill;
+  - filters apply automatically (search debounced 300ms, no "กรอง" button);
+  - header buttons only for page actions, never repeating the sidebar.
+- Below 768px a table becomes cards.
+- **Data-dense tables never scroll horizontally.** Combine related amounts into one cell (sub-lines) instead of adding columns. They switch to cards below **1024px** (`/summary`).
+
+**Task tiers.**
+- Paper and editor tasks are full pages (invoice, quotation, contract draft, contract lock, Lead edit).
+- Short forms open in a right drawer, or a bottom sheet on mobile.
+- Read-only lists that belong to a record also open in a drawer (evidence history).
+
+**Access** (refines §5).
+- Role-locked pages stay invisible: no menu entry, and a direct URL shows "ไม่พบหน้านี้".
+- Grantable work (a capability, or being the owner) shows "ยังไม่มีสิทธิ์ทำงานนี้". It names what is needed and who grants it.
+
+**Test data.** The UI has no synthetic-data or test-mode controls (ADR 0062).
+
+**Menu labels** (replace §5). Two items are renamed:
+- "การเงิน" → **"การเงินบ้านคุณภาพ"**; the page title is "สรุปการเงินบ้านคุณภาพ".
+- "รายงาน" → **"รายงาน Lead"**; the page title is "รายงาน Lead ประจำเดือน {เดือน}".

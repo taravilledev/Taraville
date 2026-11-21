@@ -1,20 +1,14 @@
 import type { FinancialDetail } from "./financial-models";
 import type { AgreementDetail } from "./agreement-models";
 
-export const bkpFlowStages = [
-  { id: "intake", label: "รับลูกค้า", hint: "ข้อมูลลูกค้าและความต้องการบ้าน" },
-  { id: "design", label: "ออกแบบ", hint: "พื้นที่จริงและแพ็กเกจค่าออกแบบ" },
-  { id: "fees", label: "รับค่าแบบ", hint: "ออกบิล ตรวจเงินเข้า และใบเสร็จ" },
-  { id: "quotation", label: "ใบเสนอราคา", hint: "แก้บนเอกสารและบันทึกลูกค้ายอมรับ" },
-  { id: "contract", label: "สัญญาและงวด", hint: "ร่างสัญญา ลงนาม และรับชำระตามงวด" },
-] as const;
+export const bkpFlowStages = [{ id: "intake" }, { id: "design" }, { id: "fees" }, { id: "quotation" }, { id: "contract" }] as const;
 export type BkpFlowStage = typeof bkpFlowStages[number]["id"];
 export const bkpOverviewStages = {
   intake: "เปิดโครงการ",
-  design: "ออกแบบและรับค่าแบบ",
+  design: "ออกแบบ",
   quotation: "ใบเสนอราคา",
   contract: "สัญญา",
-  money: "การเงิน",
+  money: "รับชำระ",
 } as const;
 
 export function bkpOverviewStage(flow: ReturnType<typeof bkpWorkflow>): keyof typeof bkpOverviewStages {

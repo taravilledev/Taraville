@@ -8,18 +8,18 @@ import { agreementPayloadSchema } from "@/lib/sales/agreement-models";
 import { formatMoney } from "@/lib/sales/money";
 import { formatDate } from "@/lib/sales/date";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
-import { PrintButton } from "@/app/leads/report/print-button";
 import styles from "./document.module.css";
 import { AgreementContent } from "./agreement-content";
 import { PhotoContractContent } from "./photo-contract-content";
 import { QuotationContent } from "./quotation-content";
 import { QuotationPages } from "./quotation-pages";
 import { ReceiptPaper } from "./receipt-paper";
+import { backTarget, DocumentBar, DocumentStatusBar } from "./document-chrome";
 import Image from "next/image";
 
 export const metadata = { title: "เอกสารการขาย · Taraville Group", robots: { index: false, follow: false } };
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
-export default function DocumentPage(props: Props) { return <Suspense fallback={<PageSkeleton />}><Document {...props} /></Suspense>; }
+export default function DocumentPage(props: Props) { return <Suspense fallback={<PageSkeleton layout="bare" />}><Document {...props} /></Suspense>; }
 async function Document({ params, searchParams }: Props) {
   const isPreview = (await searchParams).preview === "1";
   const { id } = await params; const { supabase } = await requireStaff();
@@ -64,48 +64,43 @@ async function Document({ params, searchParams }: Props) {
     </li>)}</ul>
     <p>ยอดสุทธิหลังปรับ {formatMoney(doc.adjustments.reduce((total, item) => total + BigInt(item.amount_cents), BigInt(invoice.net_cents)).toString())} บาท</p>
   </section> : null;
-  const paymentNotice = [isSynthetic ? "ข้อมูลทดสอบ · ไม่ใช่เอกสารธุรกรรมจริง" : "",
-    doc.state === "cancelled" ? `ยกเลิกเอกสาร${doc.cancel_reason ? ` · ${doc.cancel_reason}` : ""}` : ""].filter(Boolean).join(" · ");
+  const bar = isPreview ? null : <DocumentBar back={backTarget({ caseId: doc.case_id, kind: doc.kind, isBkp: issuer.brand === "BAAN_KUNAPAP",
+    isDesignInvoice: typeof doc.payload.design_position === "number", isTextAddendum })} />;
+  const statusBar = <DocumentStatusBar isSynthetic={isSynthetic} state={doc.state} cancelReason={doc.cancel_reason} />;
   if (receipt && issuer.brand === "BAAN_KUNAPAP") return <main className={styles.page}>
-    <nav className={styles.controls}>{!isPreview && <Link href={`/sales/${doc.case_id}?tab=money#receipts`} prefetch={false}>กลับหน้าการเงิน</Link>}<PrintButton /></nav>
+    {bar}
+    {statusBar}
     <ReceiptPaper issuer={issuer} customer={doc.customer_snapshot} number={doc.number} date={doc.document_date}
       paidDate={receipt.paid_date} method={receipt.method} payerName={receipt.payer_name} receiverName={receipt.confirmed_by_name}
       amountCents={receipt.amount_cents} label={paymentKinds[receipt.kind]} description={receipt.description}
       isInstalment={receipt.kind === "instalment" || receipt.kind === "design_fee"}
-      notice={paymentNotice}
+     
       replacement={receipt.replaces_number ? `ออกแทนใบเสร็จเลขที่ ${receipt.replaces_number}${receipt.replacement_reason ? ` · ${receipt.replacement_reason}` : ""}` : undefined} />
   </main>;
   if (invoice && issuer.brand === "BAAN_KUNAPAP") return <main className={styles.page}>
-    <nav className={styles.controls}>{!isPreview && <Link href={`/sales/${doc.case_id}?tab=money#${typeof doc.payload.design_position === "number" ? "design-fees" : "schedule"}`}
-      prefetch={false}>กลับหน้าการเงิน</Link>}<PrintButton /></nav>
+    {bar}
+    {statusBar}
     <ReceiptPaper issuer={issuer} customer={doc.customer_snapshot} number={doc.number} date={doc.document_date}
-      amountCents={invoice.net_cents} label={invoice.label} isInstalment notice={paymentNotice}
+      amountCents={invoice.net_cents} label={invoice.label} isInstalment
       invoice={{ dueDate: invoice.due_date, grossCents: invoice.gross_cents, creditCents: invoice.credit_cents,
         acceptanceDate: invoice.payment_due_days === 30 ? invoice.acceptance_date ?? undefined : undefined, isCreditSettled: invoice.credit_settled }}>
       {invoiceAdjustments}
     </ReceiptPaper>
   </main>;
   if (quotePaper && agreement) return <main className={styles.page}>
-    <nav className={styles.controls}>{!isPreview && <Link href={`/sales/${doc.case_id}`} prefetch={false}>กลับงาน/รายการขาย</Link>}<PrintButton /></nav>
-    <QuotationPages payload={agreement} date={doc.document_date} number={doc.number} issuerName={issuer.legal_name}
-      notice={[isSynthetic ? "ข้อมูลทดสอบ · ไม่ใช่เอกสารธุรกรรมจริง" : "", doc.state === "cancelled" ? `ยกเลิกเอกสาร · ${doc.cancel_reason}` : ""].filter(Boolean).join(" · ")} />
+    {bar}
+    {statusBar}
+    <QuotationPages payload={agreement} date={doc.document_date} number={doc.number} issuerName={issuer.legal_name} />
   </main>;
   if (isPaperContract && agreement?.contract_paper && !isTextAddendum) return <main className={styles.page}>
-    <nav className={styles.controls}>{!isPreview && <Link href={`/sales/${doc.case_id}`} prefetch={false}>กลับงาน/รายการขาย</Link>}<PrintButton /></nav>
-    <PhotoContractContent payload={agreement} number={doc.number} notice={[
-      isSynthetic ? "ข้อมูลทดสอบ · ไม่ใช่เอกสารธุรกรรมจริง" : "",
-      doc.state === "draft" ? "ร่างสัญญา · รอตรวจและล็อกเพื่อออกเลข" : "",
-      doc.state === "awaiting_signature" ? "รอลงนาม · ยังไม่เป็นสัญญาที่ลงนามแล้ว" : "",
-      doc.state === "cancelled" ? `ยกเลิกเอกสาร · ${doc.cancel_reason}` : "",
-    ].filter(Boolean).join(" · ")} />
+    {bar}
+    {statusBar}
+    <PhotoContractContent payload={agreement} number={doc.number} />
   </main>;
   return <main className={styles.page}>
-    <nav className={styles.controls}>{!isPreview && <Link href={`/sales/${doc.case_id}`} prefetch={false}>กลับงาน/รายการขาย</Link>}<PrintButton /></nav>
+    {bar}
+    {statusBar}
     <article className={`${styles.paper}${summary ? ` ${styles.summary}` : ""}${isQuotation ? ` ${styles.quotation}` : ""}${isPaperContract ? ` ${styles.contractDocument}` : ""}`}>
-      {isSynthetic && <p className={styles.watermark}>ข้อมูลทดสอบ · ไม่ใช่เอกสารธุรกรรมจริง</p>}
-      {doc.state === "draft" && <p className={styles.watermark}>ร่างสัญญา · รอตรวจและล็อกเพื่อออกเลข</p>}
-      {doc.state === "cancelled" && <p className={styles.watermark}>ยกเลิกเอกสาร · {doc.cancel_reason}</p>}
-      {doc.state === "awaiting_signature" && <p className={styles.watermark}>รอลงนาม · ยังไม่เป็นสัญญาที่ลงนามแล้ว</p>}
       {isQuotation && <Image className={styles.quoteLogo} src="/brand/baan-kunapap-logo.jpg" alt="บ้านคุณภาพ" width={100} height={76} />}
       <div className={styles.header}><div><h1>{issuer.legal_name}</h1><p>{issuer.address}</p>{issuer.tax_id && <p>เลขประจำตัวผู้เสียภาษี {issuer.tax_id}</p>}<p>{issuer.contact}</p></div>
         <div><h2>{title}</h2><p>เลขที่ {doc.number ?? "ยังไม่ออกเลข"}</p><p>วันที่ {doc.document_date}</p></div></div>
