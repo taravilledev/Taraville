@@ -1,6 +1,6 @@
 "use client";
 
-import { textActionClass, primaryActionClass } from "@/components/action-link-styles";
+import { textActionClass, primaryActionClass, secondaryActionClass } from "@/components/action-link-styles";
 import { nativeDialogClass, nativeDialogHeaderClass, nativeDialogBodyClass } from "@/components/native-dialog-styles";
 import { useRef, type ReactNode } from "react";
 
@@ -15,4 +15,10 @@ export function OpenProjectDialog({ children, label = "เปิดโครง�
       <div className={nativeDialogBodyClass}>{children}</div>
     </dialog>
   </>;
+}
+
+// A second way into the same dialog (the empty project card), so the form is never rendered twice.
+export function OpenProjectTrigger() {
+  return <button type="button" className={secondaryActionClass} aria-haspopup="dialog" aria-controls="open-project-dialog"
+    onClick={() => document.querySelector<HTMLDialogElement>("#open-project-dialog")?.showModal()}>เปิดโครงการ</button>;
 }
