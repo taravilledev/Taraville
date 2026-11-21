@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ActionForm } from "@/app/walkin/action-form";
 import type { SalesBootstrap } from "@/lib/sales/models";
 import { createCase } from "../actions";
-import { OpeningFields } from "./opening-fields";
+import { PlotTable } from "./plot-table";
 import { noticeClass } from "@/components/notice";
 import { buttonVariants } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -11,8 +11,8 @@ import { NativeSelect } from "@/components/ui/native-select";
 
 type Lead = SalesBootstrap["leads"][number];
 
-export function NewCaseForm({ workspace, lead, projects, projectId, requestId }: {
-  workspace: SalesBootstrap; lead: Lead; projects: { id: string; code: string }[]; projectId: string; requestId: string;
+export function NewCaseForm({ workspace, lead, projects, projectId, requestId, q, dev }: {
+  workspace: SalesBootstrap; lead: Lead; projects: { id: string; code: string }[]; projectId: string; requestId: string; q: string; dev: string;
 }) {
   const id = useId();
   const units = workspace.developments.filter(development => development.is_active)
@@ -24,8 +24,8 @@ export function NewCaseForm({ workspace, lead, projects, projectId, requestId }:
     {workspace.can_catalog ? <Link className={buttonVariants({ variant: "outline", size: "auto" })} href="/sales/settings/catalog" prefetch={false}>จัดการหมู่บ้านและบ้าน/แปลง</Link>
       : <p>ติดต่อผู้มีสิทธิ์จัดการหมู่บ้านและบ้าน/แปลงเพื่อเพิ่มหรือปล่อยแปลง</p>}
   </div>;
-  if (lead.brand === "TARAVILLE") return <OpeningFields leadId={lead.id} requestId={requestId}
-    units={units.flatMap(development => development.units.map(unit => ({
+  if (lead.brand === "TARAVILLE") return <PlotTable leadId={lead.id} requestId={requestId} q={q} dev={dev} baseHref={`/sales/new?lead=${lead.id}`}
+    plots={units.flatMap(development => development.units.map(unit => ({
       id: unit.id, developmentId: development.id, code: unit.code, location: development.name, address: development.address,
       details: unit.details, price: unit.list_price_cents,
     })))} />;

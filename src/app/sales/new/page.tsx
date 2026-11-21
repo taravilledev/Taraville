@@ -34,7 +34,8 @@ async function NewCase({ searchParams }: Props) {
     <div className={pageHeaderClass}><h1>เปิดโครงการ</h1><Link className={buttonVariants({ variant: "outline", size: "auto" })} href={lead ? `/leads/${lead.id}` : "/leads"} prefetch={false}>กลับหน้า Lead</Link></div>
     <section className={panelClass}>
       {reason || !lead ? <p role="alert">{reason}</p>
-        : <NewCaseForm workspace={workspace} lead={lead} projects={projects} projectId={selectedProject?.id ?? ""} requestId={randomUUID()} />}
+        : <NewCaseForm workspace={workspace} lead={lead} projects={projects} projectId={selectedProject?.id ?? ""} requestId={randomUUID()}
+          q={typeof query.q === "string" ? query.q : ""} dev={typeof query.dev === "string" ? query.dev : ""} />}
     </section>
   </div></AppShell>;
 }
