@@ -8,10 +8,10 @@ import { checkRowClass } from "@/components/check-row";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
-export function UnitForm({ developmentId, unit, requestId, backHref }: { developmentId: string; unit?: z.infer<typeof unitSchema>; requestId: string; backHref: string }) {
+export function UnitForm({ developmentId, unit, requestId, backHref }: { developmentId: string; unit?: z.infer<typeof unitSchema>; requestId: string; backHref?: string }) {
   const id = useId();
   const detail = (key: string) => typeof unit?.details[key] === "string" ? unit.details[key] as string : "";
-  return <ActionForm action={saveUnit.bind(null, { id: unit?.id ?? null, version: unit?.version ?? null, developmentId, requestId })} label={unit ? "บันทึกบ้าน/แปลง" : "เพิ่มบ้าน/แปลง"} secondaryAction={{ href: backHref, label: "ยกเลิก" }}>
+  return <ActionForm action={saveUnit.bind(null, { id: unit?.id ?? null, version: unit?.version ?? null, developmentId, requestId })} label={unit ? "บันทึกบ้าน/แปลง" : "เพิ่มบ้าน/แปลง"} secondaryAction={backHref ? { href: backHref, label: "ยกเลิก" } : undefined}>
     <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
       <Field><FieldLabel htmlFor={`${id}-code`}>เลขบ้าน/แปลง</FieldLabel><Input id={`${id}-code`} name="code" required maxLength={80} defaultValue={unit?.code} /></Field>
       <Field><FieldLabel htmlFor={`${id}-model`}>แบบบ้าน</FieldLabel><Input id={`${id}-model`} name="model" maxLength={200} defaultValue={detail("model")} /></Field>

@@ -6,10 +6,10 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { nativeDialogClass } from "@/components/native-dialog-styles"
 
-type ConfirmOptions = { title: string; description: string; cancelLabel: string; confirmLabel: string }
+type ConfirmOptions = { title: string; description: string; cancelLabel: string; confirmLabel: string; isDestructive?: boolean }
 
 // Reads like window.confirm: `if (await confirm({ ... })) ...`. Render `confirmDialog` once next to the caller.
-// Only for data loss, so the confirm button is always destructive; cancel comes first in the DOM to take initial focus.
+// Destructive by default (data loss); pass isDestructive: false to review a save, e.g. a permission diff. Cancel comes first in the DOM to take initial focus.
 export function useConfirm() {
   const [options, setOptions] = useState<ConfirmOptions | null>(null)
   const dialog = useRef<HTMLDialogElement>(null)
@@ -39,7 +39,7 @@ export function useConfirm() {
         <p id={`${id}-description`} className="text-muted-foreground">{options?.description}</p>
         <div className="flex flex-wrap justify-end gap-2">
           <Button type="button" variant="secondary" onClick={() => dialog.current?.close()}>{options?.cancelLabel}</Button>
-          <Button type="button" variant="destructive" onClick={() => { settle(true); dialog.current?.close() }}>{options?.confirmLabel}</Button>
+          <Button type="button" variant={options?.isDestructive === false ? "default" : "destructive"} onClick={() => { settle(true); dialog.current?.close() }}>{options?.confirmLabel}</Button>
         </div>
       </div>
     </dialog>
