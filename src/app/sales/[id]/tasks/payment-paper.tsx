@@ -9,6 +9,7 @@ import { formatDate } from "@/lib/sales/date";
 import { EvidenceUpload } from "../../evidence-upload";
 import { ReceiptPaper } from "../../documents/[id]/receipt-paper";
 import { checkRowClass } from "@/components/check-row";
+import { NativeSelect } from "@/components/ui/native-select";
 import styles from "./payment-paper.module.css";
 
 type Action = (state: ActionState, data: FormData) => Promise<ActionState>;
@@ -102,10 +103,10 @@ export function PaymentPaper({ mode, brand, action, caseId, customerName, custom
         <div className={styles.fields}><label>{mode === "invoice" ? "วันครบกำหนดชำระ" : "วันที่ได้รับเงินจริง"}<input type="date" name={mode === "invoice" ? "due_date" : "paid_date"} required value={date} readOnly={mode === "invoice" && !!fixedDueDate} max={mode === "receipt" ? today() : undefined} onChange={event => setDate(event.target.value)} />
           {mode === "invoice" && fixedDueDate && acceptanceDate && <small>คำนวณจากวันที่ตรวจรับจริง {formatDate(acceptanceDate)} + 30 วันปฏิทิน ตามสัญญา</small>}</label>
           {mode === "receipt" && <><label>ชื่อผู้ชำระ<input name="payer_name" value={payerName} required maxLength={300} onChange={event => setPayerName(event.target.value)} /></label>
-            <label>วิธีรับเงิน<select name="method" value={method} onChange={event => setMethod(event.target.value as Method)}>{Object.entries(paymentMethods).map(([value, name]) => <option key={value} value={value}>{name}</option>)}</select></label></>}
+            <label>วิธีรับเงิน<NativeSelect wrapperClassName="w-full" className="pr-9!" name="method" value={method} onChange={event => setMethod(event.target.value as Method)}>{Object.entries(paymentMethods).map(([value, name]) => <option key={value} value={value}>{name}</option>)}</NativeSelect></label></>}
         </div>
         <table className={styles.table}><thead><tr><th scope="col">รายการ</th><th scope="col">จำนวนเงิน (บาท)</th></tr></thead><tbody><tr><td>
-          {kindOptions && <label>ประเภทเงินรับ<select name="kind" value={kind} onChange={event => setKind(event.target.value)}>{kindOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>}
+          {kindOptions && <label>ประเภทเงินรับ<NativeSelect wrapperClassName="w-full" className="pr-9!" name="kind" value={kind} onChange={event => setKind(event.target.value)}>{kindOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</NativeSelect></label>}
           {mode === "receipt" ? <label>รายละเอียดในใบเสร็จ<textarea name="description" required maxLength={1000} value={description} onChange={event => setDescription(event.target.value)} /></label> : label}
         </td><td>{amountEditable ? <label>จำนวนเงินรับ (บาท)<input name="amount" inputMode="decimal" required value={amount} maxLength={20} onChange={event => setAmount(event.target.value)} /></label> : formatMoney(grossCents ?? amountCents)}</td></tr>
           {creditCents && creditCents !== "0" && <tr><td>หักเครดิตเงินที่รับไว้แล้ว</td><td>{formatMoney(creditCents)}</td></tr>}</tbody>

@@ -1,6 +1,7 @@
 import type { z } from "zod";
 import type { quotationPaperSchema } from "@/lib/sales/agreement-inputs";
 import local from "./quotation-editor.module.css";
+import { NativeSelect } from "@/components/ui/native-select";
 
 export type QuotationPaper = z.infer<typeof quotationPaperSchema>;
 export const paperFields = [
@@ -21,8 +22,8 @@ export function QuotationPaperFields({ value, onChange, error }: {
     {field.key === "customer_name" && error && <span id="quote-customer-error">{error}</span>}
   </label>)}
     <label className={local.field}>วันที่ใบเสนอราคา<input type="date" required value={value.document_date} onChange={event => onChange({ ...value, document_date: event.target.value })} /></label>
-    <label className={local.field}>ประเภทงาน<select value={value.work_type} onChange={event => onChange({ ...value, work_type: event.target.value as QuotationPaper["work_type"] })}>
+    <label className={local.field}>ประเภทงาน<NativeSelect wrapperClassName="w-full" className="pr-9!" value={value.work_type} onChange={event => onChange({ ...value, work_type: event.target.value as QuotationPaper["work_type"] })}>
       <option value="">ยังไม่ระบุ</option>{["รับสร้างบ้าน", "ต่อเติม", "ปรับปรุง", "อื่นๆ"].map(item => <option key={item}>{item}</option>)}
-    </select></label>
+    </NativeSelect></label>
   </div>;
 }

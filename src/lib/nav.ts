@@ -6,8 +6,8 @@ const EXECUTIVE: NavItem[] = [
   { href: "/walkin", label: "รับลูกค้า", icon: "walkin" },
   { href: "/leads", label: "ลูกค้า (Lead)", icon: "leads" },
   { href: "/sales", label: "โครงการ", icon: "projects" },
-  { href: "/summary", label: "การเงิน", icon: "finance" },
-  { href: "/leads/report", label: "รายงาน", icon: "report" },
+  { href: "/summary", label: "การเงินบ้านคุณภาพ", icon: "finance" },
+  { href: "/leads/report", label: "รายงาน Lead", icon: "report" },
   { href: "/sales/settings", label: "ตั้งค่า", icon: "settings" },
 ]
 
@@ -16,7 +16,7 @@ const FIELD: NavItem[] = [
   { href: "/walkin", label: "รับลูกค้า", icon: "walkin" },
   { href: "/leads", label: "ลูกค้า (Lead)", icon: "leads" },
   { href: "/sales", label: "โครงการ", icon: "projects" },
-  { href: "/leads/report", label: "รายงาน", icon: "report" },
+  { href: "/leads/report", label: "รายงาน Lead", icon: "report" },
 ]
 
 // ตั้งค่า is executive-only here: the sidebar must not call salesBootstrap to learn catalog rights (Sale keeps the button on /sales).

@@ -10,6 +10,7 @@ import { RequiredMark } from "./required-mark";
 import { VersionedNotice } from "./versioned-notice";
 import { formCardClass, formHintClass, sectionHeadingClass } from "@/components/form-card";
 import { walkinFieldClass } from "./walkin-form-styles";
+import { NativeSelect } from "@/components/ui/native-select";
 
 export const LEAD_FORM_ID = "lead-form";
 
@@ -28,9 +29,9 @@ export function LeadForm({ brand, staff, owners, lead, requestId, choice = null 
       <section id="contact" className={formCardClass} aria-labelledby="contact-title">
         <div className={sectionHeadingClass}><h2 id="contact-title">ข้อมูลติดต่อ</h2><span>ช่องที่มี<RequiredMark />เป็นข้อมูลจำเป็น</span></div>
         <div className="grid grid-cols-[125px_1fr_1fr] gap-4 max-[640px]:grid-cols-1">
-          <label data-slot="walkin-field" className={walkinFieldClass}>คำนำหน้า<select name="name_title" defaultValue={lead?.name_title ?? ""} autoComplete="honorific-prefix">
+          <label data-slot="walkin-field" className={walkinFieldClass}>คำนำหน้า<NativeSelect wrapperClassName="w-full" className="pr-9!" name="name_title" defaultValue={lead?.name_title ?? ""} autoComplete="honorific-prefix">
             <option value="">ไม่ระบุ</option><option>นาย</option><option>นาง</option><option>นางสาว</option>
-          </select></label>
+          </NativeSelect></label>
           <label data-slot="walkin-field" className={walkinFieldClass}><span>ชื่อ<RequiredMark /></span><input name="first_name" defaultValue={lead?.first_name} autoComplete="given-name" required maxLength={200} /></label>
           <label data-slot="walkin-field" className={walkinFieldClass}>นามสกุล<input name="last_name" defaultValue={lead?.last_name} autoComplete="family-name" maxLength={200} /></label>
         </div>
@@ -42,9 +43,9 @@ export function LeadForm({ brand, staff, owners, lead, requestId, choice = null 
           <label data-slot="walkin-field" className={walkinFieldClass}>LINE ID<input name="line_id" defaultValue={lead?.line_id} autoComplete="off" maxLength={200} /></label>
         </div>
         {!lead && staff.role === "executive" ? <label data-slot="walkin-field" className={walkinFieldClass}><span>ฝ่ายขายผู้ดูแล<RequiredMark /></span>
-          <select name="owner_id" required defaultValue=""><option value="">เลือกฝ่ายขาย</option>
+          <NativeSelect wrapperClassName="w-full" className="pr-9!" name="owner_id" required defaultValue=""><option value="">เลือกฝ่ายขาย</option>
             {owners.map(owner => <option key={owner.id} value={owner.id}>{owner.full_name}</option>)}
-          </select></label> : <input type="hidden" name="owner_id" value={lead?.owner_id ?? staff.id} />}
+          </NativeSelect></label> : <input type="hidden" name="owner_id" value={lead?.owner_id ?? staff.id} />}
       </section>
       {isSurveyShown ? <section id="survey" className={formCardClass} aria-labelledby="survey-title">
         <h2 id="survey-title">แบบสอบถามความต้องการ</h2><p className="-mt-3 mb-6 text-sm text-muted-foreground">ไม่บังคับ ข้อที่ลูกค้าไม่ตอบ เว้นว่างได้</p>
