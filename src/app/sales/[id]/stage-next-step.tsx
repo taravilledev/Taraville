@@ -4,8 +4,8 @@ import { taskHref, taskLabels } from "@/lib/sales/tasks";
 import { buttonVariants } from "@/components/ui/button";
 import { StepBlockedNotice } from "./step-blocked-notice";
 
-/** The single next-step card of a BKP project, shown under the stage bar on every tab. */
-export function BkpNextStep({ caseId, step, isExecutive }: { caseId: string; step: NextStep | null; isExecutive: boolean }) {
+/** The single next-step card of a project, shown under the stage bar on every tab. */
+export function StageNextStep({ caseId, step, isExecutive }: { caseId: string; step: NextStep | null; isExecutive: boolean }) {
   if (!step) return null;
   if (step.kind === "done") return <p className="m-0 text-sm text-muted-foreground">{step.title}</p>;
   const href = step.task ? taskHref(caseId, step.task, step.row) : `/sales/${caseId}?tab=${step.tab}${step.anchor ? `#${step.anchor}` : ""}`;
@@ -16,6 +16,6 @@ export function BkpNextStep({ caseId, step, isExecutive }: { caseId: string; ste
       {step.hint && <span className="text-sm text-muted-foreground">{step.hint}</span>}
       {!step.allowed && <StepBlockedNotice isExecutive={isExecutive} />}
     </div>
-    {step.allowed && <Link className={buttonVariants({ size: "auto" })} href={href} prefetch={false}>{step.task ? taskLabels[step.task] : "ไปทำขั้นนี้"}</Link>}
+    {step.allowed && <Link className={buttonVariants({ size: "auto" })} href={href} prefetch={false}>{step.task ? taskLabels[step.task] : step.kind === "reserve" ? "ยืนยันจองแปลง" : "ไปทำขั้นนี้"}</Link>}
   </section>;
 }

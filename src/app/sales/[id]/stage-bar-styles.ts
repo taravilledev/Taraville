@@ -1,4 +1,4 @@
-// Utility class sets for the BKP stage bar; chips scroll sideways on narrow screens.
+// Utility class sets for the project stage bar; chips scroll sideways on narrow screens.
 export const bar = "flex min-w-0 items-stretch gap-1 overflow-x-auto rounded-xl border bg-card p-1"
 export const tab =
   "flex min-h-14 flex-1 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm text-foreground no-underline hover:bg-muted " +

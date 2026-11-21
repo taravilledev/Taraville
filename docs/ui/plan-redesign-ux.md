@@ -118,20 +118,20 @@ The rules come from design-system.md §8. No screen redesign in this phase, exce
 
 ## Phase 4 — project workspace, documents, Taraville opening (boards Project*, DesignInvoice, QuotationEditor, ContractEditor, ContractLock, TVProject, TVOpenProject, DocumentView; ADRs 0057, 0058)
 
-- [ ] **Stage tabs and the single "งานถัดไป" card.**
+- [x] **Stage tabs and the single "งานถัดไป" card.** (2026-11-21: one `StageBar` + `StageNextStep` for both brands; Taraville maps stages onto its existing tabs, ADR 0065.)
   - [x] The BKP stage comes from `bkpOverviewStage` only (2026-11-21): `projectProgress` now uses the same rule (a quotation or a fully paid design fee starts ใบเสนอราคา, not the design plan); `stage-agreement.check.mts` requires zero disagreements; SQL `sales_case_facts` adds `hasQuotation`/`feesPaid` (`20261121090200`). Cross-checked locally: list stage = workspace stage on all 99 open BKP cases.
   - **Correction (2026-11-21):** `/summary` already used `bkpOverviewStage` (`src/lib/sales/executive.ts`), so its tabs do **not** change. What changes is the stage shown by `projectProgress`: the workspace progress, the Phase 3 stage track on `/sales` and the homes, and the Lead cards — a BKP case with a design plan but no quotation moves from ใบเสนอราคา back to ออกแบบ (17 of 99 open BKP cases in local data). Tell the owner this one.
-  - Redirect old `?tab=` / `?task=` links.
+  - [x] Redirect old `?tab=` / `?task=` links: tab keys unchanged; drawer tasks redirect via the `drawerTasks` map in `src/app/sales/[id]/page.tsx`.
 - [x] **`nextStep()` design-fee branch** (instalment 1 → 2 → 3 → quotation), with a `*.check.mts`. Overdue warns and never gates. (2026-11-21: instalments 1–2 = issue, then record payment; instalment 3 = issue, then the quotation leads, matching ADR 0058 §2 and board ProjectDesign; facts from `designFacts()` in `tasks.ts` (same guard as the task pages) and SQL `sales_case_facts.input.design`, cross-checked 136/136 BKP cases.)
-- [ ] **Task tiers.**
+- [x] **Task tiers.** (Drawers: accept quotation, sign, unlock, confirm/withdraw payment, acceptance, refunds. **Left as full pages:** record payment (prepare-payment / prepare-instalment / prepare-design-payment), because they carry the PaymentPaper; ADR 0057 lists record payment as a drawer — owner to confirm.)
   - Full pages: invoice, quotation, contract draft, lock.
   - Drawers: payment record and confirm, acceptance, accept quotation, refunds, reserve, sign, unlock.
-- [ ] **Quotation, contract, money, documents** as described in [flow-to-be §3.4](flow-to-be.md#34-bkp-project-workspace-projectdesign-projectmoney-projectagreement-projectdocs-adr-0057). The project close / cancel red bottom section (`cancelProject`, already moved to the bottom of `/sales/[id]` in Phase 2) gets its final layout here.
-- [ ] **Taraville `/sales/new`.**
+- [x] **Quotation, contract, money, documents** as described in [flow-to-be §3.4](flow-to-be.md#34-bkp-project-workspace-projectdesign-projectmoney-projectagreement-projectdocs-adr-0057). The project close / cancel red bottom section (`cancelProject`, already moved to the bottom of `/sales/[id]` in Phase 2) gets its final layout here.
+- [x] **Taraville `/sales/new`.**
   - Shared table, plus a drawer replacing the native `<dialog>`.
   - The no-units say-why; the redirect stays `?task=reserve`.
-- [ ] **`/sales/documents/[id]`.** Top bar and status bar above the paper (not red). The paper content is untouched.
-- **Verify point:** one BKP project through every tab, and Taraville open-project. Ask first.
+- [x] **`/sales/documents/[id]`.** Top bar and status bar above the paper (not red). The paper content is untouched.
+- **Verify point:** one BKP project through every tab, and Taraville open-project. Ask first. (2026-11-21: browser-checked per slice on local Docker as the executive; see `.docs/SESSIONLOG-ux-redesign-phase4-2026-11-21.md`. Submitting forms was not exercised; sale-role views of Phase 4 not checked.)
 
 ## Phase 5 — `/summary` (board FinanceSummary)
 

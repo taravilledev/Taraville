@@ -61,9 +61,9 @@ for (const name of ["design", "assign", "close", "request-refund", "cancel-desig
 }
 assert.equal(usesFocusedTaskHeader("accept-quotation", true), false);
 const navigation = createElement("nav", { "aria-label": "Case sections" }, "TEST TABS");
-const header = renderToStaticMarkup(createElement(CaseHeader, { sale, summary: null, step: null, navigation }));
+const header = renderToStaticMarkup(createElement(CaseHeader, { sale, summary: null, navigation }));
 assert.ok(header.includes("TEST TABS"));
-const focused = renderToStaticMarkup(createElement(CaseHeader, { sale, summary: null, step: null, navigation, showProgress: false }));
+const focused = renderToStaticMarkup(createElement(CaseHeader, { sale, summary: null, navigation, showProgress: false }));
 assert.ok(focused.includes("TEST TABS") && !focused.includes('aria-label="สถานะงาน"'));
 const data = { sale, tasks: [], work: [], closeout: null, refunds: [], agreement: { is_settled: false, documents: [], instalments: [] },
   summary: { net: null, received: "350000", outstanding: null }, finance: { case_id: sale.id, version: 1, issuer_ready: true, can_change_design: false,
