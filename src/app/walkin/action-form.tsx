@@ -12,10 +12,12 @@ const stickyActionFooterClass =
   "max-[640px]:-mx-2 max-[640px]:px-2 [&>button[type=submit]]:w-full";
 
 export type ActionState = { error: string; field?: string; fix?: Fix };
-export function ActionForm({ action, children, label = "บันทึกข้อมูล", pendingLabel, id, sticky = false, inline = false, destructive = false, secondaryAction }: {
+export function ActionForm({ action, children, label = "บันทึกข้อมูล", pendingLabel, id, sticky = false, inline = false, destructive = false, secondaryAction, next, onFieldError }: {
   action: (state: ActionState, data: FormData) => Promise<ActionState>;
   children: ReactNode; label?: string; pendingLabel?: string; id?: string; sticky?: boolean; inline?: boolean; destructive?: boolean;
   secondaryAction?: { label: string; onClick: () => void } | { label: string; href: string };
+  // A multi-step form: while `next` is set it replaces the submit button; onFieldError lets the form reveal the step holding the rejected field.
+  next?: { label: string; onClick: () => void }; onFieldError?: (field: string) => void;
 }) {
   const form = useRef<HTMLFormElement>(null);
   const [state, submit, isPending] = useActionState(async (previous: ActionState, data: FormData) => {
@@ -33,12 +35,15 @@ export function ActionForm({ action, children, label = "บันทึกข้
   useEffect(() => {
     if (!state.error || isPending) return;
     const field = state.field && form.current?.elements.namedItem(state.field);
-    if (field instanceof HTMLElement) {
+    if (field instanceof HTMLElement && state.field && onFieldError) {
+      onFieldError(state.field);
+      requestAnimationFrame(() => field.focus()); // after the revealed step has rendered
+    } else if (field instanceof HTMLElement) {
       field.focus();
     } else {
       error.current?.focus();
     }
-  }, [state, isPending]);
+  }, [state, isPending, onFieldError]);
   // Successful actions redirect; a rejected save must not reset the entered data.
   return <form id={id} action={submit} ref={form} className={inline ? "inline-flex flex-col items-start" : undefined} onReset={event => event.preventDefault()}>
     <fieldset className="m-0 min-w-0 border-0 p-0" disabled={isPending}>{children}</fieldset>
@@ -48,9 +53,10 @@ export function ActionForm({ action, children, label = "บันทึกข้
       {secondaryAction && ("href" in secondaryAction
         ? <a className={secondaryActionClass} href={isPending ? undefined : secondaryAction.href} aria-disabled={isPending || undefined}>{secondaryAction.label}</a>
         : <button type="button" className={secondaryActionClass} disabled={isPending} onClick={secondaryAction.onClick}>{secondaryAction.label}</button>)}
-      <button className={inline ? secondaryActionClass : destructive ? destructiveActionClass : primaryActionClass} disabled={isPending} type="submit">
+      {next ? <button type="button" className={`${primaryActionClass} min-[641px]:ml-auto`} onClick={next.onClick}>{next.label}</button>
+      : <button className={inline ? secondaryActionClass : destructive ? destructiveActionClass : primaryActionClass} disabled={isPending} type="submit">
       {isPending && pendingLabel && <Loader2 className="mr-2 animate-spin" size={18} aria-hidden />}
       {isPending ? pendingLabel ?? "กำลังดำเนินการ…" : label}
-    </button></div>
+    </button>}</div>
   </form>;
 }

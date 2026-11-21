@@ -6,9 +6,9 @@ import { useRef, type ReactNode } from "react";
 
 const DIALOG_ID = "notice-dialog";
 
-export function NoticeLink() {
+export function NoticeLink({ label = "อ่านประกาศ" }: { label?: string }) {
   return <button type="button" className={textActionClass}
-    onClick={() => (document.getElementById(DIALOG_ID) as HTMLDialogElement | null)?.showModal()}>อ่านประกาศ</button>;
+    onClick={() => (document.getElementById(DIALOG_ID) as HTMLDialogElement | null)?.showModal()}>{label}</button>;
 }
 
 export function NoticeDialog({ children }: { children: ReactNode }) {

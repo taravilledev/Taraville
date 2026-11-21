@@ -58,7 +58,9 @@ export async function saveLead(context: MutationContext, _state: ActionState, fo
   revalidatePath("/dashboard");
   revalidatePath("/leads");
   revalidatePath(`/leads/${lead.data.id}`);
-  redirect(withSuccessFeedback(`/leads/${lead.data.id}?saved=1`, context.id ? "lead_updated" : "lead_created"));
+  // A new lead lands on the saved screen, which is its own confirmation; an edit returns to the lead with a toast.
+  if (!context.id) redirect(`/walkin?saved=${lead.data.id}`);
+  redirect(withSuccessFeedback(`/leads/${lead.data.id}?saved=1`, "lead_updated"));
 }
 
 export async function reassignLead(id: string, version: number, _state: ActionState, form: FormData): Promise<ActionState> {
