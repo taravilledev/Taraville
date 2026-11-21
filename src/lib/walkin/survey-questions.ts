@@ -5,6 +5,9 @@ export type SurveyQuestion = (
   | { key: string; label: string; kind: "text" | "number"; placeholder: string }
 ) & { legacy?: boolean; dependsOn?: { key: string; option: string } };
 
+// Screens drop the "N. " prefix; the stored labels keep it because CSV export headers use them.
+export const displayLabel = (question: SurveyQuestion) => question.label.replace(/^\d+\.\s*/, "");
+
 const OTHER_OPTION = "อื่นๆ";
 const ADDRESS: SurveyQuestion = { key: "address", label: "ที่อยู่", kind: "text", placeholder: "บ้านเลขที่ ตำบล อำเภอ จังหวัด" };
 const SALES_STAFF: SurveyQuestion = { key: "sales_staff", label: "พนักงานขาย", kind: "text", placeholder: "ชื่อพนักงานขายที่ดูแล" };
@@ -39,5 +42,19 @@ export const SURVEY_QUESTIONS: Record<Brand, SurveyQuestion[]> = {
     { key: "channel", label: "8. ท่านรู้จักและสะดวกรับข้อมูลข่าวสารจากบริษัทฯ ทางช่องทางใด", kind: "single", options: ["Line / Facebook", "สื่อสิ่งพิมพ์ / โบรชัวร์", "เพื่อนและครอบครัว", "ป้ายไวนิล", OTHER_OPTION] },
     { key: "monthly_installment", label: "ค่างวดที่สะดวกในการผ่อนชำระต่อเดือน (บาท) (ข้อมูลเดิม)", kind: "single", options: ["6,000-8,000", "9,000-12,000", "14,000-16,000", "มากกว่า 20,000"], legacy: true },
     SALES_STAFF,
+  ],
+};
+
+// Display grouping for the form; sales_staff is filled by the server so it is in no group.
+export const SURVEY_GROUPS: Record<Brand, { label: string; keys: string[] }[]> = {
+  BAAN_KUNAPAP: [
+    { label: "บ้านที่จะสร้าง", keys: ["address", "house_type", "layout"] },
+    { label: "งบและการเงิน", keys: ["budget_range", "payment_method", "income_range", "monthly_installment"] },
+    { label: "ตัวลูกค้า", keys: ["gender", "age_range", "occupation", "channel"] },
+  ],
+  TARAVILLE: [
+    { label: "บ้านที่สนใจ", keys: ["house_type", "bedrooms", "decision_factors", "preferred_location", "purchase_reason", "decision_time"] },
+    { label: "งบและการเงิน", keys: ["budget_range", "monthly_installment", "income_range"] },
+    { label: "ตัวลูกค้า", keys: ["address", "gender", "age_range", "occupation", "channel"] },
   ],
 };

@@ -20,6 +20,14 @@ export async function leadDetail(id: string) {
   return { ...session, lead: leadSchema.parse(data), events: privacyEventSchema.array().parse(events.data) };
 }
 
+/** The saved screen shows the first name only, so nothing else is selected. RLS decides whether the staff may read the lead. */
+export async function savedLead(session: Awaited<ReturnType<typeof requireStaff>>, id: string) {
+  if (!z.uuid().safeParse(id).success) return null;
+  const { data, error } = await session.supabase.from("leads").select("id,brand,first_name").eq("id", id).maybeSingle();
+  if (error) throw new Error("โหลดรายการไม่ได้ กรุณาลองใหม่");
+  return data ? leadSchema.pick({ id: true, brand: true, first_name: true }).parse(data) : null;
+}
+
 /** The list's filters as one query, shared by the list page and the CSV export so both select the same leads. */
 export function filteredLeads(session: Awaited<ReturnType<typeof requireStaff>>, filters: LeadFilters) {
   let request = session.supabase.from("walkin_leads_staged").select(`${LEAD_COLUMNS},stage`, { count: "exact" });

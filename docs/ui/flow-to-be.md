@@ -235,7 +235,7 @@ These are not decisions for the implementer. Each needs the owner (or the PDPA r
   - A design delivery date column (the drawer checkbox is UI-only).
   - A printable design-package confirmation (Q32).
 - **Quotations.** Older priced revisions stay "offered" and can still be accepted after a newer one; there is no supersede.
-- **Survey.** "พนักงานขาย" changes meaning to "the chosen owner" (Q55).
+- **Survey — decided (owner, 2026-11-22).** "พนักงานขาย" = the Lead owner: the person who fills the form, or the sale an executive picks. Executives cannot own a Lead themselves yet (every owner check requires role `sale`; a separate task with its own ADR if wanted). Migration `20261122090000`.
 - **Smaller inconsistencies.**
   - The acceptance chip counts instalments while the table lists projects.
   - "ลองเปลี่ยนคำค้นหรือเลือกสถานะทั้งหมด" shows even when status = all.

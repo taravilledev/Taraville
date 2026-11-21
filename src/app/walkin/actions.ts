@@ -20,7 +20,18 @@ export async function saveLead(context: MutationContext, _state: ActionState, fo
   if (typeof phone !== "string" || !dialablePhone(phone)) {
     return { error: PHONE_HINT, field: "phone" };
   }
-  form.set("survey.sales_staff", staff.full_name);
+  // The survey "พนักงานขาย" is the Lead owner: the filler, or the sale an executive picked (owner, 2026-11-22).
+  let ownerName = staff.full_name;
+  if (staff.role === "executive") {
+    const ownerId = z.uuid().safeParse(form.get("owner_id"));
+    if (!ownerId.success) return { error: "กรุณาเลือกฝ่ายขาย", field: "owner_id" };
+    const owner = await supabase.from("staff").select("full_name").eq("id", ownerId.data).maybeSingle();
+    if (owner.error) return { error: mutationError() };
+    const name = z.string().min(1).safeParse(owner.data?.full_name);
+    if (!name.success) return { error: "กรุณาเลือกฝ่ายขาย", field: "owner_id" };
+    ownerName = name.data;
+  }
+  form.set("survey.sales_staff", ownerName);
   let consent: boolean | null = null;
   if (!context.id) {
     try { consent = parsePrivacyIntake(form); }
@@ -58,7 +69,9 @@ export async function saveLead(context: MutationContext, _state: ActionState, fo
   revalidatePath("/dashboard");
   revalidatePath("/leads");
   revalidatePath(`/leads/${lead.data.id}`);
-  redirect(withSuccessFeedback(`/leads/${lead.data.id}?saved=1`, context.id ? "lead_updated" : "lead_created"));
+  // A new lead lands on the saved screen, which is its own confirmation; an edit returns to the lead with a toast.
+  if (!context.id) redirect(`/walkin?saved=${lead.data.id}`);
+  redirect(withSuccessFeedback(`/leads/${lead.data.id}?saved=1`, "lead_updated"));
 }
 
 export async function reassignLead(id: string, version: number, _state: ActionState, form: FormData): Promise<ActionState> {

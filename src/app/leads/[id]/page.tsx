@@ -8,7 +8,7 @@ import { primaryAction, workRows } from "@/lib/walkin/lead-page";
 import { STAGE_GROUP_LABELS, STAGE_GROUP_TONES } from "@/lib/walkin/lead-stage";
 import { staffSchema } from "@/lib/walkin/models";
 import { surveyChoice } from "@/lib/walkin/privacy";
-import { SURVEY_QUESTIONS } from "@/lib/walkin/survey-questions";
+import { displayLabel, SURVEY_QUESTIONS } from "@/lib/walkin/survey-questions";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { AppShell } from "@/app/walkin/app-shell";
 import { EvidenceHistory, SurveyChoice, SurveyChoiceStatus, formatDate } from "@/app/walkin/privacy-controls";
@@ -109,7 +109,7 @@ async function Detail({ params, searchParams }: Props) {
         {SURVEY_QUESTIONS[lead.brand].filter(question => !question.legacy || lead.survey[question.key]).map(question => {
           const value = lead.survey[question.key];
           const answer = Array.isArray(value) ? value.join(" · ") : value;
-          return <div key={question.key}><dt>{question.label}</dt><dd>{answer || "ไม่ได้ระบุ"}
+          return <div key={question.key}><dt>{displayLabel(question)}</dt><dd>{answer || "ไม่ได้ระบุ"}
             {lead.survey[`${question.key}_other`] && <span> · {lead.survey[`${question.key}_other`]}</span>}</dd></div>;
         })}
       </dl>
