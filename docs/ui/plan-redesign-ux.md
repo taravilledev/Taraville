@@ -61,34 +61,40 @@ The rules come from design-system.md §8. No screen redesign in this phase, exce
 
 ## Phase 2 — Lead area (boards Main, LeadsMobile, LeadDetail, LeadEdit, LeadsReport; ADRs 0059, 0061)
 
-- [ ] **Shared pieces first called here** (moved from Phase 1; rules in design-system §8):
+- [x] **Shared pieces first called here** (`components/drawer.tsx`, `components/data-table.tsx`, `components/forbidden-notice.tsx`) (moved from Phase 1; rules in design-system §8):
   - **Drawer** (right side ≥768px, bottom sheet <768px) on `components/ui/dialog`: a title, a body that scrolls, and a sticky footer.
   - **Shared table pattern helpers** for `/leads`: sortable header, sticky header, whole-row link, card fallback below 768px. Extract them from what `/sales` and `/summary` already have before adding anything. The money cell (right-aligned, `tabular-nums`, nowrap, 2 decimals) and the dense <1024px variant come with the first money table (Phase 3 "บิลที่ต้องตามเก็บ", Phase 5 `/summary`).
   - **"ยังไม่มีสิทธิ์ทำงานนี้" section** for the Lead-edit non-owner case: it takes what is needed and who grants it (board AuthStates `page=forbidden`).
-- [ ] **`/leads`.**
+- [x] **`/leads`.**
   - Stage tabs: ทั้งหมด · ยังไม่เปิดโครงการ · เปิดโครงการแล้ว · ปิด.
   - A sale defaults to "my Leads"; newest first; separate "ขั้น" and "โครงการ" columns.
   - Filter row plus the "ตัวกรอง (n)" panel and removable chips.
   - Remove: the "ซ่อนข้อมูลสมมติ" filter, the "รายงานรายเดือน" header button, and contact columns.
-- [ ] **Lead detail.**
+- [x] **Lead detail.**
   - Remove the "ตัวเลือก ▾" menu, `ContactRecord`, "ติดต่อล่าสุด" and the desktop call button.
   - Add drawers: owner (`reassignLead`), survey choice (`recordPrivacy`, verbatim notice strings), evidence history (+ "บันทึกโดย").
   - Add the bottom close and reopen section (`closeLead` / `reopenLead`, reason via `NativeSelect`).
   - Show the BKP retry card with "ลองเปิดโครงการอีกครั้ง".
-- [ ] **Redirects.** `/leads/[id]/manage` → `/leads/[id]`; `/leads/[id]/history` → `/leads/[id]` with the history drawer open.
-- [ ] **`/leads/[id]/edit`.**
+- [x] **Redirects.** `/leads/[id]/manage` → `/leads/[id]`; `/leads/[id]/history` → `/leads/[id]` with the history drawer open.
+- [x] **Cancel project** (executive, active project) moves from `/manage` to the bottom of `/sales/[id]` now, so it never disappears; Phase 4 only lays it out (owner, 2026-11-20).
+- [x] **`/leads/[id]/edit`.**
   - Layout: sections, survey chips, `NativeSelect` คำนำหน้า.
   - Sticky "ยกเลิก" / "บันทึก" bar with the in-app unsaved-changes dialog.
   - One phone rule for both brands.
   - A non-owner gets the forbidden section instead of `notFound()`.
   - Fix the stale hint in `lead-form.tsx:52`.
-- [ ] **`/leads/report`** (Q77–Q83).
+- [x] **`/leads/report`** (Q77–Q83).
   - 3 cards; by-stage + by-brand boxes on the left; by-owner (top 5 + "ดูทั้งหมด") on the right.
   - Sale scope labels; no owner box for sales; the owner filter is hidden for sales.
   - Print dialog: all filtered rows, plus "เลือกเฉพาะบางราย…".
   - The RPC is unchanged; the UI derives "ยังไม่เปิดโครงการ" from `by_stage`.
 - **Checks:** report summary derivation (`monthly-report.check.mts`); the phone rule.
-- **Verify point:** Lead detail drawers, edit, report print. Ask first.
+- **Verify point:** Lead detail drawers, edit, report print. Ask first. (Done 2026-11-20 as executive at 1280/375; the sale role is not yet verified.)
+- **Left from the boards (not built in Phase 2):**
+  - `/leads` "โครงการ" column has no project code: `sales_lead_tags` does not return it (RPC change).
+  - The mobile filter bottom sheet (LeadsMobile); mobile uses the inline panel.
+  - Lead page: grouped survey answers, the "แก้คำตอบ" link and "รู้จักจาก" in the contact card.
+  - Stage tracks on project cards and in the report wait for the Phase 3 stage track.
 
 ## Phase 3 — homes and the project list (boards SaleHome, ExecutiveHome, SalesList; ADR 0058)
 
@@ -119,7 +125,7 @@ The rules come from design-system.md §8. No screen redesign in this phase, exce
 - [ ] **Task tiers.**
   - Full pages: invoice, quotation, contract draft, lock.
   - Drawers: payment record and confirm, acceptance, accept quotation, refunds, reserve, sign, unlock.
-- [ ] **Quotation, contract, money, documents** as described in [flow-to-be §3.4](flow-to-be.md#34-bkp-project-workspace-projectdesign-projectmoney-projectagreement-projectdocs-adr-0057). The project close / cancel red bottom section moves here from `/manage` (`cancelProject`).
+- [ ] **Quotation, contract, money, documents** as described in [flow-to-be §3.4](flow-to-be.md#34-bkp-project-workspace-projectdesign-projectmoney-projectagreement-projectdocs-adr-0057). The project close / cancel red bottom section (`cancelProject`, already moved to the bottom of `/sales/[id]` in Phase 2) gets its final layout here.
 - [ ] **Taraville `/sales/new`.**
   - Shared table, plus a drawer replacing the native `<dialog>`.
   - The no-units say-why; the redirect stays `?task=reserve`.

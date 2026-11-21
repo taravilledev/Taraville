@@ -36,12 +36,18 @@ const pageQueries = {
   leadDetail: async () => session(), saleOwners: async () => [owner, reader],
   closeInfo: async () => ({ text: "Historical close reason", by: "Historical closer" }),
   leadProjects: async () => ({ projects, names: new Map([[executive.id, executive.full_name]]) }),
+  leadStageGroup: async () => (lead.closed_at ? "closed" : projects.length ? "project" : "open"),
+  evidenceActors: async () => new Map([[owner.id, owner.full_name]]),
   filteredLeads: () => ({ range: async () => ({ data: [{ ...lead, stage: "received" }], error: null, count: 1 }) }),
   brandCounts: async () => ({ all: 1, taraville: 0, baanKunapap: 1 }),
+  stageCounts: async () => ({ all: 1, open: 1, project: 0, closed: 0 }),
 };
 const mocks: Record<string, unknown> = {
   "server-only": {},
-  "next/navigation": { notFound: () => { throw new Error("CHECK_NOT_FOUND"); }, useRouter: () => ({ replace: noop }) },
+  "next/navigation": {
+    notFound: () => { throw new Error("CHECK_NOT_FOUND"); }, useRouter: () => ({ replace: noop }), useSearchParams: () => new URLSearchParams(),
+    redirect: (url: string) => { throw new Error(`CHECK_REDIRECT ${url}`); },
+  },
   "next/link": ({ href, children, "aria-label": label }: { href: string; children?: ReactNode; "aria-label"?: string }) => createElement("a", { href, "aria-label": label }, children),
   "@/lib/walkin/queries": pageQueries,
   "@/lib/sales/lead-work": { leadWork: async () => work, leadTags: async () => new Map() },
@@ -88,6 +94,8 @@ const DetailPage = load(new URL("../../app/leads/[id]/page.tsx", import.meta.url
 const EditPage = load(new URL("../../app/leads/[id]/edit/page.tsx", import.meta.url)).default as Page;
 const ManagePage = load(new URL("../../app/leads/[id]/manage/page.tsx", import.meta.url)).default as Page;
 const HistoryPage = load(new URL("../../app/leads/[id]/history/page.tsx", import.meta.url)).default as Page;
+const CancelProjectSection = load(new URL("../../app/walkin/cancel-project-section.tsx", import.meta.url)).CancelProjectSection as
+  (props: { supabase: unknown; sale: { project_id: string | null; lead_id: string; id: string; status: string } }) => Promise<ReactNode>;
 const ListPage = load(new URL("../../app/leads/page.tsx", import.meta.url)).default as Page;
 async function render(Page: Page) {
   const errors: unknown[] = [];
@@ -97,43 +105,43 @@ async function render(Page: Page) {
   await stream.allReady;
   return { html: await new Response(stream).text(), errors };
 }
-const detailLabels = ["แก้ไขข้อมูล", "บันทึกการติดต่อ", "ยืนยันเปิดโครงการ"];
-const manageLabels = ["ยืนยันตัวเลือกให้ข้อมูลเพิ่มเติม", "ยืนยันถอนตัวเลือกและล้างคำตอบเพิ่มเติม", "ยืนยันปิดรายการ", "ยืนยันเปิดรายการอีกครั้ง", "ยืนยันยกเลิกโครงการ", "เปลี่ยนฝ่ายขายผู้ดูแล"];
-const allLabels = [...detailLabels, ...manageLabels];
+const html = (text: string) => text.replace(/<!--.*?-->/g, "");
+const count = (text: string, pattern: string) => text.split(pattern).length - 1;
+
+// ADR 0061: manage and history are gone as pages; the old links land on the Lead page, history as its drawer.
+for (const [Page, target] of [[ManagePage, `/leads/${lead.id}`], [HistoryPage, `/leads/${lead.id}?drawer=history`]] as const) {
+  // The redirect runs inside Suspense (Cache Components), so it surfaces through onError rather than a rejection.
+  const { errors } = await render(Page);
+  assert.ok(errors.some(error => error instanceof Error && error.message === `CHECK_REDIRECT ${target}`), `old link must redirect to ${target}`);
+}
 
 // Actual async pages and actual status/project/privacy children; only data and server-action boundaries are mocked.
 for (const actor of [reader, owner, executive]) {
   staff = actor;
   const detail = await render(DetailPage);
   assert.deepEqual(detail.errors, [], `Detail render failed for ${actor.full_name}`);
-  for (const text of ["Shared customer", "Owner Sale", "หญิง"]) assert.ok(detail.html.includes(text), `Shared detail missing ${text}`);
-  assert.ok(detail.html.includes("<h2>คำตอบแบบสอบถาม</h2>"), "Survey answers have a visible heading");
-  const options = detail.html.match(/<details[^>]*>[\s\S]*?<\/details>/)?.[0] ?? "";
-  for (const suffix of ["manage", "history"]) {
-    assert.ok(options.includes(`href="/leads/${lead.id}/${suffix}"`), `Lead options must include ${suffix}`);
+  const page = html(detail.html);
+  for (const text of ["Shared customer", "Owner Sale", "หญิง", "ลูกค้าไม่ให้ข้อมูลเพิ่มเติม"]) assert.ok(page.includes(text), `Shared detail missing ${text}`);
+  assert.ok(page.includes("<h2>ความต้องการของลูกค้า</h2>") && page.includes("<h2>โครงการ</h2>"));
+  for (const gone of ["ตัวเลือก ▾", "/manage", "/history", 'href="tel:', "บันทึกการติดต่อ", "ติดต่อล่าสุด", "ยืนยันยกเลิกโครงการ", "ยืนยันเปิดรายการอีกครั้ง"]) {
+    assert.ok(!page.includes(gone), `Lead page must not carry ${gone}`);
   }
-  assert.ok(!options.includes("คำตอบแบบสอบถาม") && !options.includes("<form"), "Only record links sit in the options menu");
-  assert.ok(detail.html.includes("<h2>โครงการ</h2>"));
-  const openProjectIndex = detail.html.indexOf('aria-controls="open-project-dialog"');
-  assert.equal(openProjectIndex >= 0, actor !== reader, "Only an authorized actor can start a BKP Project");
-  if (actor !== reader) assert.ok(openProjectIndex < detail.html.indexOf('href="tel:'), "Project CTA precedes the phone action");
-  for (const label of manageLabels) assert.ok(!detail.html.includes(label), `Lead page must not carry manage control ${label}`);
-  for (const label of detailLabels) assert.equal(detail.html.includes(label), actor !== reader, `${label} for ${actor.full_name}`);
-  const manage = await render(ManagePage);
-  assert.deepEqual(manage.errors, [], `Manage render failed for ${actor.full_name}`);
-  if (actor === reader) {
-    for (const label of allLabels) assert.ok(!manage.html.includes(label), `Nonowner sees mutation control ${label}`);
-    assert.ok(manage.html.includes("ลูกค้าไม่ให้ข้อมูลเพิ่มเติม"), "Read-only privacy choice must stay visible");
-  } else {
-    for (const label of ["ยืนยันตัวเลือกให้ข้อมูลเพิ่มเติม", "ยืนยันปิดรายการ"]) assert.ok(manage.html.includes(label), `Authorized actor lost ${label}`);
-    assert.equal(manage.html.includes("เปลี่ยนฝ่ายขายผู้ดูแล"), actor === executive, "Only Executive reassigns");
-  }
-  const history = await render(HistoryPage);
-  assert.deepEqual(history.errors, []);
-  for (const text of ["historical-evidence-hash", "historical-notice"]) assert.ok(history.html.includes(text), `History missing ${text}`);
+  // Evidence history is a drawer any staff may open, with who recorded each event.
+  for (const text of ["ประวัติหลักฐานและความยินยอม", "ประวัติหลักฐาน (1)", "historical-evidence-hash", "historical-notice", "บันทึกโดย Owner Sale"]) assert.ok(page.includes(text), `History drawer missing ${text}`);
+  const isAuthorized = actor !== reader;
+  assert.equal(page.includes("แก้ไขข้อมูล"), isAuthorized);
+  assert.equal(page.includes('aria-controls="open-project-dialog"'), isAuthorized, "Only an authorized actor can start a BKP Project");
+  assert.equal(page.includes("เปลี่ยนตัวเลือก…"), isAuthorized);
+  assert.equal(page.includes("ยืนยันตัวเลือกให้ข้อมูลเพิ่มเติม"), isAuthorized, "Opt-in lives in the survey drawer");
+  assert.ok(!page.includes("ยืนยันถอนตัวเลือกและล้างคำตอบเพิ่มเติม"), "Withdraw is offered only while the Customer has opted in");
+  assert.equal(page.includes('aria-label="เปลี่ยนผู้ดูแล"'), actor === executive, "Only Executive gets the owner pencil");
+  assert.equal(page.includes("ฝ่ายขายผู้ดูแล"), actor === executive);
+  assert.equal(page.includes("ปิด Lead…") && page.includes('name="reason"'), isAuthorized, "Close Lead opens a reason dialog for owner and Executive");
+  assert.ok(!page.includes("ยังปิด Lead นี้ไม่ได้"));
   const edit = await render(EditPage);
   if (actor === reader) {
-    assert.ok(edit.errors.some(error => error instanceof Error ? error.message === "CHECK_NOT_FOUND" : String(error).includes("CHECK_NOT_FOUND")), "Nonowner edit must invoke notFound");
+    assert.deepEqual(edit.errors, [], "Nonowner edit renders the forbidden notice, not an error");
+    assert.ok(edit.html.includes("ยังไม่มีสิทธิ์ทำงานนี้") && edit.html.includes("ขอให้ผู้บริหารเปลี่ยนผู้ดูแล"), "Nonowner edit says what is needed and who grants it");
     assert.ok(!edit.html.includes("data-edit-form"), "Nonowner edit must not render form");
   } else {
     assert.deepEqual(edit.errors, []);
@@ -154,14 +162,17 @@ assert.ok(failed.html.includes("โหลดโครงการไม่ได
 assert.ok(!failed.html.includes('aria-controls="open-project-dialog"'), "Failed work loading must not expose the project CTA");
 work = { canCreate: false, cases: [] };
 
-// Read-only closed status and reopen control live on the manage page.
+// A closed Lead shows a grey band and, for owner and Executive, a one-click reopen at the bottom.
 lead = { ...baseLead, closed_at: baseLead.created_at, closed_by: owner.id, closed_reason: "other" };
 for (const actor of [reader, owner, executive]) {
   staff = actor;
-  const manage = await render(ManagePage);
-  assert.deepEqual(manage.errors, []);
-  assert.ok(manage.html.includes("Historical close reason") && manage.html.includes("Historical closer"));
-  assert.equal(manage.html.includes("ยืนยันเปิดรายการอีกครั้ง"), actor !== reader);
+  const closed = await render(DetailPage);
+  assert.deepEqual(closed.errors, []);
+  const page = html(closed.html);
+  assert.ok(page.includes("Lead นี้ปิดแล้ว") && page.includes("Historical close reason") && page.includes("Historical closer"));
+  assert.equal(page.includes("<button>เปิด Lead อีกครั้ง</button>"), actor !== reader);
+  assert.ok(!page.includes("ปิด Lead…") && !page.includes('aria-controls="open-project-dialog"'), "A closed Lead can neither close again nor open a Project");
+  assert.ok(page.includes("เปิด Lead อีกครั้งก่อนจึงจะเปิดโครงการได้"));
 }
 lead = { ...baseLead };
 const projectId = "93000000-0000-4000-a000-000000000001";
@@ -174,40 +185,60 @@ for (const actor of [reader, owner, executive]) {
   staff = actor;
   const detail = await render(DetailPage);
   assert.deepEqual(detail.errors, []);
-  assert.ok(detail.html.includes("BKP-69-123") && detail.html.includes("SC-1"));
-  assert.ok(!detail.html.includes("/sales/"), "A row the reader cannot open has no link");
-  const manage = await render(ManagePage);
-  assert.deepEqual(manage.errors, []);
-  assert.ok(manage.html.includes("ลูกค้าเลือกให้ข้อมูลเพิ่มเติม"));
-  assert.equal(manage.html.includes("ยืนยันยกเลิกโครงการ"), actor === executive);
-  assert.equal(manage.html.includes("ยืนยันถอนตัวเลือกและล้างคำตอบเพิ่มเติม"), actor !== reader);
-  assert.ok(!manage.html.includes("ยืนยันปิดรายการ"), "Active projects still prevent closing");
+  const page = html(detail.html);
+  assert.ok(page.includes("BKP-69-123") && page.includes("SC-1"));
+  assert.ok(!page.includes("/sales/"), "A row the reader cannot open has no link");
+  assert.ok(page.includes("ลูกค้าเลือกให้ข้อมูลเพิ่มเติม") && !page.includes("ยืนยันตัวเลือกให้ข้อมูลเพิ่มเติม"), "Opted in: only withdraw is offered");
+  assert.equal(page.includes("ยืนยันถอนตัวเลือกและล้างคำตอบเพิ่มเติม"), actor !== reader);
+  assert.ok(!page.includes("ยืนยันยกเลิกโครงการ"), "Cancel Project moved to the Project page");
+  assert.ok(!page.includes("ปิด Lead…"), "An active Project prevents closing");
+  assert.equal(page.includes("ยังปิด Lead นี้ไม่ได้") && page.includes("ต้องยกเลิกโครงการก่อน"), actor !== reader, "The blocker is said in advance, not a bare disabled button");
 }
-// Project without a sale offers to start one; a cancelled sale on the Project explains instead of offering a failing button.
+// A Project without a sale is half open: a retry card (and the primary action) leads to the sale form for that Project.
 staff = owner;
 work = { canCreate: true, cases: [] };
-assert.ok((await render(DetailPage)).html.includes(`/sales/new?lead=${lead.id}&amp;project=${projectId}`));
+const halfOpen = html((await render(DetailPage)).html);
+assert.ok(halfOpen.includes(`/sales/new?lead=${lead.id}&amp;project=${projectId}`));
+assert.equal(count(halfOpen, "ลองเปิดโครงการอีกครั้ง"), 2, "Retry card plus the primary action");
 work = { canCreate: false, cases: [{ ...row, id: "94000000-0000-4000-a000-000000000001", status: "contracted", can_open: true }] };
-const existingProject = (await render(DetailPage)).html;
-const existingProjectLink = existingProject.indexOf('href="/sales/94000000-0000-4000-a000-000000000001"');
-assert.ok(existingProjectLink >= 0 && existingProject.includes('aria-controls="open-project-dialog"'), "Existing cards open their own Project while the primary CTA still adds another");
-assert.equal((existingProject.match(/BKP-69-123/g) ?? []).length, 2, "Project code appears once visually and once in the card accessible name");
+const existingProject = html((await render(DetailPage)).html);
+assert.ok(existingProject.includes('href="/sales/94000000-0000-4000-a000-000000000001"') && existingProject.includes("ไปที่โครงการ BKP-69-123"), "The only live Project is the primary action");
+assert.ok(existingProject.includes('aria-controls="open-project-dialog"') && existingProject.includes("เปิดโครงการเพิ่ม"), "Opening another Project moves into the section");
 assert.ok(existingProject.includes("ดูรายละเอียด"));
+// Two live Projects: cards for both, no primary action; a finished one is folded.
+work = { canCreate: true, cases: [{ ...row, id: "94000000-0000-4000-a000-000000000001", status: "contracted", can_open: true }] };
 projects.push({ ...projects[0], id: "93000000-0000-4000-a000-000000000002", code: "BKP-69-124" });
-const multipleProjects = (await render(DetailPage)).html.replace(/<!--.*?-->/g, "");
+const multipleProjects = html((await render(DetailPage)).html);
 assert.ok(multipleProjects.includes("2 โครงการ") && multipleProjects.includes("BKP-69-123") && multipleProjects.includes("BKP-69-124"));
-projects.pop();
+assert.equal(count(multipleProjects, "ลองเปิดโครงการอีกครั้ง"), 1, "Several live Projects have no primary action");
+assert.ok(!multipleProjects.includes("โครงการที่จบแล้ว"));
+projects.push({ ...projects[0], id: "93000000-0000-4000-a000-000000000003", code: "BKP-69-101", status: "cancelled", cancel_reason: "Changed plan", cancelled_by: executive.id, cancelled_at: lead.created_at });
+assert.ok(html((await render(DetailPage)).html).includes("โครงการที่จบแล้ว (1)"), "Finished Projects are folded");
+projects.splice(1);
 work = { canCreate: false, cases: [{ ...row, id: "94000000-0000-4000-a000-000000000001", status: "cancelled", can_open: true }] };
 const cancelledSale = (await render(DetailPage)).html;
 assert.ok(cancelledSale.includes("ถูกยกเลิกแล้ว") && !cancelledSale.includes("ดำเนินโครงการต่อ"));
 
+// Cancel Project is rendered at the bottom of the BKP project page for an active Project only.
+const projectRow = (status: string) => ({ ...projects[0], status });
+const cancelSection = async (status: string) => {
+  const supabase = { from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: projectRow(status), error: null }) }) }) }) };
+  const element = await CancelProjectSection({ supabase, sale: { project_id: projectId, lead_id: lead.id, id: "case", status: "contracted" } });
+  if (!element) return "";
+  const stream = await renderToReadableStream(element as ReturnType<typeof createElement>);
+  await stream.allReady;
+  return new Response(stream).text();
+};
+assert.ok((await cancelSection("active")).includes("ยืนยันยกเลิกโครงการ"));
+assert.equal(await cancelSection("cancelled"), "");
+
 lead = { ...baseLead, brand: "TARAVILLE" };
 projects = [];
 work = { canCreate: true, cases: [] };
-const tv = (await render(DetailPage)).html;
+const tv = html((await render(DetailPage)).html);
 assert.ok(tv.includes("<h2>โครงการ</h2>") && tv.includes("ยังไม่มีโครงการ"));
 const tvProjectLink = tv.indexOf(`href="/sales/new?lead=${lead.id}"`);
-assert.ok(tvProjectLink >= 0 && tvProjectLink < tv.indexOf('href="tel:'), "Taraville project CTA precedes the phone action");
+assert.ok(tvProjectLink >= 0 && tv.includes("เปิดโครงการ"), "Taraville opens the sale form from the primary action");
 assert.ok(!tv.includes("เปิดรายการขายใหม่") && !tv.includes("งานของลูกค้า"));
 lead = { ...baseLead };
 
@@ -216,11 +247,11 @@ const queries = load(new URL("./queries.ts", import.meta.url)) as typeof import(
 const calls: [string, unknown][] = [];
 const request = {
   select: () => request, eq: (column: string, value: unknown) => { calls.push([column, value]); return request; },
-  neq: () => request, order: () => request,
+  neq: () => request, in: () => request, order: () => request,
   then: (resolve: (value: { data: Staff[]; error: null }) => unknown) => Promise.resolve({ data: [owner, reader], error: null }).then(resolve),
 };
 const querySession = { staff: reader, supabase: { from: () => request } } as unknown as Parameters<typeof queries.filteredLeads>[0];
-queries.filteredLeads(querySession, { owner: owner.id, sort: "created", dir: "desc", page: 1 });
+queries.filteredLeads(querySession, { owner: owner.id, dir: "desc", page: 1 });
 assert.deepEqual(calls.find(([column]) => column === "owner_id"), ["owner_id", owner.id], "A Sale can filter another owner");
 assert.equal((await queries.saleOwners(querySession)).length, 2, "Sale owner filter roster cannot be restricted to Executive");
 const NewCaseForm = load(new URL("../../app/sales/new/new-case-form.tsx", import.meta.url)).NewCaseForm as

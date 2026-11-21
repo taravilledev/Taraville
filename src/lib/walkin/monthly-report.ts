@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { stageSchema } from "./lead-stage";
+import { STAGE_GROUP_CODES, stageSchema, type StageGroup } from "./lead-stage";
 
 export const REPORT_BRAND_LABELS = { TARAVILLE: "ธาราวิลล์", BAAN_KUNAPAP: "บ้านคุณภาพ" } as const;
 
@@ -34,6 +34,9 @@ export function monthLabel(month: string) {
   return new Date(`${month}-15T12:00:00+07:00`).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", month: "long", year: "numeric" });
 }
 
+/** Buddhist-era date on the Asia/Bangkok calendar, as the rest of the app. */
+export const thaiDate = (iso: string) => new Date(iso).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" });
+
 export function summarizeSelectedLeads(leads: readonly Pick<MonthlyReport["leads"][number], "brand" | "is_synthetic" | "project_counts">[]) {
   const byBrand = {
     TARAVILLE: { total: 0, open: 0, closed: 0, hasProjectCounts: true },
@@ -58,3 +61,21 @@ export function summarizeSelectedLeads(leads: readonly Pick<MonthlyReport["leads
 
   return { byBrand, synthetic };
 }
+
+/** `by_stage` folds into the three `/leads` tab groups; the RPC keeps returning raw stage codes. */
+export function foldStageGroups(byStage: Record<string, number>): Record<StageGroup, number> {
+  const sum = (group: StageGroup) => STAGE_GROUP_CODES[group].reduce((total, code) => total + (byStage[code] ?? 0), 0);
+  return { open: sum("open"), project: sum("project"), closed: sum("closed") };
+}
+
+type SortableLead = Pick<MonthlyReport["leads"][number], "name" | "created_at">;
+
+/** Client-side sort of the full row list: by registration time or by Thai name. */
+export function sortLeads<T extends SortableLead>(leads: readonly T[], key: "date" | "name", isAscending: boolean) {
+  const direction = isAscending ? 1 : -1;
+  return [...leads].sort((a, b) => direction * (key === "name" ? a.name.localeCompare(b.name, "th") : a.created_at.localeCompare(b.created_at)));
+}
+
+/** Owners by Lead count, largest first; ties by Thai name. */
+export const rankOwners = (owners: MonthlyReport["summary"]["by_owner"]) =>
+  [...owners].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "th"));

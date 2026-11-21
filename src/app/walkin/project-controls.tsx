@@ -14,11 +14,11 @@ export function OpenProject({ lead }: { lead: Lead }) {
   </ActionForm>;
 }
 
-export function CancelProject({ lead, project, openCaseId }: { lead: Lead; project: Project; openCaseId?: string }) {
+export function CancelProject({ leadId, project, openCaseId }: { leadId: string; project: Project; openCaseId?: string }) {
   return <section className={formCardClass}>
     <h2>ยกเลิกโครงการ {project.code}</h2>
     {openCaseId && <FixNotice {...guidance("sales_closeout_required", { caseId: openCaseId, isExecutive: true })} />}
-    <ActionForm action={cancelProject.bind(null, { id: project.id, leadId: lead.id, caseId: openCaseId, version: project.version, requestId: randomUUID() })} label="ยืนยันยกเลิกโครงการ">
+    <ActionForm action={cancelProject.bind(null, { id: project.id, leadId, caseId: openCaseId, version: project.version, requestId: randomUUID() })} label="ยืนยันยกเลิกโครงการ">
       <label data-slot="walkin-field" className={walkinFieldClass}><span>เหตุผลการยกเลิก</span><input name="reason" maxLength={500} required /></label>
       <p className={formHintClass}>ยกเลิกแล้วย้อนกลับไม่ได้ รหัสเดิมยังอยู่ในประวัติ หากต้องทำต่อให้เปิดโครงการใหม่ซึ่งจะได้รหัสใหม่</p>
       <label className={walkinOptionClass}><input type="checkbox" name="confirm_operation" required /><span>ยืนยันยกเลิกโครงการนี้</span></label>

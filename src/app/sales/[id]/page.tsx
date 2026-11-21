@@ -21,6 +21,7 @@ import { usesFocusedTaskHeader } from "./tasks/task-header";
 import { tabLinksClass } from "@/components/tab-links";
 import { noticeClass } from "@/components/notice";
 import { FixNotice } from "@/components/fix-notice";
+import { CancelProjectSection } from "@/app/walkin/cancel-project-section";
 import { guidance } from "@/lib/errors/error-map";
 import { missingContractPrerequisite } from "@/lib/sales/contract-template";
 import { cn } from "@/lib/utils";
@@ -90,5 +91,6 @@ async function CaseDetail({ params, searchParams }: Props) {
       {tab === "documents" && <DocumentsSection data={data} />}
       {tab === "money" && <MoneySection data={data} />}
     </>}
+    {isExecutive && isBkp && !task && <CancelProjectSection supabase={supabase} sale={sale} />}
   </div></AppShell>;
 }

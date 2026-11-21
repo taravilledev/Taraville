@@ -17,7 +17,7 @@ export async function saveLead(context: MutationContext, _state: ActionState, fo
   const parsed = mutationContextSchema.safeParse(context);
   if (!parsed.success) return { error: "แบบฟอร์มหมดอายุหรือไม่ถูกต้อง กรุณาเปิดใหม่" };
   const phone = form.get("phone");
-  if (parsed.data.brand === "BAAN_KUNAPAP" && (typeof phone !== "string" || !dialablePhone(phone))) {
+  if (typeof phone !== "string" || !dialablePhone(phone)) {
     return { error: PHONE_HINT, field: "phone" };
   }
   form.set("survey.sales_staff", staff.full_name);

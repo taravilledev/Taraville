@@ -14,7 +14,7 @@ function load(file: string, require: (name: string) => unknown) {
   return exports;
 }
 const stageModule = load("./lead-stage.ts", name => nodeRequire(name));
-const { currentMonth, monthLabel, reportFiltersSchema, summarizeSelectedLeads } = load("./monthly-report.ts",
+const { currentMonth, foldStageGroups, monthLabel, rankOwners, reportFiltersSchema, sortLeads, summarizeSelectedLeads } = load("./monthly-report.ts",
   name => name === "zod" ? nodeRequire("zod") : name === "./lead-stage" ? stageModule : {}) as typeof import("./monthly-report");
 
 // 2026-09-30 18:00 UTC is already 1 October in Bangkok.
@@ -41,4 +41,22 @@ assert.equal(summarizeSelectedLeads([]).byBrand.BAAN_KUNAPAP.total, 0);
 assert.equal(summarizeSelectedLeads([
   { brand: "TARAVILLE", is_synthetic: false },
 ]).byBrand.TARAVILLE.hasProjectCounts, false);
+
+// The by-stage box folds raw codes into the /leads groups: received + contacted = ยังไม่เปิดโครงการ.
+assert.deepEqual({ ...foldStageGroups({ received: 3, contacted: 2, project_opened: 4, closed: 1 }) }, { open: 5, project: 4, closed: 1 });
+assert.deepEqual({ ...foldStageGroups({}) }, { open: 0, project: 0, closed: 0 });
+// The paper summary counts exactly the printed rows, not the whole month.
+const month = [
+  { brand: "TARAVILLE", is_synthetic: false, project_counts: { open: 1, closed: 0 } },
+  { brand: "TARAVILLE", is_synthetic: false, project_counts: { open: 4, closed: 4 } },
+] as const;
+assert.equal(summarizeSelectedLeads(month.slice(0, 1)).byBrand.TARAVILLE.total, 1);
+assert.equal(summarizeSelectedLeads(month.slice(0, 1)).byBrand.TARAVILLE.open, 1);
+assert.equal(summarizeSelectedLeads(month).byBrand.TARAVILLE.open, 5);
+const people = [{ name: "ข", created_at: "2026-11-02T00:00:00Z" }, { name: "ก", created_at: "2026-11-09T00:00:00Z" }, { name: "ค", created_at: "2026-11-05T00:00:00Z" }];
+assert.deepEqual([...sortLeads(people, "date", false).map(row => row.name)], ["ก", "ค", "ข"]);
+assert.deepEqual([...sortLeads(people, "name", true).map(row => row.name)], ["ก", "ข", "ค"]);
+assert.equal(people[0].name, "ข");
+const ranked = rankOwners([{ owner_id: "a", name: "ข", count: 1 }, { owner_id: "b", name: "ก", count: 3 }, { owner_id: "c", name: "ค", count: 1 }]);
+assert.deepEqual([...ranked.map(row => row.name)], ["ก", "ข", "ค"]);
 console.log("PASS: selected monthly Leads and their project totals by brand");
