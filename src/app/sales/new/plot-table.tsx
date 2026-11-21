@@ -8,7 +8,7 @@ import { factsClass } from "@/components/facts";
 import { buttonVariants } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
 
 export type Plot = { id: string; developmentId: string; code: string; location: string; address: string; details: Record<string, unknown>; price: string | null };
@@ -29,8 +29,8 @@ export function PlotTable({ plots, leadId, requestId, q, dev, baseHref }: {
       <Field className="min-w-48 flex-1"><FieldLabel htmlFor="plot-q">ค้นหาแปลงหรือแบบบ้าน</FieldLabel>
         <Input id="plot-q" type="search" name="q" defaultValue={q} placeholder="เลขแปลง หรือชื่อแบบบ้าน" /></Field>
       <Field><FieldLabel htmlFor="plot-dev">โครงการ</FieldLabel>
-        <NativeSelect id="plot-dev" name="dev" defaultValue={dev}><option value="">ทุกโครงการ</option>
-          {developments.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</NativeSelect></Field>
+        <Combobox id="plot-dev" name="dev" defaultValue={dev} placeholder="ทุกโครงการ" searchPlaceholder="พิมพ์ชื่อโครงการ"
+          options={developments.map(([id, name]) => ({ id, label: name }))} /></Field>
       <button type="submit" className={buttonVariants({ variant: "outline" })}>ค้นหา</button>
     </form>
     <p role="status" className="m-0 text-sm text-muted-foreground">{matches.length} จาก {plots.length} แปลงว่าง</p>

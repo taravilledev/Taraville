@@ -270,7 +270,9 @@ assert.ok((await renderOpening({ ...openingWorkspace, can_catalog: true })).incl
 const development = { id: "development", name: "Available village", address: "", is_active: true, version: 1,
   units: [{ id: "unit", code: "A1", details: {}, list_price_cents: null, is_active: true, is_available: true, version: 1 }] };
 const availableOpening = await renderOpening({ ...openingWorkspace, developments: [development], customers: [{ id: "customer", brand: "TARAVILLE", full_name: "Existing fixture", phone: "0000000000" }] });
-assert.equal((availableOpening.match(/role="combobox"/g) ?? []).length, 0, "Taraville plots are browsed in the table; the project filter is a NativeSelect");
+// Plots are picked in the table; the only combobox is the searchable project filter (owner, 2026-11-22), which submits as `dev`.
+assert.equal((availableOpening.match(/role="combobox"/g) ?? []).length, 1, "Taraville plots are browsed in the table; only the project filter is a combobox");
+assert.ok(/<input[^>]*name="dev"/.test(availableOpening), "The project filter still submits the dev URL param");
 assert.ok(availableOpening.includes("<table") && availableOpening.includes('type="search"'));
 assert.equal((availableOpening.match(/name="unit_id"/g) ?? []).length, 1, "One create form per free plot, inside that plot's drawer");
 assert.ok(!availableOpening.includes("Existing fixture") && !availableOpening.includes("checkbox"), "Lead data is used directly with no customer-switch UI");
