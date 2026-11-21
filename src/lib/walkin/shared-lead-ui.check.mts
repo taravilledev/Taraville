@@ -255,11 +255,11 @@ queries.filteredLeads(querySession, { owner: owner.id, dir: "desc", page: 1 });
 assert.deepEqual(calls.find(([column]) => column === "owner_id"), ["owner_id", owner.id], "A Sale can filter another owner");
 assert.equal((await queries.saleOwners(querySession)).length, 2, "Sale owner filter roster cannot be restricted to Executive");
 const NewCaseForm = load(new URL("../../app/sales/new/new-case-form.tsx", import.meta.url)).NewCaseForm as
-  (props: { workspace: SalesBootstrap; lead: SalesBootstrap["leads"][number]; projects: { id: string; code: string }[]; projectId: string; requestId: string }) => ReactNode;
+  (props: { workspace: SalesBootstrap; lead: SalesBootstrap["leads"][number]; projects: { id: string; code: string }[]; projectId: string; requestId: string; q: string; dev: string }) => ReactNode;
 const openingLead: SalesBootstrap["leads"][number] = { id: baseLead.id, brand: "TARAVILLE", full_name: "Opening fixture", owner_id: owner.id, project_id: null, project_code: null };
 const openingWorkspace: SalesBootstrap = { actor: { id: owner.id, full_name: owner.full_name, role: "sale" }, cases: [], leads: [openingLead], customers: [], developments: [], staff: [], can_admin: false, can_catalog: false };
 async function renderOpening(workspace = openingWorkspace, brand = openingLead.brand) {
-  const stream = await renderToReadableStream(createElement(NewCaseForm, { workspace, lead: { ...openingLead, brand }, projects: [{ id: "project", code: "BKP-fixture" }], projectId: "project", requestId: "request" }));
+  const stream = await renderToReadableStream(createElement(NewCaseForm, { workspace, lead: { ...openingLead, brand }, projects: [{ id: "project", code: "BKP-fixture" }], projectId: "project", requestId: "request", q: "", dev: "" }));
   await stream.allReady;
   return new Response(stream).text();
 }
@@ -270,53 +270,37 @@ assert.ok((await renderOpening({ ...openingWorkspace, can_catalog: true })).incl
 const development = { id: "development", name: "Available village", address: "", is_active: true, version: 1,
   units: [{ id: "unit", code: "A1", details: {}, list_price_cents: null, is_active: true, is_available: true, version: 1 }] };
 const availableOpening = await renderOpening({ ...openingWorkspace, developments: [development], customers: [{ id: "customer", brand: "TARAVILLE", full_name: "Existing fixture", phone: "0000000000" }] });
-assert.equal((availableOpening.match(/role="combobox"/g) ?? []).length, 1, "Only Project is a dropdown; plots are browsed in the table");
+assert.equal((availableOpening.match(/role="combobox"/g) ?? []).length, 0, "Taraville plots are browsed in the table; the project filter is a NativeSelect");
 assert.ok(availableOpening.includes("<table") && availableOpening.includes('type="search"'));
-assert.ok(!availableOpening.includes("<form"), "No create form until a plot is selected");
+assert.equal((availableOpening.match(/name="unit_id"/g) ?? []).length, 1, "One create form per free plot, inside that plot's drawer");
 assert.ok(!availableOpening.includes("Existing fixture") && !availableOpening.includes("checkbox"), "Lead data is used directly with no customer-switch UI");
-assert.ok(!(await renderOpening({ ...openingWorkspace, developments: [{ ...development, units: [{ ...development.units[0], is_available: false }] }] })).includes("<form"));
+assert.ok(!(await renderOpening({ ...openingWorkspace, developments: [{ ...development, units: [{ ...development.units[0], is_available: false }] }] })).includes('name="unit_id"'));
 const bkpOpening = await renderOpening(openingWorkspace, "BAAN_KUNAPAP");
 assert.ok(bkpOpening.includes('name="project_id"') && bkpOpening.includes("BKP-fixture"));
 assert.ok(!bkpOpening.includes('name="unit_id"'), "BKP does not require a property unit");
-// Exercise actual table filtering and modal bindings with deterministic parent state.
-const fieldFile = new URL("../../app/sales/new/opening-fields.tsx", import.meta.url);
-cache.delete(fieldFile.href);
-const fieldState: unknown[] = ["", "", null];
-let hookIndex = 0;
-mocks.react = { useState: () => {
-  const index = hookIndex++;
-  return [fieldState[index], (value: unknown) => { fieldState[index] = value; }];
-}, useId: () => "opening-check", useRef: () => ({ current: null }), useEffect: noop };
-const Fields = load(fieldFile).OpeningFields as (props: { units: typeof fieldUnits; leadId: string; requestId: string }) => ReactNode;
-delete mocks.react;
+// Real PlotTable filtering (URL params q/dev) and drawer form bindings.
+const PlotTable = load(new URL("../../app/sales/new/plot-table.tsx", import.meta.url)).PlotTable as
+  (props: { plots: typeof fieldUnits; leadId: string; requestId: string; q: string; dev: string; baseHref: string }) => ReactNode;
 const fieldUnits = [
   { id: "u1", developmentId: "d1", code: "A1", location: "Project 1", address: "Address one", details: { model: "Model one" }, price: "10000" },
   { id: "u2", developmentId: "d2", code: "A1", location: "Project 2", address: "Address two", details: { model: "Model two" }, price: null },
 ];
-async function renderBrowser() {
-  hookIndex = 0;
-  const stream = await renderToReadableStream(Fields({ units: fieldUnits, leadId: "origin-lead", requestId: "origin-request" }));
+async function renderBrowser(q = "", dev = "") {
+  const stream = await renderToReadableStream(createElement(PlotTable, { plots: fieldUnits, leadId: "origin-lead", requestId: "origin-request", q, dev, baseHref: "/sales/new?lead=origin-lead" }));
   await stream.allReady;
   return new Response(stream).text();
 }
 const allUnits = await renderBrowser();
-assert.match(allUnits, /<label[^>]*for="opening-check-development"[^>]*>โครงการ<\/label>/);
-assert.match(allUnits, /<button(?=[^>]*id="opening-check-development")(?=[^>]*role="combobox")[^>]*>/);
-assert.ok(allUnits.includes("Model one") && allUnits.includes("Model two"), "Unfiltered table includes every eligible plot");
-fieldState[1] = "d2";
-const filteredUnits = await renderBrowser();
+assert.match(allUnits, /<label[^>]*for="plot-dev"[^>]*>โครงการ<\/label>/);
+assert.ok(allUnits.includes("Model one") && allUnits.includes("Model two") && allUnits.replaceAll("<!-- -->", "").includes("2 จาก 2 แปลงว่าง"), "Unfiltered table includes every eligible plot");
+const filteredUnits = await renderBrowser("", "d2");
 assert.ok(!filteredUnits.includes("Model one") && filteredUnits.includes("Model two"), "Project filter uses UUID despite duplicate plot code");
-fieldState[1] = "";
-assert.ok((await renderBrowser()).includes("Model one"), "Clearing the project filter restores other projects");
-fieldState[0] = "  ONE  ";
-const searchedUnits = await renderBrowser();
+const searchedUnits = await renderBrowser("  ONE  ");
 assert.ok(searchedUnits.includes("Model one") && !searchedUnits.includes("Model two"), "Search trims and ignores case");
-fieldState[0] = "not-a-plot";
-assert.ok((await renderBrowser()).includes("ไม่พบแปลงที่ตรงกับเงื่อนไข"));
-fieldState[0] = ""; fieldState[2] = fieldUnits[1];
-const modal = await renderBrowser();
-for (const text of ['name="unit_id" value="u2"', 'name="lead_id" value="origin-lead"', 'name="request_id" value="origin-request"', 'name="customer_id" value=""', "Address two", "เปิดโครงการด้วยแปลงนี้", "ยังไม่จองหรือกันแปลง"]) assert.ok(modal.includes(text), `Modal missing ${text}`);
-assert.equal((modal.match(/<form/g) ?? []).length, 1, "Only the selected plot modal submits; no nested forms");
+const none = await renderBrowser("not-a-plot");
+assert.ok(none.includes("ไม่พบแปลงที่ตรงกับเงื่อนไข") && none.includes('href="/sales/new?lead=origin-lead"'), "No match offers clearing the filter");
+for (const text of ['name="unit_id" value="u2"', 'name="lead_id" value="origin-lead"', 'name="request_id" value="origin-request"', 'name="customer_id" value=""', "Address two", "เปิดโครงการด้วยแปลงนี้", "ยังไม่จองหรือกันแปลง", "ยังไม่ระบุ"]) assert.ok(allUnits.includes(text), `Drawer missing ${text}`);
+assert.ok(!/<form[^>]*>(?:(?!<\/form>)[\s\S])*<form/.test(allUnits), "Drawer forms are never nested in the search form");
 const DesignPackages = load(new URL("../../app/sales/[id]/tasks/design-packages.tsx", import.meta.url)).DesignPackages as
   (props: { initialArea: string; plan?: { tier: string; instalments: string[]; note: string } }) => ReactNode;
 async function renderDesign(initialArea: string, plan?: { tier: string; instalments: string[]; note: string }) {

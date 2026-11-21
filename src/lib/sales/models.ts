@@ -34,6 +34,10 @@ export const caseFactsSchema = z.object({
     contract: z.enum(["none", "draft", "awaiting", "signed"]), contractId: z.uuid().nullish(),
     instalment: z.object({ id: z.uuid(), label: z.string(), needsAcceptance: z.boolean(), accepted: z.boolean(),
       hasInvoice: z.boolean(), outstanding: z.boolean(), isCreditCovered: z.boolean() }).nullable(),
+    // BKP only, from 20261121090200; absent before that migration, which only drops the design-fee step.
+    design: z.object({ canCollect: z.boolean(), feesPaid: z.boolean(), hasQuotation: z.boolean(),
+      instalments: z.object({ amount: z.string().regex(/^\d+$/), bill: z.enum(["none", "open", "settled"]), billId: z.uuid().nullish().transform(id => id ?? undefined) }).array(),
+    }).nullish().transform(design => design ?? undefined),
   }),
 });
 export type CaseFacts = z.infer<typeof caseFactsSchema>;

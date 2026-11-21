@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import type { CollectionRow } from "@/lib/sales/finance-collection";
 import { formatMoney } from "@/lib/sales/money";
@@ -14,12 +14,12 @@ const filters = [
   { id: "acceptance", label: "รอตรวจรับ" }, { id: "complete", label: "ครบแล้ว" },
 ] as const;
 
-function RowActions({ row }: { row: CollectionRow }) {
+function RowActions({ row, drawer }: { row: CollectionRow; drawer?: ReactNode }) {
   if (!row.primaryAction && !row.links.length && !row.history.length) return <span className={styles.note}>
     {row.isReference ? "ดูเพื่ออ้างอิง" : row.filter === "complete" ? "ไม่มีงานค้าง" : "ยังดำเนินการไม่ได้ตามสถานะหรือสิทธิ์"}
   </span>;
   return <div className={styles.actions}>
-    {row.primaryAction && <Link className={buttonVariants({ size: "auto" })} href={row.primaryAction.href} prefetch={false}>{row.primaryAction.label}</Link>}
+    {drawer ?? (row.primaryAction && <Link className={buttonVariants({ size: "auto" })} href={row.primaryAction.href} prefetch={false}>{row.primaryAction.label}</Link>)}
     {row.links.map(link => <Link className={buttonVariants({ variant: "outline", size: "auto" })} key={link.href} href={link.href} prefetch={false}>{link.label}</Link>)}
     {row.history.length > 0 && <details className={styles.history}><summary>ประวัติบิล ({row.history.length})</summary>
       <ul>{row.history.map(link => <li key={link.href}><Link href={link.href} prefetch={false}>{link.label}{link.cancelled ? " · ยกเลิกแล้ว" : ""}</Link></li>)}</ul>
@@ -40,7 +40,8 @@ function RowAmount({ row, isClosed }: { row: CollectionRow; isClosed: boolean })
     <small>{row.isReference ? "ข้อมูลอ้างอิง ไม่ใช่ยอดเรียกเก็บปัจจุบัน" : `คงเหลือ ${row.outstandingCents === null ? "ยังไม่ระบุ" : `${formatMoney(row.outstandingCents)} บาท`}`}</small></>;
 }
 
-export function FinanceCollection({ rows, caseId, isClosed = false }: { rows: CollectionRow[]; caseId: string; isClosed?: boolean }) {
+/** `drawers` swaps a row's primary link for a drawer trigger (keyed by row id); each drawer is rendered once, so the table is the only layout. */
+export function FinanceCollection({ rows, caseId, isClosed = false, drawers = {} }: { rows: CollectionRow[]; caseId: string; isClosed?: boolean; drawers?: Record<string, ReactNode> }) {
   const [filter, setFilter] = useState<(typeof filters)[number]["id"]>("all");
   const matches = rows.filter(row => filter === "all" || row.filter === filter);
   return <section className={styles.collection} aria-labelledby="collection-title">
@@ -64,14 +65,9 @@ export function FinanceCollection({ rows, caseId, isClosed = false }: { rows: Co
               <th scope="row"><strong>{row.label}</strong><small>{row.note}</small></th>
               <td className={styles.amount}><RowAmount row={row} isClosed={isClosed} /></td>
               <td><RowStatus row={row} /></td>
-              <td className={styles.dates}><RowDates row={row} /></td><td><RowActions row={row} /></td>
+              <td className={styles.dates}><RowDates row={row} /></td><td><RowActions row={row} drawer={drawers[row.id]} /></td>
             </tr>)}</tbody>
           </table>
-          <ul className={styles.mobileCards}>{groupRows.map(row => <li key={row.id}>
-            <div className={styles.cardHeading}><h5>{row.label}</h5><RowStatus row={row} /></div>
-            <div className={styles.amount}><RowAmount row={row} isClosed={isClosed} /></div><p className={styles.note}>{row.note}</p>
-            <div className={styles.dates}><RowDates row={row} /></div><RowActions row={row} />
-          </li>)}</ul>
         </>}
       </section>;
     })}

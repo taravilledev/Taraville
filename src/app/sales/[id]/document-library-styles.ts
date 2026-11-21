@@ -19,5 +19,5 @@ export const dialog =
 export const previewHeader =
   "flex items-center justify-between gap-3 border-b p-4 max-[640px]:items-start [&_h2]:text-md [&_h2]:[overflow-wrap:anywhere] [&_p]:text-sm [&_p]:text-muted-foreground " +
   "[&_button]:min-h-11 [&_button]:shrink-0"
-export const previewHint = "m-0 px-4 py-2 text-sm text-muted-foreground"
+export const previewActions = "flex flex-wrap justify-end gap-2"
 export const frame = "min-h-0 w-full flex-1 border-0 bg-accent"

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ActionForm, type ActionState } from "@/app/walkin/action-form";
 import { formatMoney, parseMoney } from "@/lib/sales/money";
 import { paymentMethods } from "@/lib/sales/financial-models";
@@ -23,6 +23,8 @@ type Props = PaymentPaperPreviewProps & {
   action: Action; caseId: string; finalLabel: string; hiddenFields?: Record<string, string>;
   amountEditable?: boolean; kindOptions?: { value: string; label: string }[]; initialKind?: string;
   fixedDueDate?: string;
+  /** Extra form content below the paper (e.g. required confirmations); it submits with the form. */
+  aside?: ReactNode;
 };
 const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 const displayDate = (value?: string) => value ? new Intl.DateTimeFormat("th-TH", { day: "numeric", month: "numeric", year: "numeric", timeZone: "Asia/Bangkok" }).format(new Date(`${value}T00:00:00+07:00`)) : "ยังไม่ระบุ";
@@ -59,7 +61,7 @@ export function PaymentPaperPreview({ mode, brand, customerName, customerAddress
 
 export function PaymentPaper({ mode, brand, action, caseId, customerName, customerAddress, customerPhone, salesperson, label, amountCents, finalLabel,
   grossCents, creditCents, hiddenFields = {}, amountEditable = false, kindOptions, initialKind = "unallocated", description: initialDescription = label,
-  fixedDueDate, acceptanceDate }: Props) {
+  fixedDueDate, acceptanceDate, aside }: Props) {
   const [isReview, setIsReview] = useState(false);
   const [date, setDate] = useState(mode === "invoice" ? fixedDueDate ?? "" : today());
   const [method, setMethod] = useState<Method>("cash");
@@ -113,6 +115,7 @@ export function PaymentPaper({ mode, brand, action, caseId, customerName, custom
           <tfoot><tr><th scope="row">{mode === "invoice" ? "ยอดเรียกเก็บ" : "ยอดรับที่รอยืนยัน"}</th><td>{amountEditable ? amount || "—" : formatMoney(amountCents)}</td></tr></tfoot></table>
         <p className={styles.note}>{mode === "invoice" ? fixedDueDate ? "วันครบกำหนดคำนวณตามเงื่อนไขสัญญา · ยังไม่นับเป็นเงินรับจริง" : "เลือกวันครบกำหนดก่อนออกบิล · ยังไม่นับเป็นเงินรับจริง" : amountEditable ? "ยังไม่นับเป็นเงินรับจริง ต้องให้ผู้มีสิทธิ์ยืนยันก่อนออกใบเสร็จ" : "รับเต็มยอดบิลครั้งเดียวและแก้ยอดไม่ได้ · ยังไม่นับเป็นเงินรับจริง"}</p>
       </article>}
+      {aside}
       {mode === "receipt" && <aside className={styles.evidence} hidden={isReview}><h3>หลักฐานการรับเงิน</h3><EvidenceUpload caseId={caseId} />
         <p>โอนเงินและเช็คต้องแนบหลักฐานก่อนส่งตรวจยืนยัน</p></aside>}
     </ActionForm>

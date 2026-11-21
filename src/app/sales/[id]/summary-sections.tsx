@@ -8,7 +8,6 @@ import { formatMoney } from "@/lib/sales/money";
 import { formatDate } from "@/lib/sales/date";
 import { findTask, taskHref, taskLabels, type Task, type TaskName } from "@/lib/sales/tasks";
 import { BkpDocuments } from "./bkp-documents";
-import { BkpMoneySection } from "./bkp-money-section";
 import { PendingPayments } from "./pending-payments";
 export { PendingPayments } from "./pending-payments";
 import { factsClass } from "@/components/facts";
@@ -109,7 +108,6 @@ export function DocumentsSection({ data }: { data: SummaryData }) {
 export function MoneySection({ data }: { data: SummaryData }) {
   const { sale, finance, agreement, closeout, refunds } = data;
   if (!finance || !agreement) return null;
-  if (sale.brand === "BAAN_KUNAPAP") return <BkpMoneySection data={data} />;
   const rows = agreement.instalments.filter(row => row.is_active).sort((a, b) => a.position - b.position);
   const receiptCount = finance.documents.filter(doc => doc.kind === "receipt").length;
   return <>
