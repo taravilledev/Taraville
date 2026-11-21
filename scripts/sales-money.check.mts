@@ -71,8 +71,12 @@ const issuerVersion = Number(sql("select coalesce((select version from private.s
 const issuerInput = { legal_name: "SYNTHETIC DEV ISSUER", address: "Local testing only", is_synthetic: true };
 assert.equal((await rpc("sales_save_issuer", owner, { p_brand: "BAAN_KUNAPAP", p_version: issuerVersion,
   p_input: issuerInput, p_request_id: randomUUID() })).status, 403);
+// ADR 0066: no API path switches test mode on, even when the input asks for it; local fixtures set it with SQL.
+sql("update private.sales_issuers set is_synthetic=false where brand='BAAN_KUNAPAP'");
 ok(await rpc("sales_save_issuer", executive, { p_brand: "BAAN_KUNAPAP", p_version: issuerVersion,
   p_input: issuerInput, p_request_id: randomUUID() }));
+assert.equal(sql("select is_synthetic from private.sales_issuers where brand='BAAN_KUNAPAP'"), "f", "sales_save_issuer must ignore is_synthetic");
+sql("update private.sales_issuers set is_synthetic=true where brand='BAAN_KUNAPAP'");
 sale = ok(await rpc("sales_save_design_plan", owner, { p_case_id: sale.id, p_version: sale.version,
   p_input: { usable_area: "180", tier: "under150" }, p_request_id: randomUUID() }));
 assert.equal(sql(`select total_cents from private.sales_design_plans where case_id='${sale.id}'`), "2500000", "Real area overrides the card");

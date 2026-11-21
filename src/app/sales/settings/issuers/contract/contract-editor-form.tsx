@@ -10,11 +10,11 @@ import { Panel } from "@/components/panel";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 
-type Issuer = { legal_name: string; address: string; tax_id: string; contact: string; contract_text: string; is_synthetic: boolean };
+type Issuer = { legal_name: string; address: string; tax_id: string; contact: string; contract_text: string };
 
 /**
  * Two explicit saves. Only the approve button posts contract_text_approved, because saveIssuer reads its absence as "not approved".
- * The company fields are resent unchanged; test mode (is_synthetic) is resent only when currently on (ADR 0062).
+ * The company fields are resent unchanged; test mode is kept by the database (ADR 0066).
  */
 export function ContractEditorForm({ action, issuer, brandName, needsApproval, isApproved, cancelHref }: {
   action: (state: ActionState, data: FormData) => Promise<ActionState>;
@@ -31,7 +31,6 @@ export function ContractEditorForm({ action, issuer, brandName, needsApproval, i
           <FieldDescription id="issuer-contract_text-hint">ใช้กับสัญญาก่อสร้างของ{brandName}ทุกฉบับ</FieldDescription>
         </Field>
         {(["legal_name", "address", "tax_id", "contact"] as const).map(key => <input key={key} type="hidden" name={key} value={issuer?.[key] ?? ""} />)}
-        {issuer?.is_synthetic && <input type="hidden" name="is_synthetic" value="on" />}
       </Panel>
       <Notice>
         <strong>มีผลกับร่างสัญญาที่บันทึกไว้แล้ว</strong> · ร่างที่ใช้ข้อความเดิม ต้องเปิดแล้วบันทึกร่างอีกครั้งก่อนล็อก · หน้าล็อกสัญญาจะบอกให้เอง
