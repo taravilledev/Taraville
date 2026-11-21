@@ -19,9 +19,12 @@ const FIELD: NavItem[] = [
   { href: "/leads/report", label: "รายงาน Lead", icon: "report" },
 ]
 
-// ตั้งค่า is executive-only here: the sidebar must not call salesBootstrap to learn catalog rights (Sale keeps the button on /sales).
+const SALE: NavItem[] = [...FIELD, { href: "/sales/settings", label: "ตั้งค่า", icon: "settings" }]
+
+// ตั้งค่า shows for executives and sales (catalog editors and read-only viewers, flow-to-be §3.9); the settings page
+// itself decides which tabs a sale may open, so the sidebar needs no extra query.
 export function navItems(role: "sale" | "executive" | "staff"): NavItem[] {
-  return role === "executive" ? EXECUTIVE : FIELD
+  return role === "executive" ? EXECUTIVE : role === "sale" ? SALE : FIELD
 }
 
 // Longest href that equals the path or is a parent segment of it.

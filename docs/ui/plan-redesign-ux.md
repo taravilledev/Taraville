@@ -146,16 +146,16 @@ The rules come from design-system.md §8. No screen redesign in this phase, exce
 
 ## Phase 6 — settings (boards SettingsCatalog, SettingsPermissions, SettingsIssuer; ADR 0062)
 
-- [ ] **One "ตั้งค่า" page with 3 tabs.** The catalog uses the shared table and drawers, with say-why notes.
-- [ ] **Permissions.** A staff table → a per-person matrix of the 17 capabilities, with a sticky save and a diff confirm. **Read the sale defaults from SQL** instead of the hand-mirrored list in `permissions/page.tsx:53-56`.
-- [ ] **Issuer.**
+- [x] **One "ตั้งค่า" page with 3 tabs.** The catalog uses the shared table and drawers, with say-why notes.
+- [x] **Permissions.** (2026-11-21: defaults read from `sales_capability_defaults()` / `private.sales_default_actions`, migration `20261121120000`; save is per-capability, not atomic — a batch RPC would make it atomic.) A staff table → a per-person matrix of the 17 capabilities, with a sticky save and a diff confirm. **Read the sale defaults from SQL** instead of the hand-mirrored list in `permissions/page.tsx:53-56`.
+- [x] **Issuer.** (**Left:** "last saved by/at" — the issuer RPC does not return `updated_by`/`updated_at` yet.)
   - A company drawer.
   - A contract-text section with the status and "last saved by/at".
   - A full-page editor with the two explicit saves; consequence warnings.
   - **Remove the test-mode UI.**
-- [ ] **Migration file: issuer `is_synthetic` default → `false`.** Applying it is R0.
-- [ ] **Blocker labels.** Deep-link labels name the real action ("ไปตั้งค่าบริษัทผู้ออกเอกสาร").
-- **Verify point:** permissions save + diff confirm, using a test account only. Ask first.
+- [x] **Migration file: issuer `is_synthetic` default → `false`.** (`20261121120100`.) Applying it is R0.
+- [x] **Blocker labels.** (Already "ไปตั้งค่าบริษัทผู้ออกเอกสาร"; no change needed.) Deep-link labels name the real action ("ไปตั้งค่าบริษัทผู้ออกเอกสาร").
+- **Verify point:** permissions save + diff confirm, using a test account only. Ask first. (2026-11-21: done on local Docker with "Synthetic staff"; data restored byte-identical.)
 
 ## Phase 7 — login, account, errors (boards AuthLogin, AuthPassword, AuthStates)
 
