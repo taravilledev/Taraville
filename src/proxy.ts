@@ -1,9 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { supabaseConfig } from "@/lib/supabase/config";
+import { REQUEST_PATH_HEADER } from "@/lib/supabase/next-path";
 
 export async function proxy(request: NextRequest) {
   const { url, key } = supabaseConfig();
+  // requireStaff reads this to send an expired session back to the page it was on.
+  request.headers.set(REQUEST_PATH_HEADER, `${request.nextUrl.pathname}${request.nextUrl.search}`);
   let response = NextResponse.next({ request });
   const supabase = createServerClient(url, key, {
     cookies: {

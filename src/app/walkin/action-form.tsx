@@ -3,6 +3,7 @@
 import { destructiveActionClass, primaryActionClass, secondaryActionClass } from "@/components/action-link-styles";
 import { formErrorClass } from "@/components/form-feedback";
 import type { Fix } from "@/lib/errors/error-map";
+import { Loader2 } from "lucide-react";
 import { useActionState, useEffect, useRef, type ReactNode } from "react";
 
 const actionFooterClass = "mt-4 flex items-center justify-between gap-6 pt-2 pb-3 max-[640px]:flex-col max-[640px]:items-stretch";
@@ -11,16 +12,20 @@ const stickyActionFooterClass =
   "max-[640px]:-mx-2 max-[640px]:px-2 [&>button[type=submit]]:w-full";
 
 export type ActionState = { error: string; field?: string; fix?: Fix };
-export function ActionForm({ action, children, label = "บันทึกข้อมูล", id, sticky = false, inline = false, destructive = false, secondaryAction }: {
+export function ActionForm({ action, children, label = "บันทึกข้อมูล", pendingLabel, id, sticky = false, inline = false, destructive = false, secondaryAction }: {
   action: (state: ActionState, data: FormData) => Promise<ActionState>;
-  children: ReactNode; label?: string; id?: string; sticky?: boolean; inline?: boolean; destructive?: boolean;
+  children: ReactNode; label?: string; pendingLabel?: string; id?: string; sticky?: boolean; inline?: boolean; destructive?: boolean;
   secondaryAction?: { label: string; onClick: () => void } | { label: string; href: string };
 }) {
   const form = useRef<HTMLFormElement>(null);
   const [state, submit, isPending] = useActionState(async (previous: ActionState, data: FormData) => {
     const result = await action(previous, data);
     for (const element of Array.from(form.current?.elements ?? [])) {
-      if (element instanceof HTMLInputElement && element.type === "password") element.value = "";
+      // A shown password (PasswordInput) is type="text", so autocomplete identifies it too.
+      if (element instanceof HTMLInputElement && (element.type === "password" || element.autocomplete.endsWith("-password"))) {
+        element.value = "";
+        element.dispatchEvent(new Event("input", { bubbles: true }));
+      }
     }
     return result;
   }, { error: "" });
@@ -44,7 +49,8 @@ export function ActionForm({ action, children, label = "บันทึกข้
         ? <a className={secondaryActionClass} href={isPending ? undefined : secondaryAction.href} aria-disabled={isPending || undefined}>{secondaryAction.label}</a>
         : <button type="button" className={secondaryActionClass} disabled={isPending} onClick={secondaryAction.onClick}>{secondaryAction.label}</button>)}
       <button className={inline ? secondaryActionClass : destructive ? destructiveActionClass : primaryActionClass} disabled={isPending} type="submit">
-      {isPending ? "กำลังดำเนินการ…" : label}
+      {isPending && pendingLabel && <Loader2 className="mr-2 animate-spin" size={18} aria-hidden />}
+      {isPending ? pendingLabel ?? "กำลังดำเนินการ…" : label}
     </button></div>
   </form>;
 }
