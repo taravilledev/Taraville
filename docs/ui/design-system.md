@@ -120,3 +120,79 @@ _Avoid_: รับลูกค้า, รับค่าแบบ, ออกแ�
   - It leaves out "ครบกำหนดใน 7 วัน" and money totals.
 - **Print paper keeps Nunito + Sarabun exactly** (`--font-paper`). Only screens move to Noto Sans Thai.
 - **Delivery.** Five PRs into `dev`, in this order: font → colour + status → stage names → shell → Sale home and `/sales`. See [plan-design-system-v1](plan-design-system-v1.md).
+
+## 8. App-wide interaction rules (UX redesign, 2026-11-20)
+
+Decided by the owner during the redesign grilling (ADR 0060, git-ignored). They apply to every new or touched screen. The screens are in [flow-to-be](flow-to-be.md).
+
+**Stage indicator.**
+- A stage always shows as a step-number badge plus a 5-segment track, everywhere: tables, cards, the Lead page and the project stage bar.
+  - green = done, navy = current, grey = not reached;
+  - completed shows as a green ✓ badge;
+  - cancelled or closed shows as a grey × badge with a grey track.
+- Colour is reserved for status. A stage never gets a colour of its own.
+
+**Colour for problems** (refines §1–§2).
+- The §2 status groups stay as they are, including the red **Needs fixing** pill (เกินกำหนด, ถูกบล็อก, ไม่อนุมัติ). Overdue money keeps red text.
+- A **red button** is only for an irreversible action: cancel a project, withdraw survey consent and wipe the answers, delete.
+- **Red text under a field** is only for an input error.
+- **Notices and warnings are amber.** This covers advance blockers, "why you cannot do this yet", and stale or partial data. They are never red.
+- Reversible actions are never red, for example close Lead, sign out, reopen.
+
+**Say why, in advance.**
+- Do not show a bare disabled button. Show the reason next to it, and when someone can fix it, a link to the place (ADR 0055).
+- Do not hide actions in a "ตัวเลือก ▾" overflow menu. Each action sits where it belongs:
+  - the owner is changed with a pencil next to the owner;
+  - destructive or closing actions go in a bottom section;
+  - history is a row link.
+
+**Links.** Five styles, chosen by purpose:
+
+| Style | Use |
+|---|---|
+| in-sentence underline | inside a sentence |
+| continue button with › | the next step |
+| row link with › | a list row that opens something |
+| short text link + icon | a secondary action |
+| whole table row | open the record |
+
+**Icons.**
+- Icons appear only in the sidebar, stat cards, section headings on home and work-list pages, and task-kind rows.
+- One meaning = one icon across the app (banknote = money in, clock = waiting, people = Leads, folder = projects, bars = report).
+- A stat card puts its icon in a 28px tile. The tile is tinted by meaning; the card background stays white.
+
+**Feedback.**
+- **Toast** (Sonner, already mounted top-right and fed by `?feedback=`): only for a completed action with nothing left to do.
+- **Errors** stay inline.
+- **A result that needs a next step** stays as an in-page bar with that action.
+- **Confirm dialogs** only for data loss or irreversible actions.
+- **Never `window.confirm`.** Use an in-app dialog. The browser's own `beforeunload` prompt on tab close or reload stays.
+
+**Dropdowns.**
+- Always the `NativeSelect` look: `appearance: none`, 12px left / 40px right padding, its own chevron 12px from the right edge, 40px tall, the label outside the box.
+- No raw `<select>`.
+
+**Tables.**
+- **Shared pattern:**
+  - sortable headers, a sticky header, ~48px rows, and the whole row clickable;
+  - money right-aligned, `tabular-nums`, no wrap, 2 decimals;
+  - `Status` for every pill;
+  - filters apply automatically (search debounced 300ms, no "กรอง" button);
+  - header buttons only for page actions, never repeating the sidebar.
+- Below 768px a table becomes cards.
+- **Data-dense tables never scroll horizontally.** Combine related amounts into one cell (sub-lines) instead of adding columns. They switch to cards below **1024px** (`/summary`).
+
+**Task tiers.**
+- Paper and editor tasks are full pages (invoice, quotation, contract draft, contract lock, Lead edit).
+- Short forms open in a right drawer, or a bottom sheet on mobile.
+- Read-only lists that belong to a record also open in a drawer (evidence history).
+
+**Access** (refines §5).
+- Role-locked pages stay invisible: no menu entry, and a direct URL shows "ไม่พบหน้านี้".
+- Grantable work (a capability, or being the owner) shows "ยังไม่มีสิทธิ์ทำงานนี้". It names what is needed and who grants it.
+
+**Test data.** The UI has no synthetic-data or test-mode controls (ADR 0062).
+
+**Menu labels** (replace §5). Two items are renamed:
+- "การเงิน" → **"การเงินบ้านคุณภาพ"**; the page title is "สรุปการเงินบ้านคุณภาพ".
+- "รายงาน" → **"รายงาน Lead"**; the page title is "รายงาน Lead ประจำเดือน {เดือน}".
