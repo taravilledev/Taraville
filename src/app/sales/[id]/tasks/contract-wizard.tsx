@@ -131,7 +131,7 @@ export function ContractWizard({ sale, agreement, draftId, action, creditCents: 
   function changeRow(id: string, key: keyof Omit<Row, "id">, value: string) {
     setRows(current => current.map(row => row.id === id ? { ...row, [key]: value } : row)); setError("");
   }
-  const header = <TaskHeader sale={sale} title={draft ? "แก้ไขร่างสัญญา" : "จัดทำร่างสัญญา"} backTab="contract" backLabel="กลับรายการสัญญา"
+  const header = <TaskHeader sale={sale} title={draft ? "แก้ไขร่างสัญญา" : "จัดทำร่างสัญญา"} backTab="contract" backLabel={`กลับขั้นสัญญา · ${sale.code} · ${sale.customer_name}`} hasContext={false}
       phase={isReview ? "สัญญา · ตรวจตัวอย่าง" : "สัญญา · กำลังแก้ไข"}
       status={<p>{isDirty ? "มีการแก้ไขที่ยังไม่บันทึก" : draft ? "ร่างที่บันทึกไว้" : "ฉบับใหม่ · ยังไม่บันทึก"}</p>} />;
   if (!quotations.length) return <div className={paper.editor}>{header}<p role="status">ต้องมีใบเสนอราคาที่ระบุราคาและลูกค้ายอมรับก่อนเตรียมสัญญา</p></div>;

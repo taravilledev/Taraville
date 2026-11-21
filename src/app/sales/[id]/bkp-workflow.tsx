@@ -2,6 +2,7 @@ import { bkpWorkflow } from "@/lib/sales/bkp-workflow";
 import type { SummaryData } from "./summary-sections";
 import { QuotationSection } from "./quotation-section";
 import { ContractSection } from "./contract-section";
+import type { TaskData } from "./tasks/task-data";
 import { WorkspaceHeading } from "./workspace-heading";
 import { formatMoney } from "@/lib/sales/money";
 import { statCardsClass } from "@/components/stat-cards";
@@ -26,11 +27,11 @@ export function BkpOverview({ data }: { data: SummaryData }) {
   </>;
 }
 
-export function BkpAgreementSection({ data, tab }: { data: SummaryData; tab: "quotation" | "contract" }) {
+export function BkpAgreementSection({ data, tab, contractTemplate, isExecutive }: { data: SummaryData; tab: "quotation" | "contract"; contractTemplate?: TaskData["contractTemplate"]; isExecutive?: boolean }) {
   const { finance, agreement } = data;
   if (!finance || !agreement) return null;
   return <>
     {tab === "quotation" && <QuotationSection data={data} />}
-    {tab === "contract" && <ContractSection data={data} />}
+    {tab === "contract" && <ContractSection data={data} contractTemplate={contractTemplate} isExecutive={isExecutive} />}
   </>;
 }

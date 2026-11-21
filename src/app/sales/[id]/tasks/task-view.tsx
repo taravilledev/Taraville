@@ -38,8 +38,8 @@ export function TaskView({ task, data, context }: { task: Task; data: TaskData; 
     quotation: "ใบเสนอราคา", contract: "สัญญา", documents: "เอกสาร", money: isBkp ? "การเงิน" : "รายการรับเงิน" };
   const visibleBackTab = backTab === "money" && !data.sale.can_finance ? "overview" : backTab;
   const isFocused = usesFocusedTaskHeader(task.name, isBkp);
-  const ownsHeader = ["issue-quotation", "prepare-contract", "edit-contract"].includes(task.name);
-  const hasPaperBody = ["issue-quotation", "prepare-contract", "edit-contract", "contract-addendum", "issue-invoice", "prepare-instalment",
+  const ownsHeader = ["issue-quotation", "prepare-contract", "edit-contract", "lock-contract"].includes(task.name);
+  const hasPaperBody = ["issue-quotation", "prepare-contract", "edit-contract", "lock-contract", "contract-addendum", "issue-invoice", "prepare-instalment",
     "prepare-payment", "issue-design-invoice", "prepare-design-payment", "confirm-payment"].includes(task.name);
   return <section className={isFocused ? quotation.task : panelClass}>
     {isFocused && !ownsHeader && <TaskHeader sale={data.sale} title={taskLabels[task.name]} backTab={visibleBackTab}

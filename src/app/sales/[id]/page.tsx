@@ -6,7 +6,7 @@ import { salesCase } from "@/lib/sales/queries";
 import { loadCaseData } from "@/lib/sales/case-loader";
 import { bkpCaseTabs, resolveCaseTab, taskReturnTab } from "@/lib/sales/case-navigation";
 import { type CaseTab } from "@/lib/sales/case-progress";
-import { availableTasks, findTask } from "@/lib/sales/tasks";
+import { availableTasks, findTask, type TaskName } from "@/lib/sales/tasks";
 import { taskContext } from "@/lib/sales/task-context";
 import { AppShell } from "@/app/walkin/app-shell";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
@@ -30,6 +30,8 @@ import { missingContractPrerequisite } from "@/lib/sales/contract-template";
 export const metadata = { title: "ข้อมูลงานและรายการขาย · Taraville Group", robots: { index: false, follow: false } };
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 const tabLabels: Record<CaseTab, string> = { overview: "ภาพรวม", design: "ออกแบบ", quotation: "ใบเสนอราคา", contract: "สัญญา", documents: "เอกสารทั้งหมด", money: "การเงิน" };
+const drawerTasks: Partial<Record<TaskName, { tab: CaseTab; name: string }>> = { "accept-quotation": { tab: "quotation", name: "accept" },
+  "sign-contract": { tab: "contract", name: "sign" }, "unlock-contract": { tab: "contract", name: "unlock" } };
 const one = (value: string | string[] | undefined) => typeof value === "string" ? value : undefined;
 
 export default function CasePage(props: Props) { return <Suspense fallback={<PageSkeleton />}><CaseDetail {...props} /></Suspense>; }
@@ -46,8 +48,9 @@ async function CaseDetail({ params, searchParams }: Props) {
   const task = name ? findTask(tasks, name, one(query.row)) : undefined;
   // A stale or no-longer-allowed task link returns to the summary with the reason.
   if (name && !task) redirect(`/sales/${sale.id}?notice=task`);
-  // On BKP the accept form lives in a drawer on the quotation tab; the next-step card and old links land there.
-  if (task?.name === "accept-quotation" && task.row && sale.brand === "BAAN_KUNAPAP" && sale.can_finance) redirect(`/sales/${sale.id}?tab=quotation&drawer=accept-${task.row}`);
+  // On BKP these short forms live in a drawer on their stage tab; the next-step card and old links land there.
+  const drawer = task && drawerTasks[task.name];
+  if (drawer && task.row && sale.brand === "BAAN_KUNAPAP" && sale.can_finance) redirect(`/sales/${sale.id}?tab=${drawer.tab}&drawer=${drawer.name}-${task.row}`);
 
   const isBkp = sale.brand === "BAAN_KUNAPAP";
   const isExecutive = staff.role === "executive";
@@ -62,8 +65,9 @@ async function CaseDetail({ params, searchParams }: Props) {
   const isDesignBillingTask = !!task && ["issue-design-invoice", "prepare-design-payment", "cancel-design-invoice"].includes(task.name);
   let contractTemplate: { contract_text: string; contract_text_approved?: boolean; contractor_name?: string; contractor_address?: string; is_synthetic?: boolean } | undefined;
   const isContractTask = !!task && ["prepare-contract", "edit-contract", "lock-contract"].includes(task.name);
-  // The header notice only needs the template while a BKP case can still be drafted; a failed read there just hides the notice.
-  if (isContractTask || (hasBkpWorkspace && sale.status === "draft")) {
+  // The header notice and the contract tab's blockers only need the template while a draft can still be locked; a failed read there just hides them.
+  const hasContractDraft = !task && tab === "contract" && !!agreement?.documents.some(doc => doc.kind === "contract" && doc.state === "draft");
+  if (isContractTask || (hasBkpWorkspace && (sale.status === "draft" || hasContractDraft))) {
     const template = await supabase.rpc("sales_contract_template", { p_case_id: sale.id });
     if (template.error && isContractTask) throw new Error("โหลดแม่แบบสัญญาไม่ได้ กรุณาลองใหม่");
     const parsed = z.object({ contract_text: z.string(), contract_text_approved: z.boolean().optional(),
@@ -93,7 +97,7 @@ async function CaseDetail({ params, searchParams }: Props) {
         <OverviewSection data={data} houseBrief={houseBrief} />
       </>}
       {tab === "design" && finance && agreement && <DesignBillingPanel sale={sale} finance={finance} agreement={agreement} tasks={tasks} />}
-      {(tab === "quotation" || tab === "contract") && <BkpAgreementSection data={data} tab={tab} />}
+      {(tab === "quotation" || tab === "contract") && <BkpAgreementSection data={data} tab={tab} contractTemplate={contractTemplate} isExecutive={isExecutive} />}
       {tab === "documents" && <DocumentsSection data={data} />}
       {tab === "money" && <MoneySection data={data} />}
     </>}
