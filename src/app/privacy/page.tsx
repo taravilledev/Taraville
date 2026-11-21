@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 export const metadata = { title: "ประกาศความเป็นส่วนตัว · Taraville Group", robots: { index: false, follow: false } };
 type Props = { searchParams: Promise<{ brand?: string | string[] }> };
 export default function PrivacyPage(props: Props) {
-  return <Suspense fallback={<PageSkeleton />}><Notice {...props} /></Suspense>;
+  return <Suspense fallback={<PageSkeleton layout="public" />}><Notice {...props} /></Suspense>;
 }
 async function Notice({ searchParams }: Props) {
   const requested = (await searchParams).brand;

@@ -19,7 +19,7 @@ import Image from "next/image";
 
 export const metadata = { title: "เอกสารการขาย · Taraville Group", robots: { index: false, follow: false } };
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
-export default function DocumentPage(props: Props) { return <Suspense fallback={<PageSkeleton />}><Document {...props} /></Suspense>; }
+export default function DocumentPage(props: Props) { return <Suspense fallback={<PageSkeleton layout="bare" />}><Document {...props} /></Suspense>; }
 async function Document({ params, searchParams }: Props) {
   const isPreview = (await searchParams).preview === "1";
   const { id } = await params; const { supabase } = await requireStaff();
