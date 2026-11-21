@@ -4,11 +4,13 @@ import { walkinFieldClass, walkinOptionClass, walkinOtherFieldClass } from "./wa
 export function SurveyField({ question, answers = {} }: { question: SurveyQuestion; answers?: Record<string, string | string[]> }) {
   const id = `survey-${question.key}`;
   const answer = answers[question.key];
+  // The catalogue labels keep their "N. " prefix for CSV headers; the form shows none.
+  const label = question.label.replace(/^\d+\.\s*/, "");
 
   if (question.legacy) {
     return typeof answer === "string" && answer ? (
       <label data-slot="walkin-field" className={walkinFieldClass} htmlFor={id}>
-        {question.label}
+        {label}
         <input id={id} name={`survey.${question.key}`} value={answer} readOnly />
       </label>
     ) : null;
@@ -17,7 +19,7 @@ export function SurveyField({ question, answers = {} }: { question: SurveyQuesti
   if (!("options" in question)) {
     return (
       <label data-slot="walkin-field" className={walkinFieldClass} htmlFor={id}>
-        {question.label}
+        {label}
         <input id={id} name={`survey.${question.key}`} type={question.kind} defaultValue={typeof answer === "string" ? answer : ""} maxLength={4000}
           inputMode={question.kind === "number" ? "decimal" : undefined}
           min={question.kind === "number" ? 0 : undefined}
@@ -28,7 +30,7 @@ export function SurveyField({ question, answers = {} }: { question: SurveyQuesti
 
   return (
     <fieldset className="m-0 min-w-0 border-0 p-0 [&>legend]:mb-3 [&>legend]:w-full [&>legend]:text-sm [&>legend]:font-semibold [&:not(:has(input[value='อื่นๆ']:checked))_[data-slot=survey-other]]:hidden">
-      <legend>{question.label}</legend>
+      <legend>{label}</legend>
       <div className="grid grid-cols-2 gap-2 min-[1180px]:grid-cols-3 max-[640px]:grid-cols-1">
         {question.options.filter(option => !question.legacyOptions?.includes(option)
           || (Array.isArray(answer) ? answer.includes(option) : answer === option)).map((option, index) => (

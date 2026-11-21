@@ -41,3 +41,17 @@ export const SURVEY_QUESTIONS: Record<Brand, SurveyQuestion[]> = {
     SALES_STAFF,
   ],
 };
+
+// Display grouping for the form; sales_staff is filled by the server so it is in no group.
+export const SURVEY_GROUPS: Record<Brand, { label: string; keys: string[] }[]> = {
+  BAAN_KUNAPAP: [
+    { label: "บ้านที่จะสร้าง", keys: ["address", "house_type", "layout"] },
+    { label: "งบและการเงิน", keys: ["budget_range", "payment_method", "income_range", "monthly_installment"] },
+    { label: "ตัวลูกค้า", keys: ["gender", "age_range", "occupation", "channel"] },
+  ],
+  TARAVILLE: [
+    { label: "บ้านที่สนใจ", keys: ["house_type", "bedrooms", "decision_factors", "preferred_location", "purchase_reason", "decision_time"] },
+    { label: "งบและการเงิน", keys: ["budget_range", "monthly_installment", "income_range"] },
+    { label: "ตัวลูกค้า", keys: ["address", "gender", "age_range", "occupation", "channel"] },
+  ],
+};
