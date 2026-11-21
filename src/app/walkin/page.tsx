@@ -26,7 +26,7 @@ const BRAND_CHOICES: { brand: Brand; summary: string }[] = [
 ];
 type WalkinProps = { searchParams: Promise<{ brand?: string | string[]; saved?: string | string[] }> };
 export default function WalkinPage(props: WalkinProps) {
-  return <Suspense fallback={<PageSkeleton />}><WalkinContent {...props} /></Suspense>;
+  return <Suspense fallback={<PageSkeleton layout="focus" />}><WalkinContent {...props} /></Suspense>;
 }
 async function WalkinContent({ searchParams }: WalkinProps) {
   const session = await requireStaff();
