@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { salesCase } from "@/lib/sales/queries";
 import { loadCaseData } from "@/lib/sales/case-loader";
-import { bkpCaseTabs, resolveCaseTab } from "@/lib/sales/case-navigation";
+import { bkpCaseTabs, resolveCaseTab, taskReturnTab } from "@/lib/sales/case-navigation";
 import { type CaseTab } from "@/lib/sales/case-progress";
 import { availableTasks, findTask } from "@/lib/sales/tasks";
 import { taskContext } from "@/lib/sales/task-context";
@@ -12,7 +12,9 @@ import { AppShell } from "@/app/walkin/app-shell";
 import { PageSkeleton } from "@/app/walkin/page-skeleton";
 import { CaseHeader } from "./case-header";
 import { BkpOverview, BkpAgreementSection } from "./bkp-workflow";
-import { BkpProgress } from "./bkp-progress";
+import { BkpStageBar } from "./bkp-stage-bar";
+import { BkpNextStep } from "./bkp-next-step";
+import { designFeeNote } from "./design-fee-note";
 import { HouseBriefPanel } from "./house-brief-panel";
 import { DesignBillingPanel } from "./design-billing-panel";
 import { DocumentsSection, MoneySection, OverviewSection } from "./summary-sections";
@@ -24,7 +26,6 @@ import { FixNotice } from "@/components/fix-notice";
 import { CancelProjectSection } from "@/app/walkin/cancel-project-section";
 import { guidance } from "@/lib/errors/error-map";
 import { missingContractPrerequisite } from "@/lib/sales/contract-template";
-import { cn } from "@/lib/utils";
 
 export const metadata = { title: "ข้อมูลงานและรายการขาย · Taraville Group", robots: { index: false, follow: false } };
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -50,7 +51,10 @@ async function CaseDetail({ params, searchParams }: Props) {
   const isExecutive = staff.role === "executive";
   const hasBkpWorkspace = isBkp && sale.can_finance;
   const tabs: readonly CaseTab[] = sale.can_finance ? isBkp ? bkpCaseTabs : ["overview", "documents", "money"] : ["overview"];
-  const tab = resolveCaseTab(hasBkpWorkspace ? [...tabs, "documents"] : tabs, one(query.tab), one(query.flow));
+  const requestedTab = one(query.tab);
+  // BKP opens on the stage in progress; a task page highlights the stage it belongs to.
+  const stageTab = progress ? bkpCaseTabs[progress.complete ? 4 : progress.current] : "overview";
+  const tab = resolveCaseTab(hasBkpWorkspace ? [...tabs, "documents"] : tabs, requestedTab ?? (hasBkpWorkspace ? stageTab : undefined), one(query.flow));
   const data = { sale, finance, agreement, refunds, closeout, tasks, work, summary };
   const houseBrief = <HouseBriefPanel sale={sale} task={task} tab={tab} />;
   const isDesignBillingTask = !!task && ["issue-design-invoice", "prepare-design-payment", "cancel-design-invoice"].includes(task.name);
@@ -68,22 +72,22 @@ async function CaseDetail({ params, searchParams }: Props) {
   const missingPrerequisite = hasBkpWorkspace && sale.status === "draft" ? missingContractPrerequisite(contractTemplate) : null;
   const isFocusedTask = !!task && usesFocusedTaskHeader(task.name, isBkp);
   const isShowingNextStep = task && step?.task === task.name && step.row === task.row;
-  const navigation = !task && tabs.length > 1 ? <nav className={cn(tabLinksClass, isBkp && "grid grid-cols-5 gap-0 max-[680px]:grid-cols-3 [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-2 [&_a]:text-center")} aria-label="หมวดข้อมูลงาน">{tabs.map(item => <Link key={item} href={`/sales/${sale.id}?tab=${item}`} prefetch={false}
-    aria-current={item === tab ? "page" : undefined}>{!isBkp && item === "documents" ? "เอกสาร" : !isBkp && item === "money" ? "รับเงิน" : tabLabels[item]}{item === "money" && pending > 0 ? ` (${pending})` : ""}</Link>)}</nav> : null;
+  const navigation = hasBkpWorkspace && finance && agreement ? <>
+    <BkpStageBar caseId={sale.id} current={progress ? progress.complete ? 5 : progress.current : -1} selected={task ? taskReturnTab(task.name, true) : tab}
+      designNote={designFeeNote(finance, agreement)} />
+    <BkpNextStep caseId={sale.id} step={isShowingNextStep ? null : step} isExecutive={isExecutive} />
+  </> : !isBkp && !task && tabs.length > 1 ? <nav className={tabLinksClass} aria-label="หมวดข้อมูลงาน">{tabs.map(item => <Link key={item} href={`/sales/${sale.id}?tab=${item}`} prefetch={false}
+    aria-current={item === tab ? "page" : undefined}>{item === "documents" ? "เอกสาร" : item === "money" ? "รับเงิน" : tabLabels[item]}{item === "money" && pending > 0 ? ` (${pending})` : ""}</Link>)}</nav> : null;
   return <AppShell staff={staff} wide><div className="grid gap-6">
     {!isFocusedTask && <CaseHeader isExecutive={isExecutive} sale={sale} summary={!isBkp ? summary : null} step={isShowingNextStep ? null : step}
-      showProgress={!isBkp || !!task}
-      navigation={isBkp ? navigation : undefined}
-      workflow={sale.brand === "BAAN_KUNAPAP" && finance && agreement && progress ?
-        <BkpProgress isExecutive={isExecutive} sale={sale} finance={finance} agreement={agreement} progress={progress} step={step} tasks={tasks} activeTask={task} compact={(!task && tab === "documents") || isFocusedTask || isDesignBillingTask} /> : undefined} />}
+      showProgress={!isBkp} navigation={navigation} />}
     {missingPrerequisite && !isFocusedTask && <FixNotice {...guidance(missingPrerequisite, { brand: sale.brand, isExecutive })} />}
     {!isDesignBillingTask && !isFocusedTask && task?.name !== "accept-quotation" && (task || (!isBkp && tab !== "overview")) && houseBrief}
     {one(query.notice) === "task" && <p className={noticeClass} role="status">งานที่เปิดไม่ได้แล้ว เพราะสถานะหรือสิทธิ์เปลี่ยน กรุณาเลือกจากหน้านี้ใหม่</p>}
     {task ? <TaskView task={task} context={task.name === "design" ? houseBrief : undefined}
       data={{ sale, finance, agreement, staffId: staff.id, isExecutive, reservation, refunds, owners, contractTemplate, work }} /> : <>
-      {!isBkp && navigation}
       {tab === "overview" && <>
-        {hasBkpWorkspace && <BkpOverview data={data} step={step} isExecutive={isExecutive} />}
+        {hasBkpWorkspace && <BkpOverview data={data} />}
         <OverviewSection data={data} houseBrief={houseBrief} />
       </>}
       {tab === "design" && finance && <DesignBillingPanel sale={sale} finance={finance} tasks={tasks} />}

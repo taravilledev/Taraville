@@ -19,8 +19,8 @@ const stages = {
 } as const;
 type Summary = { net: string | null; received: string; outstanding: string | null };
 
-export function CaseHeader({ sale, summary, step, workflow, navigation, showProgress = true, isExecutive = false }: {
-  sale: SalesCase; summary: Summary | null; step: NextStep | null; workflow?: ReactNode; navigation?: ReactNode; showProgress?: boolean; isExecutive?: boolean;
+export function CaseHeader({ sale, summary, step, navigation, showProgress = true, isExecutive = false }: {
+  sale: SalesCase; summary: Summary | null; step: NextStep | null; navigation?: ReactNode; showProgress?: boolean; isExecutive?: boolean;
 }) {
   const flow: readonly string[] = stages[sale.brand];
   const current = flow.indexOf(sale.status);
@@ -31,14 +31,14 @@ export function CaseHeader({ sale, summary, step, workflow, navigation, showProg
       <div className="flex flex-wrap items-center gap-3"><Status tone={caseStatusTones[sale.status]}>{caseStatusLabels[sale.status]}</Status><Link className={buttonVariants({ variant: "outline", size: "auto" })} href="/dashboard" prefetch={false}>กลับแดชบอร์ด</Link></div>
     </div>
     {navigation}
-    {showProgress && !workflow && current >= 0 && <ol className={stepsClass} aria-label="สถานะงาน">{flow.map((status, index) =>
+    {showProgress && current >= 0 && <ol className={stepsClass} aria-label="สถานะงาน">{flow.map((status, index) =>
       <li key={status} aria-current={index === current ? "step" : undefined} data-done={index < current}>{caseStatusLabels[status as SalesCase["status"]]}</li>)}</ol>}
     {summary && <dl className={statCardsClass}>
       <div><dt>{sale.brand === "BAAN_KUNAPAP" ? "มูลค่าโครงการ (ราคาสุทธิ)" : "ราคาสุทธิ"}</dt><dd>{money(summary.net)}</dd></div>
       <div><dt>รับแล้ว (หลังหักคืนเงิน)</dt><dd>{money(summary.received)}</dd></div>
       <div><dt>ค้างชำระ</dt><dd>{money(summary.outstanding)}</dd></div>
     </dl>}
-    {showProgress && (workflow ?? (summary && <NextStepCard sale={sale} step={step} isExecutive={isExecutive} />))}
+    {showProgress && summary && <NextStepCard sale={sale} step={step} isExecutive={isExecutive} />}
   </>;
 }
 

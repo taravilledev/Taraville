@@ -61,11 +61,10 @@ for (const name of ["design", "assign", "close", "request-refund", "cancel-desig
 }
 assert.equal(usesFocusedTaskHeader("accept-quotation", true), false);
 const navigation = createElement("nav", { "aria-label": "Case sections" }, "TEST TABS");
-const workflow = createElement("section", null, "TEST FULL WORKFLOW");
-const header = renderToStaticMarkup(createElement(CaseHeader, { sale, summary: null, step: null, navigation, workflow }));
-assert.ok(header.indexOf("TEST TABS") < header.indexOf("TEST FULL WORKFLOW"), "Navigation precedes the long overview workflow");
-const focused = renderToStaticMarkup(createElement(CaseHeader, { sale, summary: null, step: null, navigation, workflow, showProgress: false }));
-assert.ok(focused.includes("TEST TABS") && !focused.includes("TEST FULL WORKFLOW") && !focused.includes('aria-label="สถานะงาน"'));
+const header = renderToStaticMarkup(createElement(CaseHeader, { sale, summary: null, step: null, navigation }));
+assert.ok(header.includes("TEST TABS"));
+const focused = renderToStaticMarkup(createElement(CaseHeader, { sale, summary: null, step: null, navigation, showProgress: false }));
+assert.ok(focused.includes("TEST TABS") && !focused.includes('aria-label="สถานะงาน"'));
 const data = { sale, tasks: [], work: [], closeout: null, refunds: [], agreement: { is_settled: false, documents: [], instalments: [] },
   summary: { net: null, received: "350000", outstanding: null }, finance: { case_id: sale.id, version: 1, issuer_ready: true, can_change_design: false,
     design_plan: null, design_bills: [], design_legacy_received_cents: "0", design_legacy_has_payments: false,
@@ -138,22 +137,6 @@ assert.match(quotationPage([]), /ยังไม่มีใบเสนอร�
 assert.equal(revisions[0].revision, 1, "Rendering does not mutate source ordering");
 console.log("PASS: latest quotation, visible accepted revision, collapsed actionable history and permission-safe links");
 
-const { BkpProgress } = load("../../app/sales/[id]/bkp-progress.tsx", {
-  "next/link": link, "@/lib/sales/money": money, "@/lib/sales/tasks": tasks,
-  "@/lib/sales/bkp-checklist": load("./bkp-checklist.ts"), "@/lib/sales/bkp-workflow": load("./bkp-workflow.ts"),
-  "../sales.module.css": css, "./bkp-progress.module.css": css,
-}) as typeof import("../../app/sales/[id]/bkp-progress");
-const progressHtml = renderToStaticMarkup(createElement(BkpProgress, { sale, finance: data.finance,
-  agreement: { is_settled: false, instalments: [], documents: [quote(2), quote(3)] },
-  progress: { steps: ["เปิดโครงการ", "ค่าออกแบบ", "ใบเสนอราคา", "สัญญา", "รับเงิน"], current: 2, complete: false },
-  step: null, tasks: [acceptOld], activeTask: acceptOld }));
-assert.match(progressHtml, /<li data-done="false" aria-current="step">[\s\S]*?ลูกค้ายอมรับใบเสนอราคา<small>กำลังทำรายการนี้/,
-  "Acceptance remains highlighted when viewing a revision different from the project checklist");
-assert.match(progressHtml, /<span>จัดทำใบเสนอราคาที่มีราคา<small>เสร็จแล้ว<\/small><\/span><a[^>]*>ดูเอกสาร<\/a>/,
-  "Completed checklist titles are plain text with an explicit document link");
-assert.ok(progressHtml.includes("การเงิน · ค่าแบบ งวด และใบเสร็จ"));
-console.log("PASS: current acceptance task and completed checklist document affordance");
-
 function uploadStatus(path: string, pending: boolean, grouped = false) {
   const state: unknown[] = [{ name: "test.pdf" }, path, "", pending];
   const { EvidenceUpload } = load("../../app/sales/evidence-upload.tsx", {
@@ -185,12 +168,12 @@ const { BkpOverview } = load("../../app/sales/[id]/bkp-workflow.tsx", {
   "./workspace-heading": moneyWorkspaceHeading, "./quotation-section": { QuotationSection }, "./contract-section": { ContractSection: () => null },
   "../sales.module.css": css, "./bkp-workflow.module.css": css, "./workspace-section.module.css": css,
 }) as typeof import("../../app/sales/[id]/bkp-workflow");
-const overviewWorkspace = renderToStaticMarkup(createElement(BkpOverview, { data, step: null }));
+const overviewWorkspace = renderToStaticMarkup(createElement(BkpOverview, { data }));
 assert.ok(overviewWorkspace.indexOf("ภาพรวมโครงการ</h2>") < overviewWorkspace.indexOf("มูลค่าโครงการ"), "Overview facts follow the section heading");
 assert.ok(overviewWorkspace.includes("3,500.00 บาท"));
 assert.equal((overviewWorkspace.match(/ยังไม่ระบุ/g) ?? []).length, 2, "Missing project values are not represented as zero");
 assert.match(overviewWorkspace, /tab=documents/);
-const separateOverview = renderToStaticMarkup(createElement(BkpOverview, { step: null, data: {
+const separateOverview = renderToStaticMarkup(createElement(BkpOverview, { data: {
   ...data,
   finance: { ...data.finance!, design_plan: { tier: "under150", usable_area: "120", total_cents: "1200000", instalments: ["350000", "350000", "500000"], note: "" } },
   agreement: { ...data.agreement!, documents: [{ id: id(50), kind: "contract", state: "signed", number: "SYNTHETIC", revision: 1, version: 1, evidence_path: null, payload: { design_fee_separate: true } }] },
@@ -199,16 +182,7 @@ const separateOverview = renderToStaticMarkup(createElement(BkpOverview, { step:
 assert.match(separateOverview, /2,012,000\.00 บาท/);
 assert.match(separateOverview, /ค้างชำระค่าก่อสร้าง<\/dt><dd>2,000,000\.00 บาท/);
 assert.match(separateOverview, /รับแล้วหลังหักคืนเงิน<\/dt><dd>3,500\.00 บาท/);
-const readOnlyStep = renderToStaticMarkup(createElement(BkpOverview, { data, step: { title: "รอยืนยัน", allowed: false, tab: "money" } }));
-assert.match(readOnlyStep, /รอผู้มีสิทธิ์ดำเนินการ/);
-assert.doesNotMatch(readOnlyStep, /(?:ไปทำงานถัดไป|ไปหน้าการเงิน)<\/a>/);
-const invoiceStep = renderToStaticMarkup(createElement(BkpOverview, {
-  data: { ...data, tasks: [{ name: "issue-invoice", row: id(51), label: "Invoice", group: "main" }] },
-  step: { title: "ออกใบแจ้งชำระ มัดจำวันลงนาม", tab: "money", anchor: "schedule", task: "issue-invoice", row: id(51), allowed: true },
-}));
-assert.match(invoiceStep, /href="[^"]+\?tab=money#schedule">ไปหน้าการเงิน<\/a>/);
-assert.doesNotMatch(invoiceStep, /task=issue-invoice/);
-console.log("PASS: overview hierarchy, exact financial summary and permission-safe next action");
+console.log("PASS: overview hierarchy and exact financial summary");
 
 const signingEvidence = load("../../app/sales/evidence-upload.tsx", {
   "@supabase/ssr": { createBrowserClient: () => { throw new Error("No upload in render checks"); } },
