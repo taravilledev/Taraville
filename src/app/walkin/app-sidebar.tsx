@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, type ComponentType } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import { BriefcaseBusiness, ChartColumn, House, LayoutDashboard, Lock, LogOut, Menu, SlidersHorizontal, UserPlus, Users, Wallet } from "lucide-react";
-import { BrandMark } from "@/components/brand-tag";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { logout } from "@/app/login/actions";
 import { activeHref, type NavIcon, type NavItem } from "@/lib/nav";
@@ -22,7 +22,7 @@ const ROW = "flex min-h-(--tap-min) items-center gap-3 rounded-sm px-3 text-sm t
 
 function GroupMark({ labelClass }: { labelClass: string }) {
   return <Link href="/dashboard" prefetch={false} className="flex min-h-(--tap-min) items-center gap-3 px-3 text-foreground no-underline max-[1179px]:md:justify-center max-[1179px]:md:px-0">
-    <span className="flex shrink-0 gap-1"><BrandMark brand="BAAN_KUNAPAP" /><BrandMark brand="TARAVILLE" /></span>
+    <Image src="/brand/tpc-logo.png" alt="" width={240} height={132} className="h-6 w-auto shrink-0 min-[1180px]:h-8" priority />
     <span className={`flex flex-col leading-[1.25] ${labelClass}`}><strong className="text-sm [font-family:var(--font-utility)]">Taraville Group</strong><small className="text-xs text-muted-foreground">บ้านคุณภาพ · ธาราวิลล์</small></span>
   </Link>;
 }
@@ -58,6 +58,20 @@ function LogoutButton({ labelClass }: { labelClass: string }) {
   return <button title="ออกจากระบบ" disabled={pending} className={`${ROW} w-full cursor-pointer border-0 bg-transparent [font:inherit]`}><LogOut size={20} aria-hidden /><span className={labelClass}>{label}</span></button>;
 }
 
+const ASIDE = "sticky top-0 hidden h-dvh w-16 shrink-0 flex-col gap-3 overflow-y-auto border-r bg-card p-2 md:flex min-[1180px]:w-62 print:hidden";
+const MOBILE_HEADER = "flex min-h-14 items-center justify-between border-b bg-card px-2 md:hidden print:hidden";
+
+// Shown while a page streams in, so the loading frame already has the sidebar layout of the page that follows.
+export function SidebarSkeleton() {
+  return <>
+    <aside className={ASIDE}>
+      <GroupMark labelClass={RAIL_LABEL} />
+      {[0, 1, 2, 3, 4].map(row => <span key={row} className="mx-2 h-6 rounded-sm bg-muted" />)}
+    </aside>
+    <header className={MOBILE_HEADER}><GroupMark labelClass="" /></header>
+  </>;
+}
+
 export function AppSidebar({ items, staff }: { items: NavItem[]; staff: Staff }) {
   // The drawer is md:hidden but stays modal if the screen widens (phone rotated), which would block the whole page.
   useEffect(() => {
@@ -67,11 +81,11 @@ export function AppSidebar({ items, staff }: { items: NavItem[]; staff: Staff })
     return () => wide.removeEventListener("change", close);
   }, []);
   return <>
-    <aside className="sticky top-0 hidden h-dvh w-16 shrink-0 flex-col gap-3 overflow-y-auto border-r bg-card p-2 md:flex min-[1180px]:w-62 print:hidden">
+    <aside className={ASIDE}>
       <SidebarBody items={items} staff={staff} labelClass={RAIL_LABEL} />
     </aside>
     <Dialog>
-      <header className="flex min-h-14 items-center justify-between border-b bg-card px-2 md:hidden print:hidden">
+      <header className={MOBILE_HEADER}>
         <GroupMark labelClass="" />
         <DialogTrigger aria-label="เปิดเมนู" className="grid size-(--tap-min) place-items-center rounded-sm text-foreground hover:bg-muted"><Menu size={22} aria-hidden /></DialogTrigger>
       </header>
