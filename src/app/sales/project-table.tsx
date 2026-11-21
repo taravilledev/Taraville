@@ -11,7 +11,7 @@ import { tabLinksClass } from "@/components/tab-links";
 
 type Brand = keyof typeof brandLabels;
 export type ProjectRow = {
-  id: string; href: string; code: string; customer: string; brand: Brand; owner: string; updated_at: string; status: CaseStatus;
+  id: string; href: string; code: string; customer: string; brand: Brand; owner: string; updated_at: string | null; status: CaseStatus;
   waiting_since?: string | null;
   // null when the viewer lacks financial.view: the table then shows the case status and no next task.
   track: { steps: string[]; current: number; status: StageTrackStatus } | null;
@@ -65,10 +65,10 @@ export function ProjectTable({ rows }: { rows: ProjectRow[] }) {
       <td>{row.action?.allowed
         ? <Link className="relative z-1 font-semibold text-primary underline-offset-4 hover:underline" href={row.action.href} prefetch={false}>{row.action.title} ›</Link>
         : row.action ? <span className="text-muted-foreground">{row.action.title}</span> : <span className="text-muted-foreground">—</span>}</td>
-      <td>{row.owner}</td>
+      <td>{row.owner || "—"}</td>
       <td className="whitespace-nowrap text-muted-foreground">{row.waiting_since
         ? <><small className="block text-xs">รอตั้งแต่</small>{localDate(row.waiting_since)}</>
-        : <><small className="block text-xs">อัปเดต</small>{localDate(row.updated_at)}</>}</td>
+        : row.updated_at ? <><small className="block text-xs">อัปเดต</small>{localDate(row.updated_at)}</> : "—"}</td>
     </DataRow>)}</tbody>
   </DataTable>;
 }

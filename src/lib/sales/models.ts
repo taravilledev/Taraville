@@ -38,8 +38,9 @@ export const caseFactsSchema = z.object({
 });
 export type CaseFacts = z.infer<typeof caseFactsSchema>;
 export const caseListRowSchema = caseSummarySchema.extend({
-  detail: z.string().nullable(), owner: z.string(), updated_at: z.string(),
-  permissions: z.record(z.string(), z.boolean()).nullable(), facts: caseFactsSchema.nullable(),
+  // Defaults keep /sales working on a DB without 20261121090000, so the code can deploy before the migration.
+  detail: z.string().nullable(), owner: z.string().default(""), updated_at: z.string().nullable().default(null),
+  permissions: z.record(z.string(), z.boolean()).nullable().default(null), facts: caseFactsSchema.nullable().default(null),
 });
 export type CaseListRow = z.infer<typeof caseListRowSchema>;
 export const bootstrapSchema = z.object({
