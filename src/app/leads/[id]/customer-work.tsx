@@ -13,7 +13,8 @@ import { noticeClass } from "@/components/notice";
 import { Status, type StatusTone } from "@/components/status";
 import { cn } from "@/lib/utils";
 
-type Props = { rows: WorkRow[] | null; names: Map<string, string>; isClosed: boolean; action?: ReactNode };
+// emptyAction: the way to open a first project, shown inside the empty card.
+type Props = { rows: WorkRow[] | null; names: Map<string, string>; isClosed: boolean; action?: ReactNode; emptyAction?: ReactNode };
 
 const workCardClass = "grid gap-2 rounded-md border bg-card p-4 text-foreground no-underline [overflow-wrap:anywhere] [&_p]:m-0";
 const hintClass = "m-0 text-sm text-muted-foreground";
@@ -49,7 +50,7 @@ function WorkCard({ code, status, tone, item, href, children }: {
 }
 
 /** Customer Work of a Lead: live Projects (BKP) or sales (Taraville) as cards, finished ones folded below. */
-export function CustomerWork({ rows, names, isClosed, action }: Props) {
+export function CustomerWork({ rows, names, isClosed, action, emptyAction }: Props) {
   if (!rows) return <section className={formCardClass}><h2>โครงการ</h2><p className={formErrorClass} role="alert">โหลดโครงการไม่ได้ ลองรีเฟรชหน้านี้</p></section>;
   const card = ({ item, project, href, isFinished, isHalfOpen, code }: WorkRow) => {
     const isCancelled = project?.status === "cancelled";
@@ -71,7 +72,12 @@ export function CustomerWork({ rows, names, isClosed, action }: Props) {
       <div><h2>โครงการ</h2><span className={hintClass}>{rows.length} โครงการ</span></div>
       {action}
     </div>
-    {!rows.length && <p className={formHintClass}>{isClosed ? "Lead นี้ปิดอยู่ เปิด Lead อีกครั้งก่อนจึงจะเปิดโครงการได้" : "ยังไม่มีโครงการ"}</p>}
+    {!rows.length && (isClosed || !emptyAction
+      ? <p className={formHintClass}>{isClosed ? "Lead นี้ปิดอยู่ เปิด Lead อีกครั้งก่อนจึงจะเปิดโครงการได้" : "ยังไม่มีโครงการ"}</p>
+      : <div className="grid justify-items-start gap-3 rounded-md border border-dashed p-4">
+        <p className="m-0 text-sm text-muted-foreground">ยังไม่มีโครงการ · เปิดโครงการเพื่อเริ่มงานขายของลูกค้ารายนี้</p>
+        {emptyAction}
+      </div>)}
     <ul className={listClass}>{rows.filter(row => !row.isFinished).map(card)}</ul>
     {finished.length > 0 && <details className="mt-4"><summary>โครงการที่จบแล้ว ({finished.length})</summary>
       <ul className={cn(listClass, "mt-3")}>{finished.map(card)}</ul></details>}

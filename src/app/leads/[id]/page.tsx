@@ -15,7 +15,7 @@ import { EvidenceHistory, SurveyChoice, SurveyChoiceStatus, formatDate } from "@
 import { ClosedBand, CloseLead, ReopenLead } from "@/app/walkin/status-controls";
 import { CustomerWork } from "./customer-work";
 import { OpenProject } from "@/app/walkin/project-controls";
-import { OpenProjectDialog } from "./open-project-dialog";
+import { OpenProjectDialog, OpenProjectTrigger } from "./open-project-dialog";
 import { ReassignLead } from "./reassign-lead";
 import { Drawer } from "@/components/drawer";
 import { Button } from "@/components/ui/button";
@@ -51,6 +51,8 @@ async function Detail({ params, searchParams }: Props) {
   const action = rows ? primaryAction(group, live.length) : null;
   const openProject = canOpenBkp ? <OpenProjectDialog key={lead.version} label={action === "open" ? undefined : "เปิดโครงการเพิ่ม"} isText={action !== "open"}><OpenProject lead={lead} /></OpenProjectDialog>
     : work?.canCreate && !isClosed && <Link href={`/sales/new?lead=${lead.id}`} prefetch={false} className={action === "open" ? primaryActionClass : textActionClass}>{action === "open" ? "เปิดโครงการ" : "เปิดโครงการเพิ่ม"}</Link>;
+  const emptyAction = action === "open" && (canOpenBkp ? <OpenProjectTrigger />
+    : work?.canCreate && !isClosed && <Link href={`/sales/new?lead=${lead.id}`} prefetch={false} className={secondaryActionClass}>เปิดโครงการ</Link>);
   const blockers = projects.filter(project => project.status === "active").map(project => ({ code: project.code, href: rows?.find(row => row.project?.id === project.id)?.href }));
   const saved = (await searchParams).saved === "1";
   const ownerResult = await session.supabase.from("staff").select("id,full_name,role,is_active").eq("id", lead.owner_id).maybeSingle();
@@ -81,7 +83,7 @@ async function Detail({ params, searchParams }: Props) {
     </header>
     {isClosed && <div className="mb-6"><ClosedBand lead={lead} info={info} /></div>}
     <div className="grid items-start min-[900px]:grid-cols-[minmax(0,3fr)_minmax(320px,2fr)] min-[900px]:gap-x-6 [&>section]:min-w-0">
-      <CustomerWork rows={rows} names={names} isClosed={isClosed} action={action === "open" ? undefined : openProject} />
+      <CustomerWork rows={rows} names={names} isClosed={isClosed} action={action === "open" ? undefined : openProject} emptyAction={emptyAction} />
       <section className={formCardClass}>
         <h2>ข้อมูลติดต่อ</h2>
         <dl className={cn(listClass, "grid-cols-[minmax(0,max-content)_minmax(0,1fr)]")}>
