@@ -6,6 +6,9 @@ import { agreementSchema } from "./agreement-models";
 import { refundSchema } from "./refund-models";
 import { moneySummary, nextStep, projectProgress, type NextStepInput } from "./case-progress";
 import type { SalesCase } from "./models";
+import { bkpWorkflow } from "./bkp-workflow";
+import { taskContext } from "./task-context";
+import { designFacts } from "./tasks";
 
 type Supabase = Awaited<ReturnType<typeof requireStaff>>["supabase"];
 
@@ -46,6 +49,10 @@ export async function loadCaseData(supabase: Supabase, sale: SalesCase) {
   const quotations = agreement?.documents.filter(doc => doc.kind === "quotation" && doc.payload.price_set !== false && BigInt(doc.payload.total_cents ?? "0") > BigInt(0)) ?? [];
   const net = sale.brand === "BAAN_KUNAPAP" && !contract ? null : sale.net_price_cents ?? null;
   const summary = finance && agreement ? moneySummary({ net, payments: finance.payments, instalments: agreement.instalments, closeout }) : null;
+  const flow = finance && agreement && sale.brand === "BAAN_KUNAPAP" ? bkpWorkflow(finance, agreement) : null;
+  // staffId only marks the viewer's own refunds, which the design facts do not read.
+  const design = flow && finance && agreement ? designFacts(taskContext({ sale, finance, agreement, refunds, staffId: "", reservation, work }),
+    { feesPaid: flow.done.fees, hasQuotation: flow.quotations.length > 0 }) : undefined;
   const input: NextStepInput | null = finance && agreement ? {
     brand: sale.brand, status: sale.status, can: sale.permissions, hasNetPrice: sale.net_price_cents != null,
     hasSummary: finance.documents.some(doc => doc.kind === "summary"), hasBookingReceipt: finance.payments.some(payment => payment.kind === "booking"),
@@ -58,6 +65,7 @@ export async function loadCaseData(supabase: Supabase, sale: SalesCase) {
     contract: contract ? contract.state === "signed" ? "signed" : contract.state === "draft" ? "draft" : "awaiting" : "none", contractId: contract?.id,
     instalment: row ? { id: row.id, label: row.label, needsAcceptance: row.needs_acceptance, accepted: row.accepted_at != null,
       hasInvoice: row.invoice_id != null, outstanding: row.balance?.outstanding_cents !== "0", isCreditCovered: row.net_cents === "0" } : null,
+    design,
   } : null;
   const step = input ? nextStep(input) : null;
   const progress = input ? projectProgress(input) : null;

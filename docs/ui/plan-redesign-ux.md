@@ -119,10 +119,10 @@ The rules come from design-system.md §8. No screen redesign in this phase, exce
 ## Phase 4 — project workspace, documents, Taraville opening (boards Project*, DesignInvoice, QuotationEditor, ContractEditor, ContractLock, TVProject, TVOpenProject, DocumentView; ADRs 0057, 0058)
 
 - [ ] **Stage tabs and the single "งานถัดไป" card.**
-  - The BKP stage comes from `bkpOverviewStage` only.
-  - **Tell the owner** that the `/summary` stage tab results change.
+  - [x] The BKP stage comes from `bkpOverviewStage` only (2026-11-21): `projectProgress` now uses the same rule (a quotation or a fully paid design fee starts ใบเสนอราคา, not the design plan); `stage-agreement.check.mts` requires zero disagreements; SQL `sales_case_facts` adds `hasQuotation`/`feesPaid` (`20261121090200`). Cross-checked locally: list stage = workspace stage on all 99 open BKP cases.
+  - **Correction (2026-11-21):** `/summary` already used `bkpOverviewStage` (`src/lib/sales/executive.ts`), so its tabs do **not** change. What changes is the stage shown by `projectProgress`: the workspace progress, the Phase 3 stage track on `/sales` and the homes, and the Lead cards — a BKP case with a design plan but no quotation moves from ใบเสนอราคา back to ออกแบบ (17 of 99 open BKP cases in local data). Tell the owner this one.
   - Redirect old `?tab=` / `?task=` links.
-- [ ] **`nextStep()` design-fee branch** (instalment 1 → 2 → 3 → quotation), with a `*.check.mts`. Overdue warns and never gates.
+- [x] **`nextStep()` design-fee branch** (instalment 1 → 2 → 3 → quotation), with a `*.check.mts`. Overdue warns and never gates. (2026-11-21: instalments 1–2 = issue, then record payment; instalment 3 = issue, then the quotation leads, matching ADR 0058 §2 and board ProjectDesign; facts from `designFacts()` in `tasks.ts` (same guard as the task pages) and SQL `sales_case_facts.input.design`, cross-checked 136/136 BKP cases.)
 - [ ] **Task tiers.**
   - Full pages: invoice, quotation, contract draft, lock.
   - Drawers: payment record and confirm, acceptance, accept quotation, refunds, reserve, sign, unlock.

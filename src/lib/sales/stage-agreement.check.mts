@@ -26,10 +26,14 @@ const doc = (kind: string, state: string, payload: Doc["payload"] = {}): Doc =>
   ({ id: kind + state, number: null, revision: 1, version: 1, evidence_path: null, kind, state, payload }) as Doc;
 const quote = (state: string) => doc("quotation", state, { total_cents: "1000000" });
 
+const facts = (patch: Partial<NonNullable<NextStepInput["design"]>> = {}): NextStepInput["design"] =>
+  ({ canCollect: true, feesPaid: false, hasQuotation: false, instalments: [], ...patch });
 const fixtures: { name: string; finance: Finance; documents: Doc[]; isSettled?: boolean; input: Partial<NextStepInput> }[] = [
   { name: "no design plan", finance: finance(null), documents: [], input: {} },
-  { name: "design plan only", finance: finance(plan), documents: [], input: { hasDesignPlan: true } },
-  { name: "design fee partly paid", finance: finance(plan, "350000"), documents: [], input: { hasDesignPlan: true } },
+  { name: "design plan only", finance: finance(plan), documents: [], input: { hasDesignPlan: true, design: facts() } },
+  { name: "design fee partly paid", finance: finance(plan, "350000"), documents: [], input: { hasDesignPlan: true, design: facts() } },
+  { name: "design fee fully paid", finance: finance(plan, "1200000"), documents: [], input: { hasDesignPlan: true, design: facts({ feesPaid: true }) } },
+  { name: "unpriced quotation draft", finance: finance(plan), documents: [doc("quotation", "offered")], input: { hasDesignPlan: true, design: facts({ hasQuotation: true }) } },
   { name: "quotation issued", finance: finance(plan), documents: [quote("offered")], input: { hasDesignPlan: true, quotations: { offered: 1, accepted: 0 } } },
   { name: "quotation accepted", finance: finance(plan), documents: [quote("accepted")], input: { hasDesignPlan: true, quotations: { offered: 0, accepted: 1 } } },
   { name: "contract draft", finance: finance(plan), documents: [quote("accepted"), doc("contract", "draft")],
@@ -50,7 +54,5 @@ const rows = fixtures.map(item => {
 console.table(rows);
 const disagreements = rows.filter(row => row.overview !== row.progress).map(row => row.name);
 
-// Unifying the two current-step derivations is a separate owner decision; this only records where they differ today.
-// projectProgress moves to ใบเสนอราคา once a design plan exists; the overview stays on ออกแบบ until the design fee is fully paid.
-const KNOWN_DISAGREEMENTS = ["design plan only", "design fee partly paid"];
-assert.deepEqual(disagreements, KNOWN_DISAGREEMENTS);
+// ADR 0057: one BKP stage. projectProgress (lists, stage track) must land where bkpOverviewStage (workspace, /summary) does.
+assert.deepEqual(disagreements, []);

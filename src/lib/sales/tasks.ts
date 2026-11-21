@@ -1,5 +1,6 @@
 // Registry of the one-task-per-view pages at /sales/[id]?task=<name>[&row=<id>].
 // Pure on purpose: the next step, the task lists and the page guard all read this one function.
+import type { DesignFacts } from "./case-progress";
 export const taskLabels = {
   "edit-case": "แก้ข้อมูลการขาย", reserve: "ยืนยันจองแปลง", design: "กำหนดค่าออกแบบ",
   "issue-quotation": "ออกใบเสนอราคา", "accept-quotation": "บันทึกลูกค้ายอมรับใบเสนอราคา", "prepare-contract": "เตรียมสัญญาสำหรับลงนาม",
@@ -32,6 +33,28 @@ export type TaskContext = {
   refunds: { id: string; state: string; isMine: boolean }[];
 };
 
+type DesignBill = NonNullable<TaskContext["design"]["bills"]>[number];
+const issuedDesignBill = (ctx: TaskContext, position: number) => ctx.design.bills?.find(item => item.position === position && item.state === "issued");
+const isOpenDesignBill = (bill: DesignBill) => !bill.pendingId && !bill.hasConfirmed && bill.received === "0";
+
+/** BKP design fees are collected before the contract, or after it only when the signed contract keeps them separate (ADR 0046). */
+export function canCollectDesign(ctx: Pick<TaskContext, "status" | "contracts" | "design">) {
+  const preContract = ctx.status === "draft" || ctx.status === "reserved";
+  const signed = ctx.contracts.filter(item => item.state === "signed");
+  const allowed = signed.length
+    ? signed.every(item => item.hasSeparateDesignFee === true) && (preContract || ctx.status === "contracted" || ctx.status === "completed")
+    : preContract;
+  return allowed && !ctx.design.legacyLocked && BigInt(ctx.design.legacyReceived ?? "0") === BigInt(0);
+}
+
+/** The design-fee facts nextStep() walks (ADR 0058), from the same guard the task pages use. */
+export function designFacts(ctx: TaskContext, flow: { feesPaid: boolean; hasQuotation: boolean }): DesignFacts {
+  return { ...flow, canCollect: canCollectDesign(ctx), instalments: (ctx.design.amounts ?? []).map((amount, index) => {
+    const bill = issuedDesignBill(ctx, index + 1);
+    return { amount, bill: !bill ? "none" : isOpenDesignBill(bill) ? "open" : "settled", billId: bill?.id };
+  }) };
+}
+
 export function availableTasks(ctx: TaskContext): Task[] {
   const { can, status, brand } = ctx;
   const out: Task[] = [];
@@ -45,15 +68,11 @@ export function availableTasks(ctx: TaskContext): Task[] {
     const hasContract = ctx.contracts.some(item => ["draft", "awaiting_signature", "signed"].includes(item.state));
     const hasLockedContract = ctx.contracts.some(item => ["awaiting_signature", "signed"].includes(item.state));
     if (prepare && ctx.design.canChange) add("design");
-    const signed = ctx.contracts.filter(item => item.state === "signed");
-    const canCollectDesign = signed.length
-      ? signed.every(item => item.hasSeparateDesignFee === true) && (preContract || status === "contracted" || status === "completed")
-      : preContract;
-    if (canCollectDesign && !ctx.design.legacyLocked && BigInt(ctx.design.legacyReceived ?? "0") === BigInt(0)) {
+    if (canCollectDesign(ctx)) {
       for (const [index, amount] of (ctx.design.amounts ?? []).entries()) {
-        const bill = ctx.design.bills?.find(item => item.position === index + 1 && item.state === "issued");
+        const bill = issuedDesignBill(ctx, index + 1);
         if (BigInt(amount) > BigInt(0) && !bill && can["billing.issue"]) add("issue-design-invoice", String(index + 1));
-        if (bill && !bill.pendingId && !bill.hasConfirmed && bill.received === "0") {
+        if (bill && isOpenDesignBill(bill)) {
           if (prepare) add("prepare-design-payment", bill.id);
           if (can["billing.issue"]) add("cancel-design-invoice", bill.id);
         }
