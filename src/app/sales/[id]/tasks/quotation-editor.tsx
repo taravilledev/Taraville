@@ -125,7 +125,7 @@ export function QuotationEditor({ sale, agreement, designArea, action }: {
   };
 
   return <div className={local.editor}>
-    <TaskHeader sale={sale} title="จัดทำใบเสนอราคา" backTab="quotation" backLabel="กลับรายการใบเสนอราคา"
+    <TaskHeader sale={sale} title="จัดทำใบเสนอราคา" backTab="quotation" backLabel={`กลับขั้นใบเสนอราคา · ${sale.code} · ${sale.customer_name}`} hasContext={false}
       phase={isReview ? "ใบเสนอราคา · ตรวจตัวอย่าง" : "ใบเสนอราคา · กำลังแก้ไข"}
       status={<p>{latest ? `เริ่มจากฉบับที่ ${latest.revision} · บันทึกเป็นฉบับใหม่` : "ฉบับใหม่ · ยังไม่บันทึก"}{isDirty && " · มีการแก้ไข"}</p>} />
     {isReview ? <ActionForm action={submit} label="บันทึกเป็นฉบับใหม่"

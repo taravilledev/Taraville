@@ -39,7 +39,7 @@ export function IssueQuotationTask({ sale, agreement, finance }: TaskData) {
     action={issueQuotation.bind(null, idOf(sale))} />;
 }
 
-export function AcceptQuotationTask({ sale, agreement, row }: TaskData) {
+export function AcceptQuotationTask({ sale, agreement, row }: Pick<TaskData, "sale" | "agreement" | "row">) {
   const document = agreement?.documents.find(doc => doc.id === row && doc.kind === "quotation");
   if (!document) return null;
   return <ActionForm action={acceptQuotation.bind(null, { ...idOf(sale, row), caseId: sale.id })} label="บันทึกลูกค้ายอมรับใบเสนอราคาฉบับนี้">

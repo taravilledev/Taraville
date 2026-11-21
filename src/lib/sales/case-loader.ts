@@ -61,7 +61,8 @@ export async function loadCaseData(supabase: Supabase, sale: SalesCase) {
     refundsToAct: refunds.filter(refund => refund.state === "pending" || refund.state === "approved").length,
     plotHeld: reservation?.active ?? false, isSettled: agreement.is_settled,
     quotations: { offered: quotations.filter(doc => doc.state === "offered").length, accepted: quotations.filter(doc => doc.state === "accepted").length,
-      offeredId: quotations.find(doc => doc.state === "offered")?.id },
+      // Latest offered revision, the same pick as sales_case_facts (revision desc, then id desc).
+      offeredId: quotations.filter(doc => doc.state === "offered").sort((a, b) => b.revision - a.revision || b.id.localeCompare(a.id))[0]?.id },
     contract: contract ? contract.state === "signed" ? "signed" : contract.state === "draft" ? "draft" : "awaiting" : "none", contractId: contract?.id,
     instalment: row ? { id: row.id, label: row.label, needsAcceptance: row.needs_acceptance, accepted: row.accepted_at != null,
       hasInvoice: row.invoice_id != null, outstanding: row.balance?.outstanding_cents !== "0", isCreditCovered: row.net_cents === "0" } : null,

@@ -46,6 +46,8 @@ async function CaseDetail({ params, searchParams }: Props) {
   const task = name ? findTask(tasks, name, one(query.row)) : undefined;
   // A stale or no-longer-allowed task link returns to the summary with the reason.
   if (name && !task) redirect(`/sales/${sale.id}?notice=task`);
+  // On BKP the accept form lives in a drawer on the quotation tab; the next-step card and old links land there.
+  if (task?.name === "accept-quotation" && task.row && sale.brand === "BAAN_KUNAPAP" && sale.can_finance) redirect(`/sales/${sale.id}?tab=quotation&drawer=accept-${task.row}`);
 
   const isBkp = sale.brand === "BAAN_KUNAPAP";
   const isExecutive = staff.role === "executive";

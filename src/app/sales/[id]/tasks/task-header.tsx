@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 import type { SalesCase } from "@/lib/sales/models";
 import type { CaseTab } from "@/lib/sales/case-progress";
@@ -14,17 +15,17 @@ export function usesFocusedTaskHeader(name: TaskName, isBkp: boolean) {
   return focusedDocumentTasks.includes(name) || (isBkp && name !== "accept-quotation");
 }
 
-export function TaskHeader({ sale, title, backTab, backLabel, phase, status }: {
+export function TaskHeader({ sale, title, backTab, backLabel, phase, status, hasContext = true }: {
   sale: Pick<SalesCase, "id" | "code" | "customer_name">; title: string; backTab: CaseTab; backLabel: string;
-  phase?: string; status?: ReactNode;
+  phase?: string; status?: ReactNode; hasContext?: boolean;
 }) {
   return <header className={styles.header}>
     <nav className={styles.navigation} aria-label="การนำทางงาน">
-      <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={`/sales/${sale.id}?tab=${backTab}`} prefetch={false}><span aria-hidden="true">←</span> {backLabel}</Link>
+      <Link className={cn(buttonVariants({ variant: "outline", size: "auto" }), "max-w-full shrink whitespace-normal text-start")} href={`/sales/${sale.id}?tab=${backTab}`} prefetch={false}><span aria-hidden="true">←</span> {backLabel}</Link>
       <Link className={styles.overview} href={`/sales/${sale.id}?tab=overview`} prefetch={false}>ภาพรวมโครงการ</Link>
     </nav>
     <div className={styles.heading}>{phase && <p className={styles.phase}>{phase}</p>}
-      <h1>{title}</h1><p className={styles.context}>{sale.code} · {sale.customer_name}</p>
+      <h1>{title}</h1>{hasContext && <p className={styles.context}>{sale.code} · {sale.customer_name}</p>}
     </div>
     {status && <div className={styles.status}>{status}</div>}
   </header>;
