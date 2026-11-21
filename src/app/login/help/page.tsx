@@ -5,15 +5,19 @@ export const metadata = { title: "ลืมรหัสผ่าน · Taraville
 export default function PasswordHelpPage() {
   return <AuthShell>
     <h1>ลืมรหัสผ่าน</h1>
-    <p>ติดต่อผู้ดูแลระบบของบริษัทผ่านช่องทางที่บริษัทใช้อยู่ แจ้งชื่อผู้ใช้และชื่อของคุณเพื่อให้ผู้ดูแลตรวจสอบตัวตน</p>
+    <p>ระบบนี้ยังไม่ส่งลิงก์กู้คืนทางอีเมล ให้ติดต่อ Support ทาง LINE พร้อมแจ้งชื่อผู้ใช้และชื่อของคุณ</p>
+    <div className="flex flex-col gap-1 rounded-sm bg-muted p-4 text-sm">
+      <span className="text-xs font-semibold text-primary">ติดต่อ</span>
+      <strong>Support</strong>
+      <span className="text-muted-foreground">LINE · art</span>
+    </div>
     <ol>
-      <li>ผู้ดูแลยืนยันตัวตนและสิทธิ์ของคุณก่อนรีเซ็ต</li>
-      <li>รับรหัสชั่วคราวจากผู้ดูแลเป็นการส่วนตัว โดยใช้ชื่อผู้ใช้เดิม</li>
-      <li>เข้าสู่ระบบ แล้วเลือกเมนู “ตั้ง / เปลี่ยนรหัสผ่าน”</li>
-      <li>กรอกรหัสชั่วคราวในช่องรหัสปัจจุบัน แล้วตั้งรหัสใหม่ด้วยตนเอง</li>
+      <li>Support ตรวจว่าเป็นคุณจริง</li>
+      <li>คุณได้รับรหัสชั่วคราวทางช่องทางส่วนตัว</li>
+      <li>เข้าสู่ระบบ แล้วเลือก “เปลี่ยนรหัสผ่าน” ที่เมนูด้านข้าง</li>
+      <li>ใส่รหัสชั่วคราวเป็นรหัสปัจจุบัน แล้วตั้งรหัสใหม่</li>
     </ol>
-    <p>ไม่ต้องแจ้งรหัสเดิมหรือรหัสใหม่ให้ผู้ดูแล และไม่ส่งรหัสผ่านในแชตหรือกลุ่มงาน</p>
-    <p>ระบบนี้ยังไม่ส่งลิงก์กู้คืนทางอีเมล หากไม่มีผู้ดูแลที่ได้รับมอบหมาย ให้ติดต่อผู้รับผิดชอบระบบของบริษัทก่อน</p>
+    <p role="note" className="rounded-sm bg-muted p-3 text-sm">อย่าส่งรหัสผ่านในแชตกลุ่มหรือที่สาธารณะ</p>
     <Button asChild size="auto" className="min-h-(--control-h) px-6 text-sm font-bold no-underline">
       <a href="/login">กลับหน้าเข้าสู่ระบบ</a>
     </Button>

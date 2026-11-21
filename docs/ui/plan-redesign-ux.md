@@ -159,17 +159,18 @@ The rules come from design-system.md §8. No screen redesign in this phase, exce
 
 ## Phase 7 — login, account, errors (boards AuthLogin, AuthPassword, AuthStates)
 
-- [ ] **Login.**
+- [x] **Login.**
   - Show/hide password, the username rule, a spinner.
   - Distinct login errors: **verify first which codes Supabase auth returns**, and keep one generic message where they are not distinct.
-- [ ] **Session return.** `?next=` in `requireStaff` with same-origin validation, plus a `*.check.mts`. "หมดเวลาการใช้งาน…" banner. A signed-in user on `/login` → `/dashboard`.
-- [ ] **Forgot-password page** "ติดต่อ Support ทาง LINE", LINE ID `art` (owner, 2026-11-20).
-- [ ] **Change password.** Live checklist and the "signs out every device" note. Sidebar user block: "เปลี่ยนรหัสผ่าน" / "ออกจากระบบ" (not red, no confirm).
-- [ ] **Error pages.**
+- [x] **Session return.** `?next=` in `requireStaff` with same-origin validation, plus a `*.check.mts`. "หมดเวลาการใช้งาน…" banner. A signed-in user on `/login` → `/dashboard`.
+- [x] **Forgot-password page** "ติดต่อ Support ทาง LINE", LINE ID `art` (owner, 2026-11-20).
+- [x] **Change password.** Live checklist and the "signs out every device" note. Sidebar user block: "เปลี่ยนรหัสผ่าน" / "ออกจากระบบ" (not red, no confirm).
+- [x] **Error pages.**
   - The error page gets retry, home, and a reference code; add `src/app/global-error.tsx`.
   - Not-found buttons depend on sign-in.
   - `/privacy` without a brand asks for it.
 - **Verify point:** login error states and session return. Ask first.
+- Left (Phase 7): the login form itself (toggle, spinner, error text, expiry banner) and signed-out not-found were checked over HTTP only, not in a browser (the pane was signed in). The error and global-error pages were built but not triggered. The expiry banner shows whenever `?next=` is present, including a first visit to a bookmarked page.
 
 ## Phase 8 — walk-in (board WalkinForm; ADR 0063) — **last**
 

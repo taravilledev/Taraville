@@ -55,7 +55,7 @@ function SidebarBody({ items, staff, labelClass }: { items: NavItem[]; staff: St
 function LogoutButton({ labelClass }: { labelClass: string }) {
   const { pending } = useFormStatus();
   const label = pending ? "กำลังออกจากระบบ…" : "ออกจากระบบ";
-  return <button title="ออกจากระบบ" disabled={pending} className={`${ROW} w-full cursor-pointer border-0 bg-transparent text-destructive [font:inherit]`}><LogOut size={20} aria-hidden /><span className={labelClass}>{label}</span></button>;
+  return <button title="ออกจากระบบ" disabled={pending} className={`${ROW} w-full cursor-pointer border-0 bg-transparent [font:inherit]`}><LogOut size={20} aria-hidden /><span className={labelClass}>{label}</span></button>;
 }
 
 export function AppSidebar({ items, staff }: { items: NavItem[]; staff: Staff }) {
