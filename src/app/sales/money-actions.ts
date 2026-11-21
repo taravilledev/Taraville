@@ -99,9 +99,9 @@ export async function saveIssuer(context: unknown, _state: ActionState, form: Fo
   const session = await requireStaff(true);
   const parsed = z.object({ brand: z.enum(["BAAN_KUNAPAP", "TARAVILLE"]), version: z.number().int().nonnegative(), requestId: z.uuid() }).safeParse(context);
   const input = z.object({ legal_name: z.string().trim().min(1).max(300), address: z.string().trim().min(1).max(3000),
-    tax_id: z.string().max(40), contact: z.string().max(500), contract_text: z.string().max(100000), is_synthetic: z.boolean(), contract_text_approved: z.boolean() }).safeParse({
+    tax_id: z.string().max(40), contact: z.string().max(500), contract_text: z.string().max(100000), contract_text_approved: z.boolean() }).safeParse({
     ...Object.fromEntries(["legal_name", "address", "tax_id", "contact", "contract_text"].map(key => [key, form.get(key) ?? ""])),
-    is_synthetic: form.get("is_synthetic") === "on", contract_text_approved: parsed.data?.brand === "BAAN_KUNAPAP" && form.get("contract_text_approved") === "on",
+    contract_text_approved: parsed.data?.brand === "BAAN_KUNAPAP" && form.get("contract_text_approved") === "on",
   });
   if (!parsed.success || !input.success) return invalid;
   return salesMutation(session, "sales_save_issuer", { p_brand: parsed.data.brand, p_version: parsed.data.version,
