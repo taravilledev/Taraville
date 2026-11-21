@@ -14,12 +14,13 @@ export type NextStep = { title: string; hint?: string; tab: CaseTab; anchor?: st
 const refundKeys = ["refund.request", "refund.approve", "refund.pay"];
 
 export type ProjectProgress = { steps: string[]; current: number; complete: boolean };
+export const projectSteps = (brand: SalesCase["brand"]) => brand === "BAAN_KUNAPAP"
+  ? ["เปิดโครงการ", "ออกแบบ", "ใบเสนอราคา", "สัญญา", "รับชำระ"]
+  : ["เปิดโครงการ", "จองแปลง", "สรุปการจอง", "สัญญา", "รับชำระ"];
 export function projectProgress(input: NextStepInput): ProjectProgress | null {
   if (input.status === "cancelled") return null;
   const complete = input.status === "completed" || (input.status === "contracted" && input.isSettled);
-  const steps = input.brand === "BAAN_KUNAPAP"
-    ? ["เปิดโครงการ", "ออกแบบ", "ใบเสนอราคา", "สัญญา", "รับชำระ"]
-    : ["เปิดโครงการ", "จองแปลง", "สรุปการจอง", "สัญญา", "รับชำระ"];
+  const steps = projectSteps(input.brand);
   let current = 4;
   if (!complete && input.status !== "contracted") {
     if (input.brand === "TARAVILLE") current = input.status === "draft" ? 1 : input.hasSummary ? 3 : 2;
