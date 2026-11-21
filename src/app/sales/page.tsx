@@ -27,6 +27,7 @@ async function Workspace({ searchParams }: Props) {
   const { staff, workspace, supabase } = await salesBootstrap();
   const executive = staff.role === "executive";
   const attention = one(raw.attention);
+  const stage = one(raw.stage);
   const rawOwnership = one(raw.ownership);
   const ownership: ProjectOwnership = !executive && Object.hasOwn(projectOwnershipLabels, rawOwnership)
     ? rawOwnership as ProjectOwnership : "all";
@@ -48,7 +49,7 @@ async function Workspace({ searchParams }: Props) {
         {brands.map(({ value, label }) => <Link key={value} href={value ? `${basePath}?brand=${value}` : basePath}
           aria-current={value === brand ? "page" : undefined} prefetch={false}>{label}</Link>)}
       </nav>
-      {rows ? <ExecutiveDashboard compact rows={rows} basePath={basePath} filters={{ status, brand, query, page, attention }}
+      {rows ? <ExecutiveDashboard compact rows={rows} basePath={basePath} filters={{ status, brand, query, page, attention, stage }}
         filterForm={<ProjectFilterForm filters={filters} attention={attention} ownership="all" basePath={basePath} executive />} />
         : <p className={noticeClass} role="status">โหลดรายการโครงการของผู้บริหารไม่ได้ ลองรีเฟรชหน้านี้</p>}
     </div></AppShell>;
@@ -57,6 +58,6 @@ async function Workspace({ searchParams }: Props) {
   const cases = await salesCaseList({ status, brand, query });
   return <AppShell staff={staff} wide><div className="grid gap-6">
     {header}
-    <SaleProjectList cases={cases} staffId={staff.id} filters={filters} ownership={ownership} basePath={basePath} />
+    <SaleProjectList cases={cases} staffId={staff.id} filters={filters} ownership={ownership} stage={stage} basePath={basePath} />
   </div></AppShell>;
 }

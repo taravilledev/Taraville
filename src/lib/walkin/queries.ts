@@ -120,9 +120,9 @@ export async function leadProjects(session: Awaited<ReturnType<typeof leadDetail
   return { projects, names };
 }
 
-/** The owner's Leads still รับเข้า (stage "received"); null on error so the Sale home shows "—" instead of failing. */
-export async function uncontactedLeadCount(supabase: Awaited<ReturnType<typeof requireStaff>>["supabase"], ownerId: string) {
+/** The owner's Leads that have not opened a project yet (stage group "open"); null on error so the Sale home shows "—". */
+export async function openLeadCount(supabase: Awaited<ReturnType<typeof requireStaff>>["supabase"], ownerId: string) {
   const { count, error } = await supabase.from("walkin_leads_staged").select("id", { count: "exact", head: true })
-    .eq("stage", "received").eq("owner_id", ownerId);
+    .in("stage", STAGE_GROUP_CODES.open).eq("owner_id", ownerId);
   return error ? null : count;
 }

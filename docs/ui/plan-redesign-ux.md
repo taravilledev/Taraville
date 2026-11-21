@@ -98,21 +98,22 @@ The rules come from design-system.md §8. No screen redesign in this phase, exce
 
 ## Phase 3 — homes and the project list (boards SaleHome, ExecutiveHome, SalesList; ADR 0058)
 
-- [ ] **Stage track component** (moved from Phase 1; first called by the sale-home cards and the `/sales` column). A badge with the step number, ✓ or ×, plus 5 segments. Inputs: the brand's stage list, the current index, done / cancelled. Leave a `*.check.mts` covering done / current / cancelled.
-- [ ] **Backend migration files, not applied:**
-  - `sales_work_queue` + a capability-filtered BKP design-fee kind;
-  - `sales_case_list` + the stage and next task (reuse `nextStep()` logic or its SQL equivalent).
-  - **Applying either is R0**: show the SQL and wait for the owner's yes, then dump and diff.
-- [ ] **Sale home.**
+- [x] **Stage track component** (moved from Phase 1; first called by the sale-home cards and the `/sales` column). A badge with the step number, ✓ or ×, plus 5 segments. Inputs: the brand's stage list, the current index, done / cancelled. Leave a `*.check.mts` covering done / current / cancelled. (2026-11-21: `src/components/stage-track.tsx`, `src/lib/sales/stage-track.check.mts`.)
+- [x] **Backend migration files, not applied to prod** (applied to the local Docker DB only, 2026-11-21):
+  - `sales_work_queue` + a capability-filtered BKP design-fee kind (`20261121090100`; `financial.prepare` + `financial.view`, adds `overdue`);
+  - `sales_case_list` + the stage and next task through the shared `private.sales_case_facts` (`20261121090000`, ADR 0064; `sales_executive_work` output unchanged, diffed on 42 filter combinations).
+  - **Applying either is R0**: show the SQL and wait for the owner's yes, then dump and diff. Deploy the code before the queue migration: the old code rejects the unknown `design_fee` kind.
+- [x] **Sale home.**
   - 5 cards including "ค่าแบบค้าง" and "Lead ที่ยังไม่เปิดโครงการ".
-  - A task-first queue table with row drawers; "โครงการที่ฉันดูแล" cards with the stage track.
-- [ ] **Executive home.**
+  - A task-first queue table; "โครงการที่ฉันดูแล" cards with the stage track.
+  - **Left:** row drawers (rows link to the case section instead); one row per case and kind, so "ยอด" is a count, not baht.
+- [x] **Executive home.**
   - h1 "ภาพรวม", no header buttons, brand tabs, 4 cards.
   - 3 follow-up rows, the "บิลที่ต้องตามเก็บ" table, "Lead ล่าสุด", and the amber error notice.
   - No RPC change.
-- [ ] **`/sales`.**
+- [x] **`/sales`.**
   - Columns code·customer · brand · stage track · next task › · owner · updated; stage tabs with counts; "ก่อนทำสัญญา" merge when both brands show.
-  - Remove the "ตั้งค่า" header button.
+  - **Left:** the "ตั้งค่า" header button stays until the sidebar shows ตั้งค่า to catalog-right sales (`src/lib/nav.ts` lists it for executives only); stage tabs count only the fetched rows (status filter still applies first); no sortable column.
 - **Verify point:** both homes with both roles. Ask first; this needs the migrations applied, otherwise say it is untested over HTTP.
 
 ## Phase 4 — project workspace, documents, Taraville opening (boards Project*, DesignInvoice, QuotationEditor, ContractEditor, ContractLock, TVProject, TVOpenProject, DocumentView; ADRs 0057, 0058)

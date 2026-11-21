@@ -23,7 +23,25 @@ export const caseSummarySchema = z.object({
 });
 export const unitSchema = z.object({ id: z.uuid(), code: z.string(), details: z.record(z.string(), z.unknown()), list_price_cents: money, is_active: z.boolean(), is_available: z.boolean(), version });
 export const developmentSchema = z.object({ id: z.uuid(), name: z.string(), address: z.string(), is_active: z.boolean(), version, units: unitSchema.array() });
-export const caseListRowSchema = caseSummarySchema.extend({ detail: z.string().nullable() });
+const count = z.number().int().nonnegative();
+// Facts from private.sales_case_facts that projectProgress()/nextStep() read (ADR 0064).
+export const caseFactsSchema = z.object({
+  waiting_since: z.string().nullish(), pending: count, acceptance: count, refunds: count, overdue: count, designOutstanding: z.boolean().optional(),
+  input: z.object({
+    hasNetPrice: z.boolean(), hasSummary: z.boolean(), hasBookingReceipt: z.boolean(), isBookingDue: z.boolean(), hasDesignPlan: z.boolean(),
+    pendingPayments: count, refundsToAct: count, plotHeld: z.boolean(), isSettled: z.boolean(),
+    quotations: z.object({ offered: count, accepted: count, offeredId: z.uuid().nullish() }),
+    contract: z.enum(["none", "draft", "awaiting", "signed"]), contractId: z.uuid().nullish(),
+    instalment: z.object({ id: z.uuid(), label: z.string(), needsAcceptance: z.boolean(), accepted: z.boolean(),
+      hasInvoice: z.boolean(), outstanding: z.boolean(), isCreditCovered: z.boolean() }).nullable(),
+  }),
+});
+export type CaseFacts = z.infer<typeof caseFactsSchema>;
+export const caseListRowSchema = caseSummarySchema.extend({
+  // Defaults keep /sales working on a DB without 20261121090000, so the code can deploy before the migration.
+  detail: z.string().nullable(), owner: z.string().default(""), updated_at: z.string().nullable().default(null),
+  permissions: z.record(z.string(), z.boolean()).nullable().default(null), facts: caseFactsSchema.nullable().default(null),
+});
 export type CaseListRow = z.infer<typeof caseListRowSchema>;
 export const bootstrapSchema = z.object({
   actor: z.object({ id: z.uuid(), full_name: z.string(), role: z.enum(["sale", "executive", "staff"]) }),
@@ -53,6 +71,7 @@ export const refundStates: Record<Refund["state"], { label: string; tone: Status
   pending: { label: "รออนุมัติ", tone: "waiting" }, approved: { label: "อนุมัติ รอจ่าย", tone: "waiting" }, paid: { label: "จ่ายคืนแล้ว", tone: "success" },
   rejected: { label: "ไม่อนุมัติ", tone: "fix" }, withdrawn: { label: "ถอนคำขอ", tone: "inactive" },
 };
-export const workQueueKinds = { payment_pending: "เงินเข้ารอยืนยัน", refund_pending: "คำขอคืนเงินรออนุมัติ", refund_approved: "อนุมัติคืนเงินแล้ว รอจ่ายจริง", acceptance: "รอตรวจรับงาน" };
+export const workQueueKinds = { payment_pending: "เงินเข้ารอยืนยัน", refund_pending: "คำขอคืนเงินรออนุมัติ", refund_approved: "อนุมัติคืนเงินแล้ว รอจ่ายจริง", acceptance: "รอตรวจรับงาน", design_fee: "ค่าแบบค้าง" };
 export const workQueueSchema = z.object({ case_id: z.uuid(), code: z.string(), brand: brandSchema, customer_name: z.string().nullable(),
-  kind: z.enum(["payment_pending", "refund_pending", "refund_approved", "acceptance"]), count: z.number().int(), since: z.string() }).array();
+  kind: z.enum(["payment_pending", "refund_pending", "refund_approved", "acceptance", "design_fee"]), count: z.number().int(), since: z.string(),
+  overdue: z.number().int().default(0) }).array();
