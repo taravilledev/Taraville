@@ -1,6 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
 import Link from "next/link";
-import { taskReturnTab } from "@/lib/sales/case-navigation";
+import { bkpCaseTabs, taskReturnTab } from "@/lib/sales/case-navigation";
+import { projectSteps } from "@/lib/sales/case-progress";
 import { taskLabels, type Task, type TaskName } from "@/lib/sales/tasks";
 import type { TaskData } from "./task-data";
 import quotation from "./quotation-editor.module.css";
@@ -37,13 +38,17 @@ export function TaskView({ task, data, context }: { task: Task; data: TaskData; 
   const backLabels = { overview: data.sale.brand === "BAAN_KUNAPAP" ? "ภาพรวมโครงการ" : "หน้ารายการขาย", design: "ออกแบบ",
     quotation: "ใบเสนอราคา", contract: "สัญญา", documents: "เอกสาร", money: isBkp ? "การเงิน" : "รายการรับเงิน" };
   const visibleBackTab = backTab === "money" && !data.sale.can_finance ? "overview" : backTab;
+  // BKP task pages name the stage they return to, with the project beside it (design payments go back to ออกแบบ).
+  const stage = isBkp ? projectSteps("BAAN_KUNAPAP")[bkpCaseTabs.findIndex(tab => tab === visibleBackTab)] : undefined;
+  const isStageBack = !!stage && visibleBackTab !== "overview";
   const isFocused = usesFocusedTaskHeader(task.name, isBkp);
   const ownsHeader = ["issue-quotation", "prepare-contract", "edit-contract", "lock-contract"].includes(task.name);
   const hasPaperBody = ["issue-quotation", "prepare-contract", "edit-contract", "lock-contract", "contract-addendum", "issue-invoice", "prepare-instalment",
     "prepare-payment", "issue-design-invoice", "prepare-design-payment", "confirm-payment"].includes(task.name);
   return <section className={isFocused ? quotation.task : panelClass}>
     {isFocused && !ownsHeader && <TaskHeader sale={data.sale} title={taskLabels[task.name]} backTab={visibleBackTab}
-      backLabel={`กลับ${backLabels[visibleBackTab]}`} phase={backLabels[visibleBackTab]} />}
+      backLabel={isStageBack ? `กลับขั้น${stage} · ${data.sale.code} · ${data.sale.customer_name}` : `กลับ${backLabels[visibleBackTab]}`}
+      phase={isStageBack ? stage : backLabels[visibleBackTab]} hasContext={!isStageBack} />}
     {!isFocused && <>
       <p><Link href={`/sales/${data.sale.id}?tab=${visibleBackTab}`} prefetch={false}>← กลับ{backLabels[visibleBackTab]}</Link></p>
       <h2>{taskLabels[task.name]}</h2>

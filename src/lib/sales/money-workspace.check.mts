@@ -40,7 +40,7 @@ const row = { id: id(5), contract_id: id(6), is_active: true, position: 1, label
 const data: SummaryData = { sale, finance: financial.financialSchema.parse({ case_id: sale.id, version: 1, issuer_ready: true, can_change_design: false,
   design_plan: null, pending: [], payments: [], documents: [] }), agreement: { is_settled: false, documents: [], instalments: [row] }, refunds: [], closeout: null, tasks: [], work: [],
   summary: { net: null, received: "10000", outstanding: null } };
-const render = (next: SummaryData = data) => renderToStaticMarkup(createElement(BkpMoneySection, { data: next }));
+const render = (next: SummaryData = data) => renderToStaticMarkup(createElement(BkpMoneySection, { data: next, staffId: "staff" }));
 const noRights = render();
 assert.match(noRights, /ยังไม่กำหนดค่าออกแบบ/);
 assert.doesNotMatch(noRights, /\?task=/, "No write action without registry authorization");

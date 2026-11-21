@@ -18,6 +18,7 @@ import { designFeeNote } from "./design-fee-note";
 import { HouseBriefPanel } from "./house-brief-panel";
 import { DesignBillingPanel } from "./design-billing-panel";
 import { DocumentsSection, MoneySection, OverviewSection } from "./summary-sections";
+import { BkpMoneySection } from "./bkp-money-section";
 import { TaskView } from "./tasks/task-view";
 import { usesFocusedTaskHeader } from "./tasks/task-header";
 import { tabLinksClass } from "@/components/tab-links";
@@ -31,7 +32,9 @@ export const metadata = { title: "ข้อมูลงานและราย�
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 const tabLabels: Record<CaseTab, string> = { overview: "ภาพรวม", design: "ออกแบบ", quotation: "ใบเสนอราคา", contract: "สัญญา", documents: "เอกสารทั้งหมด", money: "การเงิน" };
 const drawerTasks: Partial<Record<TaskName, { tab: CaseTab; name: string }>> = { "accept-quotation": { tab: "quotation", name: "accept" },
-  "sign-contract": { tab: "contract", name: "sign" }, "unlock-contract": { tab: "contract", name: "unlock" } };
+  "sign-contract": { tab: "contract", name: "sign" }, "unlock-contract": { tab: "contract", name: "unlock" },
+  "confirm-payment": { tab: "money", name: "confirm-payment" }, "withdraw-payment": { tab: "money", name: "withdraw-payment" }, acceptance: { tab: "money", name: "acceptance" },
+  "request-refund": { tab: "money", name: "request-refund" }, "decide-refund": { tab: "money", name: "decide-refund" }, "pay-refund": { tab: "money", name: "pay-refund" } };
 const one = (value: string | string[] | undefined) => typeof value === "string" ? value : undefined;
 
 export default function CasePage(props: Props) { return <Suspense fallback={<PageSkeleton />}><CaseDetail {...props} /></Suspense>; }
@@ -50,7 +53,7 @@ async function CaseDetail({ params, searchParams }: Props) {
   if (name && !task) redirect(`/sales/${sale.id}?notice=task`);
   // On BKP these short forms live in a drawer on their stage tab; the next-step card and old links land there.
   const drawer = task && drawerTasks[task.name];
-  if (drawer && task.row && sale.brand === "BAAN_KUNAPAP" && sale.can_finance) redirect(`/sales/${sale.id}?tab=${drawer.tab}&drawer=${drawer.name}-${task.row}`);
+  if (drawer && sale.brand === "BAAN_KUNAPAP" && sale.can_finance) redirect(`/sales/${sale.id}?tab=${drawer.tab}&drawer=${drawer.name}${task.row ? `-${task.row}` : ""}`);
 
   const isBkp = sale.brand === "BAAN_KUNAPAP";
   const isExecutive = staff.role === "executive";
@@ -99,7 +102,7 @@ async function CaseDetail({ params, searchParams }: Props) {
       {tab === "design" && finance && agreement && <DesignBillingPanel sale={sale} finance={finance} agreement={agreement} tasks={tasks} />}
       {(tab === "quotation" || tab === "contract") && <BkpAgreementSection data={data} tab={tab} contractTemplate={contractTemplate} isExecutive={isExecutive} />}
       {tab === "documents" && <DocumentsSection data={data} />}
-      {tab === "money" && <MoneySection data={data} />}
+      {tab === "money" && (isBkp ? <BkpMoneySection data={data} staffId={staff.id} /> : <MoneySection data={data} />)}
     </>}
     {isExecutive && isBkp && !task && <CancelProjectSection supabase={supabase} sale={sale} />}
   </div></AppShell>;
