@@ -5,6 +5,9 @@ export type SurveyQuestion = (
   | { key: string; label: string; kind: "text" | "number"; placeholder: string }
 ) & { legacy?: boolean; dependsOn?: { key: string; option: string } };
 
+// Screens drop the "N. " prefix; the stored labels keep it because CSV export headers use them.
+export const displayLabel = (question: SurveyQuestion) => question.label.replace(/^\d+\.\s*/, "");
+
 const OTHER_OPTION = "อื่นๆ";
 const ADDRESS: SurveyQuestion = { key: "address", label: "ที่อยู่", kind: "text", placeholder: "บ้านเลขที่ ตำบล อำเภอ จังหวัด" };
 const SALES_STAFF: SurveyQuestion = { key: "sales_staff", label: "พนักงานขาย", kind: "text", placeholder: "ชื่อพนักงานขายที่ดูแล" };

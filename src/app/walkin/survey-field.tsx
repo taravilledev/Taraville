@@ -1,11 +1,10 @@
-import type { SurveyQuestion } from "@/lib/walkin/survey-questions";
+import { displayLabel, type SurveyQuestion } from "@/lib/walkin/survey-questions";
 import { walkinFieldClass, walkinOptionClass, walkinOtherFieldClass } from "./walkin-form-styles";
 
 export function SurveyField({ question, answers = {} }: { question: SurveyQuestion; answers?: Record<string, string | string[]> }) {
   const id = `survey-${question.key}`;
   const answer = answers[question.key];
-  // The catalogue labels keep their "N. " prefix for CSV headers; the form shows none.
-  const label = question.label.replace(/^\d+\.\s*/, "");
+  const label = displayLabel(question);
 
   if (question.legacy) {
     return typeof answer === "string" && answer ? (
