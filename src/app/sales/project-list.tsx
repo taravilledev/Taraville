@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { projectOwnershipLabels, groupDashboardProjects, type ProjectOwnership } from "@/app/dashboard/project-ownership";
-import { brandLabels, caseStatusLabels, caseStatusTones, type CaseListRow } from "@/lib/sales/models";
+import { brandLabels, caseStatusLabels, type CaseListRow } from "@/lib/sales/models";
 import { panelClass } from "@/components/panel";
-import { Status } from "@/components/status";
 import { tabLinksClass } from "@/components/tab-links";
 import { buttonVariants } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { cn } from "@/lib/utils";
+import type { caseWork } from "@/lib/sales/case-work";
+import { filterByStage, ProjectTable, StageTabs, type ProjectRow } from "./project-table";
 
 export const caseRowClass = "grid grid-cols-[1fr_auto] items-center gap-3 rounded-md border bg-card p-4 max-[640px]:grid-cols-1 [&_a]:font-bold [&_a]:text-foreground [&_a]:underline-offset-4";
 export const projectStatusOptions = { active: "กำลังดำเนินการ", all: "ทั้งหมด", ...caseStatusLabels };
@@ -34,37 +35,36 @@ export function ProjectFilterForm({ filters, attention, ownership, basePath, exe
   </form>;
 }
 
-export function SaleProjectList({ cases, staffId, filters, ownership, basePath }: {
-  cases: CaseListRow[]; staffId: string; filters: ProjectFilters; ownership: ProjectOwnership; basePath: string;
+export function SaleProjectList({ cases, staffId, filters, ownership, stage, basePath }: {
+  cases: (CaseListRow & { work: ReturnType<typeof caseWork> | null })[]; staffId: string; filters: ProjectFilters; ownership: ProjectOwnership; stage: string; basePath: string;
 }) {
   const { q = "", brand = "", status = "active" } = filters;
   const filtered = status !== "active" || brand !== "" || q !== "";
   const visibleCases = groupDashboardProjects(cases, staffId)[ownership];
-  function ownershipHref(next: ProjectOwnership) {
+  const allRows: ProjectRow[] = visibleCases.map(({ work, ...sale }) => ({ id: sale.id, href: `/sales/${sale.id}`, code: sale.code,
+    customer: sale.customer_name, brand: sale.brand, owner: sale.owner, updated_at: sale.updated_at, status: sale.status,
+    track: work?.track ?? null, action: work?.action ?? null }));
+  const { stage: activeStage, rows } = filterByStage(allRows, brand, stage);
+  function listHref(nextOwnership: ProjectOwnership, nextStage = "") {
     const params = new URLSearchParams();
-    if (next !== "all") params.set("ownership", next);
+    if (nextOwnership !== "all") params.set("ownership", nextOwnership);
     if (brand) params.set("brand", brand);
     if (status !== "active") params.set("status", status);
     if (q) params.set("q", q);
+    if (nextStage) params.set("stage", nextStage);
     return `${basePath}${params.size ? `?${params}` : ""}#project-list`;
   }
   return <section className="grid gap-6" id="project-list" aria-label="รายการโครงการ">
     <nav className={tabLinksClass} aria-label="ผู้รับผิดชอบโครงการ">
       {(Object.keys(projectOwnershipLabels) as ProjectOwnership[]).map(item =>
-        <Link href={ownershipHref(item)} key={item} prefetch={false} aria-current={item === ownership ? "page" : undefined}>
+        <Link href={listHref(item, activeStage)} key={item} prefetch={false} aria-current={item === ownership ? "page" : undefined}>
           {projectOwnershipLabels[item]}
         </Link>)}
     </nav>
     <ProjectFilterForm filters={filters} ownership={ownership} basePath={basePath} />
-    <p className="text-sm text-muted-foreground">พบ {visibleCases.length} โครงการ{cases.length === 100 && " จากผลล่าสุด 100 รายการ"}</p>
-    {visibleCases.length ? <ul className="grid gap-3">{visibleCases.map(sale => <li key={sale.id} className={caseRowClass}>
-      <div><Link href={`/sales/${sale.id}`} prefetch={false}>{sale.code} · {sale.customer_name}</Link>
-        <p className="text-sm text-muted-foreground">{brandLabels[sale.brand]}
-          {sale.responsible_id === staffId ? " · ฉันดูแล" : " · คนอื่นดูแล"}
-          {sale.detail && sale.detail !== sale.code ? ` · ${sale.detail}` : ""} · {sale.can_finance ? "ดูข้อมูลการเงินได้" : "ดูข้อมูลงาน"}
-        </p></div>
-      <Status tone={caseStatusTones[sale.status]}>{caseStatusLabels[sale.status]}</Status>
-    </li>)}</ul> : ownership !== "all"
+    {visibleCases.length > 0 && <StageTabs rows={allRows} brand={brand} stage={activeStage} hrefFor={next => listHref(ownership, next)} />}
+    <p className="text-sm text-muted-foreground">พบ {rows.length} โครงการ{cases.length === 100 && " จากผลล่าสุด 100 รายการ"}</p>
+    {rows.length ? <ProjectTable rows={rows} /> : visibleCases.length ? <p className="text-sm text-muted-foreground">ไม่พบโครงการในขั้นที่เลือก</p> : ownership !== "all"
       ? <p className="text-sm text-muted-foreground">{ownership === "mine" ? "ไม่พบโครงการที่คุณดูแลในรายการนี้" : "ไม่พบโครงการของคนอื่นที่คุณมีสิทธิ์ดูในรายการนี้"}</p>
       : filtered ? <section className={panelClass}><h3>ไม่พบรายการตามตัวกรอง</h3><p>ลองเปลี่ยนคำค้นหรือเลือกสถานะทั้งหมด</p></section>
       : <section className={panelClass}><h3>ยังไม่มีรายการที่คุณดูได้</h3><p>เริ่มเปิดงานจาก Lead หรือให้ผู้บริหารตรวจสอบสิทธิ์ของคุณ</p><Link href="/leads" prefetch={false}>ไปที่รายการ Lead</Link></section>}
