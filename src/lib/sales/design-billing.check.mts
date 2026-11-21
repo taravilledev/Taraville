@@ -40,10 +40,10 @@ const finance = financialSchema.parse({ case_id: sale.id, version: 1, issuer_rea
 const base = { brand: sale.brand, status: sale.status, can: { "billing.issue": true, "financial.prepare": true }, canAssign: false, hasNetPrice: false,
   design: { canChange: true, amounts: finance.design_plan!.instalments }, summaryCount: 0, hasPayments: false, plotHeld: false, unitOptions: 0,
   pendingPaymentIds: [], receipts: [], quotations: [], contracts: [], instalments: [], workAcceptance: [], refunds: [] };
-const render = (patch: Partial<typeof finance> = {}, actionList = tasks.availableTasks(base)) => renderToStaticMarkup(createElement(DesignBillingPanel, { sale, finance: { ...finance, ...patch }, tasks: actionList }));
+const render = (patch: Partial<typeof finance> = {}, actionList = tasks.availableTasks(base)) => renderToStaticMarkup(createElement(DesignBillingPanel, { sale, finance: { ...finance, ...patch }, agreement: { documents: [], instalments: [], is_settled: false }, tasks: actionList }));
 const initial = render();
 for (const text of ["ออกแบบ", "พื้นที่ใช้สอยจริง", "53 ตร.ม.", "12,000.00 บาท", "3 งวด", "tab=money#design-fees"]) assert.ok(initial.includes(text), text);
-assert.doesNotMatch(initial, /task=(?:issue-design-invoice|prepare-design-payment|cancel-design-invoice)/, "Design is configuration only; collection tasks live in finance");
+assert.match(initial, /task=issue-design-invoice&amp;row=1/, "ADR 0058: design-fee billing lives on the ออกแบบ stage");
 assert.match(initial, /task=design/);
 const bill = { id: id(5), position: 1, label: "ส่งมอบแบบแปลน", amount_cents: "350000", due_date: "2026-11-30", document_id: id(6), state: "issued" as const,
   pending_id: id(7), receipt_document_id: null, received_cents: "0", pending_cents: "350000", has_confirmed_payment: false };

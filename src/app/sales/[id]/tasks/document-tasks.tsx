@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 
-export function DesignTask({ sale, finance }: TaskData) {
+export function DesignTask({ sale, finance }: Pick<TaskData, "sale" | "finance">) {
   const plan = finance?.design_plan;
   return <ActionForm action={saveDesign.bind(null, idOf(sale, sale.id, finance?.version))} label="บันทึกค่าออกแบบ">
     <DesignPackages initialArea={plan ? plan.usable_area ?? "" : sale.house_brief?.usable_area ?? String(sale.details?.usable_area ?? "")} plan={plan} />

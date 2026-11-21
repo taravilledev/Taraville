@@ -19,8 +19,8 @@ const nav = load("./case-navigation.ts") as typeof import("./case-navigation");
 assert.equal(nav.resolveCaseTab(nav.bkpCaseTabs, "overview", "fees"), "money");
 assert.equal(nav.taskReturnTab("design", true), "design");
 for (const name of ["issue-design-invoice", "prepare-design-payment", "cancel-design-invoice"] as const) {
-  assert.equal(nav.taskReturnTab(name, true), "money");
-  assert.equal(nav.taskReturnTab(name, false), "design", "Non-BKP return behavior remains unchanged");
+  assert.equal(nav.taskReturnTab(name, true), "design", "ADR 0058: design-fee billing returns to the ออกแบบ stage");
+  assert.equal(nav.taskReturnTab(name, false), "design");
 }
 assert.equal(nav.taskReturnTab("confirm-payment", true, true), "money");
 assert.equal(nav.taskReturnTab("withdraw-payment", true, true), "money");

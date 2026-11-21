@@ -90,7 +90,7 @@ async function CaseDetail({ params, searchParams }: Props) {
         {hasBkpWorkspace && <BkpOverview data={data} />}
         <OverviewSection data={data} houseBrief={houseBrief} />
       </>}
-      {tab === "design" && finance && <DesignBillingPanel sale={sale} finance={finance} tasks={tasks} />}
+      {tab === "design" && finance && agreement && <DesignBillingPanel sale={sale} finance={finance} agreement={agreement} tasks={tasks} />}
       {(tab === "quotation" || tab === "contract") && <BkpAgreementSection data={data} tab={tab} />}
       {tab === "documents" && <DocumentsSection data={data} />}
       {tab === "money" && <MoneySection data={data} />}

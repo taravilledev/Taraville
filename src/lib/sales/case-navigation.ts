@@ -14,7 +14,8 @@ export function taskReturnTab(name: TaskName, isBkp: boolean, isDesignPayment = 
   void isDesignPayment;
   switch (name) {
     case "design": return "design";
-    case "issue-design-invoice": case "prepare-design-payment": case "cancel-design-invoice": return isBkp ? "money" : "design";
+    // ADR 0058: design-fee billing lives on the ออกแบบ stage (board ProjectDesign), not under รับชำระ.
+    case "issue-design-invoice": case "prepare-design-payment": case "cancel-design-invoice": return "design";
     case "confirm-payment": case "withdraw-payment": return "money";
     case "prepare-payment": case "prepare-instalment": case "fix-receipt": case "issue-invoice":
     case "request-refund": case "decide-refund": case "pay-refund": return "money";
