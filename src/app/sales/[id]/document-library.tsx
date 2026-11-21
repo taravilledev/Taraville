@@ -12,6 +12,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
+import { cn } from "@/lib/utils";
 
 type Action = { label: string; href: string; documentId?: string };
 export function DocumentLibrary({ documents, actions }: { documents: LibraryDocument[]; actions: Action[] }) {
@@ -20,6 +21,7 @@ export function DocumentLibrary({ documents, actions }: { documents: LibraryDocu
   const [group, setGroup] = useState("");
   const [selected, setSelected] = useState<LibraryDocument | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
+  const frame = useRef<HTMLIFrameElement>(null);
   useEffect(() => { if (selected) dialog.current?.showModal(); }, [selected]);
   const search = query.trim().toLocaleLowerCase();
   const matches = documents.filter(doc => (!group || doc.group === group) && `${doc.title} ${doc.number ?? ""} ${doc.status} ${doc.note}`.toLocaleLowerCase().includes(search));
@@ -34,7 +36,7 @@ export function DocumentLibrary({ documents, actions }: { documents: LibraryDocu
     <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} aria-haspopup="dialog" aria-label={`เปิดอ่าน ${doc.title} ${doc.number ?? "ร่าง"} ฉบับ ${doc.revision ?? ""}`} onClick={() => setSelected(doc)}>เปิดอ่าน</button>
   </li>)}</ul>;
   return <section className={styles.library} id="contract" aria-labelledby="document-library-title">
-    <div className={ws.header}><div><h2 id="document-library-title">เอกสารทั้งหมด</h2><p>ค้นหาและเปิดอ่านฉบับที่ใช้อยู่ พร้อมประวัติฉบับก่อนและฉบับยกเลิก</p></div>
+    <div className={ws.header}><div><h2 id="document-library-title">เอกสารทั้งหมด</h2><p>ฉบับที่ใช้อยู่แสดงก่อน ฉบับก่อนหน้าและฉบับยกเลิกพับไว้ในแต่ละประเภท</p></div>
       <div className={styles.actions}>{actions.filter(action => !action.documentId).map(action => <Link className={buttonVariants({ variant: "outline", size: "auto" })} key={action.href} href={action.href} prefetch={false}>{action.label}</Link>)}</div></div>
     <div className={styles.filters}>
       <Field><FieldLabel htmlFor={`${id}-query`}>ค้นหาเอกสาร</FieldLabel><Input id={`${id}-query`} type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="เลขที่ ประเภท หรือสถานะเอกสาร" /></Field>
@@ -42,7 +44,8 @@ export function DocumentLibrary({ documents, actions }: { documents: LibraryDocu
         {Object.entries(documentGroups).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</NativeSelect></Field>
     </div>
     <p role="status">พบ {matches.length} จาก {documents.length} เอกสาร</p>
-    {!matches.length && <div className={styles.empty}>{documents.length ? "ไม่พบเอกสารที่ตรงกับเงื่อนไข ลองเปลี่ยนคำค้นหาหรือประเภท" : "ยังไม่มีเอกสารในโครงการนี้"}</div>}
+    {!matches.length && <div className={styles.empty}>{documents.length ? "ไม่พบเอกสารที่ตรงกับเงื่อนไข ลองเปลี่ยนคำค้นหาหรือประเภท"
+      : <><strong className="block text-foreground">ยังไม่มีเอกสารในโครงการนี้</strong>ใบแจ้งชำระค่าออกแบบ ใบเสนอราคา สัญญา และใบเสร็จที่ออกในโครงการนี้จะรวมอยู่ที่นี่เอง ไม่ต้องอัปโหลดเพิ่ม</>}</div>}
     {Object.entries(documentGroups).map(([key, label]) => {
       const rows = matches.filter(doc => doc.group === key);
       if (!rows.length) return null;
@@ -55,9 +58,11 @@ export function DocumentLibrary({ documents, actions }: { documents: LibraryDocu
     })}
     <dialog ref={dialog} className={styles.dialog} aria-labelledby="document-preview-title" onClose={() => setSelected(null)}>
       {selected && <><header className={styles.previewHeader}><div><h2 id="document-preview-title">{selected.title} · {selected.number ?? "ยังไม่ออกเลข"}</h2><p>{selected.status}</p></div>
-        <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} onClick={() => dialog.current?.close()}>ปิดเอกสาร</button></header>
-        <p className={styles.previewHint}>พิมพ์หรือบันทึก PDF ได้จากปุ่มในเอกสาร · <a href={`/sales/documents/${selected.id}`} target="_blank" rel="noopener noreferrer">เปิดหน้าเต็มในแท็บใหม่</a></p>
-        <iframe key={selected.id} title={`เนื้อหา ${selected.title} ${selected.number ?? "ร่าง"}`} src={`/sales/documents/${selected.id}?preview=1`} className={styles.frame} />
+        <div className={styles.previewActions}>
+          <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} onClick={() => frame.current?.contentWindow?.print()}>พิมพ์ / บันทึก PDF</button>
+          <Link className={cn(buttonVariants({ variant: "outline", size: "auto" }), "inline-flex min-h-11 items-center")} href={`/sales/documents/${selected.id}`} prefetch={false}>เปิดหน้าเอกสาร ›</Link>
+          <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} onClick={() => dialog.current?.close()}>ปิดเอกสาร</button></div></header>
+        <iframe ref={frame} key={selected.id} title={`เนื้อหา ${selected.title} ${selected.number ?? "ร่าง"}`} src={`/sales/documents/${selected.id}?preview=1`} className={styles.frame} />
       </>}
     </dialog>
   </section>;
