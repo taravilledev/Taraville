@@ -176,11 +176,11 @@ The rules come from design-system.md §8. No screen redesign in this phase, exce
 
 - **PDPA review: done** (owner, 2026-11-20). The attestation wording, the survey shown before consent, and the combined checkbox stand as drawn.
 - [x] Three steps with no notice step; consent text on step ②; chips; the advance warning on ③; the saved screen without personal data; the executive-without-sale-account block; the in-app leave dialog; one phone rule.
-- Left (Phase 8): "เปิดโครงการ" on the saved screen (no helper gives a Lead's project URL). The survey "พนักงานขาย" still holds the person who filled the form (open business decision, flow-to-be §4). The executive owner-select path and the no-sale-account block were not browser-tested (QA ran as a sale).
+- Left (Phase 8): "เปิดโครงการ" on the saved screen (no helper gives a Lead's project URL). The survey "พนักงานขาย" = the Lead owner (owner, 2026-11-22; migration `20261122090000`, checked over HTTP as an executive). The executive owner-select UI and the no-sale-account block were not browser-tested (QA ran as a sale).
 
 ## R0 tasks (never inside a phase; each needs its own approval with the exact list)
 
-- **Apply the Phase 3 and Phase 6 migrations to prod**, then dump and diff.
+- **Apply the Phase 3, Phase 6 and Phase 8 migrations to prod**, then dump and diff.
 - **Go-live purge** (ADR 0062):
   - delete synthetic rows (count them per table first and show the list);
   - set every issuer's `is_synthetic = false`;
