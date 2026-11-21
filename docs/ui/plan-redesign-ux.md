@@ -135,14 +135,14 @@ The rules come from design-system.md §8. No screen redesign in this phase, exce
 
 ## Phase 5 — `/summary` (board FinanceSummary)
 
-- [ ] **Cards.**
+- [x] **Cards.**
   - 5 KPI cards, plus "รับสุทธิในช่วง" when a period is set.
   - "เกินกำหนด" is a red sub-button inside "ค้างตามบิล".
   - Click-to-filter; icon tiles by meaning.
-- [ ] **Filters.** Auto-apply, an owner filter, stage tabs, the period merged in with presets, the closeout chip only when above 0, no synthetic toggle.
-- [ ] **Table.** 4 money columns, no horizontal scroll; table ≥1024px, cards below.
-- [ ] **Export.** CSV and print all filtered rows via `/summary/export` and `?print=1`. The selection is optional, with a reason text instead of a disabled button and a toast on download.
-- **Verify point:** money totals against the current page on the same filters. Ask first.
+- [x] **Filters.** Auto-apply, an owner filter, stage tabs, the period merged in with presets, the closeout chip only when above 0, no synthetic toggle.
+- [x] **Table.** 4 money columns, no horizontal scroll; table ≥1024px, cards below.
+- [x] **Export.** CSV and print all filtered rows via `/summary/export` and `?print=1`. The selection is optional, with a reason text instead of a disabled button and a toast on download.
+- **Verify point:** money totals against the current page on the same filters. Ask first. (2026-11-21: totals recorded on the old page before any change and matched exactly on 4 filter sets; CSV for stage=money = 48 rows + matching total. Owner filter matches by owner name — duplicate names would merge. Closeout chip not seen: no closeout amount in local data.)
 
 ## Phase 6 — settings (boards SettingsCatalog, SettingsPermissions, SettingsIssuer; ADR 0062)
 

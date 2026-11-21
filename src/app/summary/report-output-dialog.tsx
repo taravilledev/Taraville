@@ -3,7 +3,10 @@
 import { nativeDialogClass, nativeDialogHeaderClass, nativeDialogBodyClass } from "@/components/native-dialog-styles";
 import { useId, useRef, useState } from "react";
 import { createPortal, flushSync } from "react-dom";
+import Link from "next/link";
+import { Download, Printer } from "lucide-react";
 import { toast } from "sonner";
+import { textActionClass } from "@/components/action-link-styles";
 import { ProjectTable } from "./project-table";
 import {
   amountState, collectionFilters, displayAmount, filterSummaryReportRows, selectSummaryReport, summaryCsv,
@@ -16,10 +19,12 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 
-export function ReportOutputDialog({ report, title, today }: { report: SummaryReport; title: string; today: string }) {
+type Props = { report: SummaryReport; title: string; today: string; csvHref: string; printHref: string };
+
+// CSV and print take every filtered row straight away (the export route and ?print=1); the dialog is the optional "pick some projects" path.
+export function ReportOutputDialog({ report, title, today, csvHref, printHref }: Props) {
   const id = useId();
   const dialog = useRef<HTMLDialogElement>(null);
-  const [mode, setMode] = useState<"csv" | "print">("print");
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [filters, setFilters] = useState({ query: "", stage: "", money: "" });
   const [printReport, setPrintReport] = useState<SummaryReport | null>(null);
@@ -30,13 +35,7 @@ export function ReportOutputDialog({ report, title, today }: { report: SummaryRe
   const hiddenSelectedCount = count - visibleSelectedCount;
   const isAllSelected = visible.length > 0 && visibleSelectedCount === visible.length;
 
-  function open(next: typeof mode) {
-    setMode(next);
-    setPrintReport(null);
-    dialog.current?.showModal();
-  }
-
-  function exportSelection() {
+  function exportSelection(mode: "csv" | "print") {
     if (!count) return;
     if (mode === "csv") {
       const url = URL.createObjectURL(new Blob([summaryCsv(chosen, true)], { type: "text/csv;charset=utf-8" }));
@@ -57,14 +56,16 @@ export function ReportOutputDialog({ report, title, today }: { report: SummaryRe
     window.print();
   }
 
+  if (!report.rows.length) return <p className="m-0 text-sm text-warn-ink" role="note">ไม่มีโครงการตามตัวกรอง จึงยังส่งออกไม่ได้ · ลองล้างตัวกรองก่อน</p>;
   return <>
-    <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} aria-haspopup="dialog" aria-controls="summary-output"
-      disabled={!report.rows.length} onClick={() => open("csv")}>ส่งออก CSV</button>
-    <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} aria-haspopup="dialog" aria-controls="summary-output"
-      disabled={!report.rows.length} onClick={() => open("print")}>พิมพ์ / PDF</button>
+    <a className={buttonVariants({ variant: "outline", size: "auto" })} href={csvHref} download
+      onClick={() => toast.success("เริ่มดาวน์โหลดรายงาน CSV แล้ว")}><Download aria-hidden="true" />ส่งออก CSV</a>
+    <Link className={buttonVariants({ variant: "outline", size: "auto" })} href={printHref} prefetch={false}><Printer aria-hidden="true" />พิมพ์ / PDF</Link>
+    <button type="button" className={textActionClass} aria-haspopup="dialog" aria-controls="summary-output"
+      onClick={() => { setPrintReport(null); dialog.current?.showModal(); }}>เลือกเฉพาะบางโครงการ…</button>
     <dialog ref={dialog} id="summary-output" className={`${nativeDialogClass} ${styles.selectionDialog}`} aria-labelledby="summary-output-title">
       <div className={nativeDialogHeaderClass}>
-        <h2 id="summary-output-title">{mode === "print" ? "เลือกโครงการสำหรับพิมพ์ / PDF" : "เลือกโครงการสำหรับส่งออก CSV"}</h2>
+        <h2 id="summary-output-title">ส่งออกเฉพาะบางโครงการ</h2>
         <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} onClick={() => dialog.current?.close()}>ปิด</button>
       </div>
       <div className={`${nativeDialogBodyClass} ${styles.selectionBody}`}>
@@ -126,13 +127,14 @@ export function ReportOutputDialog({ report, title, today }: { report: SummaryRe
         </fieldset>
       </div>
       <div className={styles.selectionActions}>
-        <button type="button" className={buttonVariants({ size: "auto" })} disabled={!count} onClick={exportSelection}>
-          {mode === "print" ? "พิมพ์โครงการที่เลือก" : "ดาวน์โหลด CSV"}
-        </button>
+        {count ? <>
+          <button type="button" className={buttonVariants({ variant: "outline", size: "auto" })} onClick={() => exportSelection("csv")}>ดาวน์โหลด CSV</button>
+          <button type="button" className={buttonVariants({ size: "auto" })} onClick={() => exportSelection("print")}>พิมพ์ / PDF</button>
+        </> : <p className={styles.selectionEmpty}>เลือกอย่างน้อย 1 โครงการ จึงจะส่งออกได้</p>}
       </div>
     </dialog>
     {printReport && createPortal(<main className={`${paper.printReport} ${paper.selectionPrint}`}>
-      <h1>{title} · บ้านคุณภาพ</h1>
+      <h1>{title}</h1>
       <p>หน่วยบาท{printReport.periodLabel && ` · รับและคืนเงิน ${printReport.periodLabel}`}
         {printReport.rows.some(row => row.hasUnknownBalance || row.amounts.value === null) && " · รวมเฉพาะยอดที่ระบุได้"}</p>
       <ProjectTable report={printReport} rows={printReport.rows} />
